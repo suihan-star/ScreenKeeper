@@ -7,7 +7,7 @@ namespace OLED_Sleeper.Infrastructure.Helpers
     /// </summary>
     public static class StartupHelper
     {
-        private const string AppName = "OLED Sleeper";
+        private const string AppName = ProductIdentity.Name;
         private const string RunKeyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
 
         /// <summary>

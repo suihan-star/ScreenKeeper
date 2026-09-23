@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../OLED-Sleeper/Native/NativeMethods.cs" Link="NativeMethods.cs" />
+    <Compile Include="../../OLED-Sleeper/Native/ColorNative.cs" Link="ColorNative.cs" />
+    <Compile Include="../../OLED-Sleeper/Features/ColorTemperature/ColorTemperatureContracts.cs" Link="ColorTemperatureContracts.cs" />
+    <Compile Include="../../OLED-Sleeper/Features/ColorTemperature/WindowsGammaBackend.cs" Link="WindowsGammaBackend.cs" />
+    <Compile Include="../../OLED-Sleeper/Features/ColorTemperature/ColorTemperatureSettings.cs" Link="ColorTemperatureSettings.cs" />
+    <Compile Include="../../OLED-Sleeper/Features/ColorTemperature/ColorSchedule.cs" Link="ColorSchedule.cs" />
+    <Compile Include="../../OLED-Sleeper/Features/ColorTemperature/ColorTransition.cs" Link="ColorTransition.cs" />
+    <Compile Include="../../OLED-Sleeper/Features/ColorTemperature/ColorTemperatureService.cs" Link="ColorTemperatureService.cs" />
+    <Compile Include="../../OLED-Sleeper/Features/ColorTemperature/ColorTemperatureService.Validation.cs" Link="ColorTemperatureService.Validation.cs" />
+    <Compile Include="../../OLED-Sleeper/Features/ColorTemperature/ColorTemperatureService.BaselineReset.cs" Link="ColorTemperatureService.BaselineReset.cs" />
+  </ItemGroup>
+</Project>

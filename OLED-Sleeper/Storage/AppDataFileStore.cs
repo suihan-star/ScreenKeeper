@@ -65,14 +65,18 @@ namespace OLED_Sleeper.Storage
         }
 
         /// <inheritdoc />
-        public bool TryWrite<T>(string fileName, T value)
+        public bool TryWrite<T>(string fileName, T value) => Write(fileName, value, false);
+        public bool TryWriteDurable<T>(string fileName, T value) => Write(fileName, value, true);
+        private bool Write<T>(string fileName, T value, bool durable)
         {
             var filePath = Path.Combine(_storeDirectory, fileName);
             var tempFilePath = filePath + TempFileSuffix;
 
             try
             {
-                _fileSystem.WriteAllText(tempFilePath, JsonSerializer.Serialize(value, SerializerOptions));
+                var json = JsonSerializer.Serialize(value, SerializerOptions);
+                if (durable) _fileSystem.WriteAllTextDurable(tempFilePath, json);
+                else _fileSystem.WriteAllText(tempFilePath, json);
 
                 if (_fileSystem.FileExists(filePath))
                 {

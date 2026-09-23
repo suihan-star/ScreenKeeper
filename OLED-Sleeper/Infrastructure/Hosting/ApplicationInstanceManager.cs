@@ -12,8 +12,8 @@ namespace OLED_Sleeper.Infrastructure.Hosting
     {
         #region Constants
 
-        private const string MutexName = "OLED-Sleeper-Mutex";
-        private const string EventName = "OLED-Sleeper-ShowWindow";
+        private const string MutexName = ProductIdentity.MutexName;
+        private const string EventName = ProductIdentity.ShowWindowEventName;
 
         #endregion Constants
 

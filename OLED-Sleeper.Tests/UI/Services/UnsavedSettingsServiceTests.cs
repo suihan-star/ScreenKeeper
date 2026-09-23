@@ -99,7 +99,7 @@ namespace OLED_Sleeper.Tests.UI.Services
         }
 
         [Fact]
-        public void ConfirmHide_WhenUserDeclinesToSave_DiscardsAndGoesAhead()
+        public void ConfirmHide_KeepsDraftsWithoutPrompting()
         {
             // Arrange
             SetupAnswer(MessageBoxResult.No);
@@ -109,11 +109,12 @@ namespace OLED_Sleeper.Tests.UI.Services
 
             // Assert
             Assert.True(proceed);
-            _unsavedSettingsMock.Verify(x => x.DiscardChanges(), Times.Once);
+            _unsavedSettingsMock.Verify(x => x.DiscardChanges(), Times.Never);
+            _dialogServiceMock.Verify(x => x.AskYesNoCancel(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
-        public void ConfirmHide_WhenUserCancels_Stops()
+        public void ConfirmHide_DoesNotConsultExitPrompt()
         {
             // Arrange
             SetupAnswer(MessageBoxResult.Cancel);
@@ -122,7 +123,7 @@ namespace OLED_Sleeper.Tests.UI.Services
             var proceed = _service.ConfirmHide();
 
             // Assert
-            Assert.False(proceed);
+            Assert.True(proceed);
             _unsavedSettingsMock.Verify(x => x.DiscardChanges(), Times.Never);
         }
 
@@ -137,8 +138,8 @@ namespace OLED_Sleeper.Tests.UI.Services
             _service.ConfirmExit();
 
             // Assert
-            _dialogServiceMock.Verify(x => x.AskYesNoCancel(It.Is<string>(m => m.Contains("hiding the window")), "Unsaved Changes"), Times.Once);
-            _dialogServiceMock.Verify(x => x.AskYesNoCancel(It.Is<string>(m => m.Contains("exiting")), "Unsaved Changes"), Times.Once);
+            _dialogServiceMock.Verify(x => x.AskYesNoCancel(It.Is<string>(m => m.Contains("隐藏窗口")), "尚未保存的更改"), Times.Never);
+            _dialogServiceMock.Verify(x => x.AskYesNoCancel(It.Is<string>(m => m.Contains("退出")), "尚未保存的更改"), Times.Once);
         }
 
         /// <summary>
@@ -148,7 +149,7 @@ namespace OLED_Sleeper.Tests.UI.Services
         private void SetupAnswer(MessageBoxResult answer)
         {
             _dialogServiceMock
-                .Setup(x => x.AskYesNoCancel(It.IsAny<string>(), "Unsaved Changes"))
+                .Setup(x => x.AskYesNoCancel(It.IsAny<string>(), "尚未保存的更改"))
                 .Returns(answer);
         }
     }

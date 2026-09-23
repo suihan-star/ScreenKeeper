@@ -6,7 +6,7 @@ namespace OLED_Sleeper.Tests.Storage
 {
     public class StorageRootPreparerTests
     {
-        private const string StoreDirectory = @"C:\FakeAppData\OLED-Sleeper";
+        private const string StoreDirectory = @"C:\FakeAppData\ScreenKeeper";
 
         private readonly FakeFileSystem _fileSystem;
         private readonly StorageRootPreparer _preparer;
@@ -93,7 +93,7 @@ namespace OLED_Sleeper.Tests.Storage
 
             // Assert
             Assert.True(prepared);
-            Assert.Equal(new[] { @"C:\FakeApp\Data" }, _fileSystem.CreatedDirectories);
+            Assert.Equal(new[] { @"C:\FakeApp\Data\ScreenKeeper" }, _fileSystem.CreatedDirectories);
         }
     }
 }

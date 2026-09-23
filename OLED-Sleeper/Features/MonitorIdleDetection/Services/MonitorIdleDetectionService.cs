@@ -1,7 +1,8 @@
-﻿using OLED_Sleeper.Features.MonitorBehavior.Commands;
+using OLED_Sleeper.Features.MonitorBehavior.Commands;
 using OLED_Sleeper.Features.MonitorIdleDetection.Models;
 using OLED_Sleeper.Features.MonitorIdleDetection.Services.Interfaces;
 using OLED_Sleeper.Features.MonitorInformation.Models;
+using OLED_Sleeper.Features.MonitorPrivacy;
 using OLED_Sleeper.Features.UserSettings.Models;
 using OLED_Sleeper.Messaging.Interfaces;
 using OLED_Sleeper.Native;
@@ -35,6 +36,8 @@ namespace OLED_Sleeper.Features.MonitorIdleDetection.Services
 
         // === Dependencies & State ===
         private readonly IMediator _mediator;
+        private readonly IMonitorPrivacyService? _privacy;
+        private readonly ScreenSnoozeService _snooze;
 
         private CancellationTokenSource? _cancellationTokenSource;
         private List<ManagedMonitorState> _managedMonitors = new();
@@ -43,9 +46,11 @@ namespace OLED_Sleeper.Features.MonitorIdleDetection.Services
 
         // === Construction ===
 
-        public MonitorIdleDetectionService(IMediator mediator)
+        public MonitorIdleDetectionService(IMediator mediator, IMonitorPrivacyService? privacy = null, ScreenSnoozeService? snooze = null)
         {
             _mediator = mediator;
+            _privacy = privacy;
+            _snooze = snooze ?? new();
         }
 
         // === Service Lifecycle ===
@@ -57,6 +62,8 @@ namespace OLED_Sleeper.Features.MonitorIdleDetection.Services
         {
             Stop();
 
+            _snooze.RestartWaiting();
+            _privacy?.Start();
             var cancellationTokenSource = new CancellationTokenSource();
             _cancellationTokenSource = cancellationTokenSource;
             Task.Run(() => IdleCheckLoop(cancellationTokenSource.Token));
@@ -68,6 +75,7 @@ namespace OLED_Sleeper.Features.MonitorIdleDetection.Services
         /// </summary>
         public void Stop()
         {
+            _privacy?.Stop();
             var cancellationTokenSource = Interlocked.Exchange(ref _cancellationTokenSource, null);
             if (cancellationTokenSource == null) return;
 
@@ -85,9 +93,11 @@ namespace OLED_Sleeper.Features.MonitorIdleDetection.Services
         /// Callers supply the monitor list; this class never reads the shared cache and does not depend on
         /// the monitor manager, so no lock that manager owns can be taken while <see cref="_lock"/> is held.
         /// </remarks>
-        public Task UpdateSettingsAsync(List<MonitorSettings> monitorSettings, IReadOnlyList<MonitorInfo> monitors)
+        public async Task UpdateSettingsAsync(List<MonitorSettings> monitorSettings, IReadOnlyList<MonitorInfo> monitors)
         {
-            var activeSettings = monitorSettings.Where(s => s.IsManaged).ToList();
+            _snooze.Configure(monitorSettings, monitors);
+            if (_privacy != null) await _privacy.ConfigureAsync(monitorSettings, monitors);
+            var activeSettings = monitorSettings.Where(s => s.IsManaged && s.Behavior != OLED_Sleeper.Features.MonitorBehavior.Models.MonitorBehaviorType.None).ToList();
 
             int trackedCount;
             lock (_lock)
@@ -111,7 +121,7 @@ namespace OLED_Sleeper.Features.MonitorIdleDetection.Services
             }
 
             Log.Information("MonitorIdleDetectionService settings updated. Now tracking {Count} monitors.", trackedCount);
-            return Task.CompletedTask;
+            return;
         }
 
         // === Idle Detection Loop ===
@@ -167,6 +177,9 @@ namespace OLED_Sleeper.Features.MonitorIdleDetection.Services
                 monitor.Settings.HardwareId, monitor.DisplayNumber, monitor.Bounds,
                 monitor.Settings, systemState.ForegroundWindowHandle, activityReason);
 
+            if (timerState.CurrentState != MonitorStateMachine.Idle && _snooze.IsPaused(monitor.Settings.HardwareId, MonitorSettingsScope.Rest))
+            { timerState.CurrentState = MonitorStateMachine.Active; return; }
+
             switch (timerState.CurrentState)
             {
                 case MonitorStateMachine.Active:
@@ -183,6 +196,24 @@ namespace OLED_Sleeper.Features.MonitorIdleDetection.Services
             }
         }
 
+        private bool StillIdle(ManagedMonitorState monitor, MonitorTimerState timer)
+        {
+            lock (_lock) return _cancellationTokenSource != null && _managedMonitors.Contains(monitor) &&
+                _monitorStates.GetValueOrDefault(monitor.Settings.HardwareId) == timer && timer.CurrentState == MonitorStateMachine.Idle &&
+                !_snooze.IsPaused(monitor.Settings.HardwareId, MonitorSettingsScope.Rest) && GetActivityReason(monitor, GetSystemState()) == ActivityReason.None;
+        }
+        private async Task ApplyIdleAsync(ManagedMonitorState monitor, MonitorTimerState timer, MonitorIdleStateEventArgs args)
+        {
+            try { await _mediator.SendAsync(new ApplyMonitorIdleBehaviorCommand(args)); }
+            catch (Exception ex) { args.IsIgnored = true; Log.Error(ex, "Could not apply screen rest."); }
+            finally
+            {
+                if (args.IsIgnored) lock (_lock)
+                        if (_monitorStates.GetValueOrDefault(monitor.Settings.HardwareId) == timer && timer.CurrentState == MonitorStateMachine.Idle)
+                            timer.CurrentState = MonitorStateMachine.Active;
+            }
+        }
+
         // === State Machine Handlers ===
 
         /// <summary>
@@ -195,7 +226,7 @@ namespace OLED_Sleeper.Features.MonitorIdleDetection.Services
             if (!hasActivityNow)
             {
                 timerState.CurrentState = MonitorStateMachine.Counting;
-                timerState.ActivityStoppedTimestamp = DateTime.UtcNow;
+                timerState.ActivityStoppedTimestamp = _snooze.Now;
             }
         }
 
@@ -214,13 +245,14 @@ namespace OLED_Sleeper.Features.MonitorIdleDetection.Services
             }
             else
             {
-                var elapsed = DateTime.UtcNow - timerState.ActivityStoppedTimestamp;
+                var elapsed = TimeSpan.FromMilliseconds(_snooze.Now - Math.Max(timerState.ActivityStoppedTimestamp, _snooze.WaitFrom(monitor.Settings.HardwareId, MonitorSettingsScope.Rest)));
                 if (elapsed.TotalMilliseconds >= monitor.Settings.IdleTimeMilliseconds)
                 {
                     timerState.CurrentState = MonitorStateMachine.Idle;
                     Log.Information("Monitor #{DisplayNumber} has become idle after {Seconds}s of inactivity.",
                         monitor.DisplayNumber, Math.Round(elapsed.TotalSeconds));
-                    _mediator.SendAsync(new ApplyMonitorIdleBehaviorCommand(eventArgs));
+                    eventArgs.StillIdle = () => StillIdle(monitor, timerState);
+                    _ = ApplyIdleAsync(monitor, timerState, eventArgs);
                 }
             }
         }
@@ -389,7 +421,7 @@ namespace OLED_Sleeper.Features.MonitorIdleDetection.Services
         private class MonitorTimerState
         {
             public MonitorStateMachine CurrentState { get; set; } = MonitorStateMachine.Active;
-            public DateTime ActivityStoppedTimestamp { get; set; }
+            public long ActivityStoppedTimestamp { get; set; }
         }
 
         /// <summary>

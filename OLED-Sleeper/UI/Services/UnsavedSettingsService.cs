@@ -1,3 +1,4 @@
+using OLED_Sleeper.UI.Localization;
 using OLED_Sleeper.UI.Services.Interfaces;
 using System.Windows;
 
@@ -10,15 +11,15 @@ namespace OLED_Sleeper.UI.Services
         IUnsavedSettings unsavedSettings,
         IDialogService dialogService) : IUnsavedSettingsService
     {
-        private const string Caption = "Unsaved Changes";
+        private static string Caption => UiText.Get("尚未保存的更改");
 
         /// <inheritdoc />
-        public bool ConfirmHide() =>
-            Confirm("You have unsaved changes. Would you like to save them before hiding the window?");
+        public bool ConfirmHide() => true;
 
         /// <inheritdoc />
         public bool ConfirmExit() =>
-            Confirm("You have unsaved changes. Would you like to save them before exiting?");
+            Confirm(UiText.Get("有尚未保存的更改，是否在退出前保存？") +
+                (string.IsNullOrWhiteSpace(unsavedSettings.DirtyModules) ? "" : "\n\n" + unsavedSettings.DirtyModules));
 
         /// <summary>
         /// Prompts only when there is something to lose. Yes answers with whether the save succeeded;

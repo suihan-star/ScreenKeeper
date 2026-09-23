@@ -44,6 +44,7 @@ namespace OLED_Sleeper.Features.MonitorIdleDetection.Models
         /// Subscribers can set this to true to prevent the sender from changing its internal state.
         /// </summary>
         public bool IsIgnored { get; set; } = false;
+        public Func<bool>? StillIdle { get; set; }
 
         /// <param name="hardwareId">The unique hardware ID of the monitor.</param>
         /// <param name="displayNumber">The display number of the monitor.</param>

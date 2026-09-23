@@ -1,0 +1,942 @@
+/* v6 proposal: discoverable live preview beside the temperature controls.
+  A: drag to preview; B: explicit opt-in with four controls. Both are browser simulations.
+  Browser-only proposal; no native display, recovery or product configuration access. */
+'use strict';
+
+(() => {
+  const {
+    useState,
+    useEffect
+  } = React;
+  const {
+    Icon,
+    Button,
+    Dialog,
+    Toggle,
+    Tabs
+  } = window.SK4UI;
+  const copy = x => JSON.parse(JSON.stringify(x));
+  const minutes = s => /^\d{2}:\d{2}$/.test(s) ? Number(s.slice(0, 2)) * 60 + Number(s.slice(3)) : NaN;
+  const inWork = c => {
+    const day = minutes(c.dayTime),
+      night = minutes(c.nightTime),
+      now = 20 * 60 + 30;
+    return day < night ? now >= day && now < night : now >= day || now < night;
+  };
+  const errorFor = (c, t) => {
+    if (c.mode === 'schedule' && !c.original && (!Number.isInteger(c.day) || c.day < 3500 || c.day > 6500) || !Number.isInteger(c.night) || c.night < 3500 || c.night > 6500) return t('色温请输入 3500–6500 K 的整数。', 'Enter a whole number between 3500 and 6500 K.');
+    if (c.mode === 'schedule') {
+      const a = minutes(c.dayTime),
+        b = minutes(c.nightTime),
+        gap = (b - a + 1440) % 1440;
+      if (!Number.isFinite(a) || !Number.isFinite(b) || a === b) return t('请设置两个不同的开始时间。', 'Choose two different start times.');
+      if (!Number.isInteger(c.transition) || c.transition < 0 || c.transition > 120 || c.transition >= Math.min(gap, 1440 - gap)) return t('过渡需为 0–120 分钟，并短于任一时段。', 'Transition must be 0–120 minutes and shorter than either period.');
+    }
+    return '';
+  };
+  const profile = (enabled = false) => ({
+    enabled,
+    mode: 'schedule',
+    dayTime: '07:00',
+    nightTime: '18:00',
+    original: true,
+    day: 5300,
+    night: 4500,
+    transition: 30
+  });
+  function initial(scenario = 'normal') {
+    let screens = [{
+      id: 'q',
+      name: 'Q27P10',
+      number: 1,
+      state: 'ready',
+      primary: true
+    }, {
+      id: 'd',
+      name: 'DELL SE2723DS',
+      number: 2,
+      state: 'ready'
+    }];
+    let saved = {
+      q: profile(true),
+      d: {
+        ...profile(false),
+        dayTime: '09:00',
+        nightTime: '20:00',
+        original: false,
+        day: 5500,
+        night: 4200
+      }
+    };
+    if (['validated', 'no-participants', 'unverified', 'conflict'].includes(scenario)) Object.values(saved).forEach(c => c.enabled = false);
+    if (scenario === 'unverified') screens = screens.map(s => ({
+      ...s,
+      state: 'unverified'
+    }));
+    if (scenario === 'pending') screens[1].state = 'unverified';
+    if (scenario === 'conflict') screens = screens.map(s => ({
+      ...s,
+      state: 'issue'
+    }));
+    if (scenario === 'unsupported') screens[1].state = 'unsupported';
+    if (scenario === 'disconnected') {
+      screens[1].state = 'disconnected';
+      saved.d.enabled = true;
+    }
+    if (scenario === 'many') {
+      screens.push({
+        id: 'e',
+        name: 'Studio Display',
+        number: 3,
+        state: 'ready'
+      }, {
+        id: 'f',
+        name: 'Portrait Display',
+        number: 4,
+        state: 'ready'
+      });
+      saved.e = profile();
+      saved.f = profile();
+    }
+    if (scenario === 'empty') {
+      screens = [];
+      saved = {};
+    }
+    const draft = copy(saved);
+    if (scenario === 'save-fail') draft.q.night = 4600;
+    return {
+      screens,
+      saved,
+      draft,
+      selected: 'q',
+      tab: 'schedule',
+      paused: {}
+    };
+  }
+  function Workspace({
+    model: m,
+    setModel: setM,
+    t,
+    scenario,
+    previewMode
+  }) {
+    const [modal, setModal] = useState(null),
+      [error, setError] = useState(''),
+      [notice, setNotice] = useState('');
+    const [previewEnabled, setPreviewEnabled] = useState(previewMode === 'direct'),
+      [previewStatus, setPreviewStatus] = useState('idle');
+    const [trial, setTrial] = useState(null),
+      [comparing, setComparing] = useState(false),
+      [now, setNow] = useState(performance.now());
+    const ready = m.screens.filter(s => s.state === 'ready'),
+      screen = ready.find(s => s.id === m.selected) || ready[0],
+      id = screen?.id;
+    const c = m.draft[id] || profile(),
+      saved = m.saved[id] || profile();
+    const changed = m.screens.filter(s => JSON.stringify(m.draft[s.id]) !== JSON.stringify(m.saved[s.id]));
+    const dirty = changed.length > 0,
+      screenDirty = changed.some(s => s.id === id),
+      hasIssue = m.screens.some(s => s.state === 'issue');
+    const active = m.screens.filter(s => m.saved[s.id]?.enabled && s.state === 'ready' && !m.paused[s.id] && !hasIssue);
+    const canTry = !!screen && c.enabled && !m.paused[id] && !hasIssue;
+    const remaining = trial ? Math.max(0, Math.ceil((trial.end - now) / 1000)) : 0;
+    const stop = () => {
+      setTrial(null);
+      setComparing(false);
+      setPreviewStatus('idle');
+    };
+    const patch = v => {
+      setM(prev => ({
+        ...prev,
+        draft: {
+          ...prev.draft,
+          [id]: {
+            ...prev.draft[id],
+            ...v
+          }
+        }
+      }));
+      setError('');
+    };
+    const choose = sid => {
+      stop();
+      setError('');
+      setM(prev => ({
+        ...prev,
+        selected: sid
+      }));
+    };
+    const tabTo = tab => {
+      stop();
+      setError('');
+      setM(prev => ({
+        ...prev,
+        tab
+      }));
+    };
+    const editScreen = sid => {
+      choose(sid);
+      setM(prev => ({
+        ...prev,
+        selected: sid,
+        tab: 'schedule'
+      }));
+    };
+    const stateText = s => ({
+      ready: t('已验证', 'Verified'),
+      unverified: t('尚未验证', 'Not verified'),
+      issue: t('原色需确认', 'Check original color'),
+      unsupported: t('HDR 暂不可用', 'HDR unavailable'),
+      disconnected: t('未连接', 'Disconnected')
+    })[s.state];
+    const savedTarget = setting => setting.mode === 'schedule' && inWork(setting) ? setting.original ? t('原色', 'Original') : setting.day + ' K' : setting.night + ' K';
+    function statusText(s) {
+      const setting = m.saved[s.id];
+      return hasIssue && setting?.enabled ? t('原色需确认，当前暂停调节', 'Original color needs checking; adjustment paused') : s.state !== 'ready' ? stateText(s) : !setting?.enabled ? t('保持原色 · 未开启', 'Original color · Off') : m.paused[s.id] ? t('暂用原色 · 到期自动恢复', 'Original temporarily · Auto-resumes') : t('正在使用', 'Using') + ' ' + savedTarget(setting);
+    }
+    const close = () => {
+      if (modal?.phase === 'running') setNotice(t('验证已取消，已恢复原色（演示）。', 'Verification cancelled; original restored (demo).'));
+      setModal(null);
+    };
+    useEffect(() => {
+      const timer = setInterval(() => setNow(performance.now()), 200);
+      return () => clearInterval(timer);
+    }, []);
+    useEffect(() => {
+      if (trial && now >= trial.end) {
+        stop();
+        setPreviewStatus('restored');
+      }
+      if (modal?.phase === 'running' && now >= modal.end) setModal(prev => ({
+        ...prev,
+        phase: 'observe',
+        checks: [false, false, false]
+      }));
+    }, [now, trial, modal]);
+    useEffect(() => {
+      if (Object.values(m.paused).some(end => end && end <= now)) setM(prev => ({
+        ...prev,
+        paused: Object.fromEntries(Object.entries(prev.paused).filter(([, end]) => end > now))
+      }));
+    }, [now]);
+    useEffect(() => {
+      const blur = () => setComparing(false),
+        hide = () => {
+          if (document.hidden) {
+            stop();
+            setModal(prev => prev?.phase === 'running' ? null : prev);
+          }
+        };
+      window.addEventListener('blur', blur);
+      document.addEventListener('visibilitychange', hide);
+      return () => {
+        window.removeEventListener('blur', blur);
+        document.removeEventListener('visibilitychange', hide);
+      };
+    }, []);
+    useEffect(() => {
+      if (modal) document.querySelector('.cv-root [role="dialog"] button:not(:disabled)')?.focus();
+    }, [modal?.type, modal?.phase]);
+    useEffect(() => {
+      if (!notice) return;
+      const timer = setTimeout(() => setNotice(''), 5500);
+      return () => clearTimeout(timer);
+    }, [notice]);
+    function save() {
+      stop();
+      for (const s of changed) {
+        const value = m.draft[s.id];
+        if (value.enabled) {
+          const invalid = errorFor(value, t);
+          if (invalid) {
+            setError(s.name + '：' + invalid);
+            return;
+          }
+          if (s.state !== 'ready' || hasIssue) {
+            setError(s.name + '：' + t('请先在「屏幕与验证」处理状态，或关闭该屏调节后保存。', 'Resolve this display in Displays & verification, or turn its adjustment off before saving.'));
+            return;
+          }
+        }
+      }
+      if (scenario === 'save-fail') {
+        setError(t('未能保存，所有屏幕的修改都已保留。请重试。', 'Could not save. Edits for all displays are kept. Try again.'));
+        return;
+      }
+      setM(prev => ({
+        ...prev,
+        saved: copy(prev.draft)
+      }));
+      setError('');
+      setNotice(t('色温设置已保存（演示）。', 'Color settings saved (demo).'));
+    }
+    useEffect(() => {
+      stop();
+      setPreviewEnabled(previewMode === 'direct');
+      setNotice('');
+    }, [previewMode]);
+    function previewValue(key, number) {
+      if (!canTry || !previewEnabled) return;
+      if (number !== null && (!Number.isInteger(number) || number < 3500 || number > 6500)) {
+        stop();
+        return;
+      }
+      const started = performance.now();
+      setNow(started);
+      setTrial({
+        id,
+        period: key,
+        end: started + 15000,
+        value: number
+      });
+      setPreviewStatus('active');
+      setComparing(false);
+      setNotice('');
+    }
+    function kelvin(key, value) {
+      const number = value === '' ? '' : Number(value);
+      patch({
+        [key]: number
+      });
+      previewValue(key, number);
+    }
+    function endPreview() {
+      stop();
+      setPreviewStatus('restored');
+    }
+    function previewBar() {
+      return /*#__PURE__*/React.createElement("section", {
+        className: 'live-preview-bar ' + (trial ? 'is-previewing ' : '') + (previewMode === 'switch' ? 'is-manual' : ''),
+        "aria-label": t('实时预览', 'Live preview')
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "live-preview-heading"
+      }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, t('实时预览', 'Live preview')), /*#__PURE__*/React.createElement("span", {
+        className: "live-scope"
+      }, screen.name)), /*#__PURE__*/React.createElement(Toggle, {
+        checked: previewEnabled,
+        disabled: !canTry,
+        label: t('开启实时预览', 'Enable live preview'),
+        onChange: value => {
+          stop();
+          setPreviewEnabled(value);
+        }
+      })), /*#__PURE__*/React.createElement("div", {
+        className: "live-preview-description"
+      }, !canTry ? /*#__PURE__*/React.createElement("span", null, hasIssue ? t('请先处理原色恢复记录，再预览。', 'Resolve original-color recovery before previewing.') : t('当前暂用原色，恢复调节后可预览。', 'Resume adjustment to preview colors.')) : !previewEnabled ? /*#__PURE__*/React.createElement("span", null, t('只编辑数值，保存后生效。开启后可边调边看。', 'Edit values without changing the display. Enable to see changes live.')) : trial ? /*#__PURE__*/React.createElement("span", {
+        className: "live-current",
+        role: "status"
+      }, comparing ? t('正在对比原色', 'Comparing original colors') : (trial.period === 'day' ? t('正在预览工作', 'Previewing work') : t('正在预览休息', 'Previewing rest')) + ' · ' + (trial.value === null ? t('原色', 'Original') : trial.value + ' K')) : previewStatus === 'restored' ? /*#__PURE__*/React.createElement("span", {
+        role: "status"
+      }, t('已恢复保存的设置，修改仍保留。继续拖动即可预览。', 'Saved settings restored; your edits are kept. Drag again to preview.')) : /*#__PURE__*/React.createElement("span", null, t('拖动即预览；停手 15 秒恢复，保存后长期使用。', 'Drag to preview. Restore after 15 seconds; save to keep your changes.')), trial && /*#__PURE__*/React.createElement("span", {
+        className: "live-countdown"
+      }, remaining, t(' 秒后恢复', 's until restore'))), !canTry && /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        kind: "link",
+        onClick: () => hasIssue ? tabTo('devices') : pauseUntil(0)
+      }, hasIssue ? t('查看并处理', 'Resolve') : t('恢复调节', 'Resume adjustment')), (trial || previewMode === 'switch' && previewEnabled && canTry) && /*#__PURE__*/React.createElement("div", {
+        className: "live-actions"
+      }, previewMode === 'switch' && /*#__PURE__*/React.createElement(React.Fragment, null, c.mode === 'schedule' && /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        disabled: !!errorFor(c, t),
+        onClick: () => previewValue('day', c.original ? null : c.day)
+      }, t('预览工作色温', 'Preview work')), /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        disabled: !!errorFor(c, t),
+        onClick: () => previewValue('night', c.night)
+      }, c.mode === 'manual' ? t('预览色温', 'Preview color') : t('预览休息色温', 'Preview rest'))), /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        disabled: !trial,
+        "aria-label": t('按住对比原色', 'Hold to compare original'),
+        onPointerDown: e => {
+          if (trial) {
+            e.currentTarget.setPointerCapture?.(e.pointerId);
+            setComparing(true);
+          }
+        },
+        onPointerUp: () => setComparing(false),
+        onPointerCancel: () => setComparing(false),
+        onLostPointerCapture: () => setComparing(false),
+        onKeyDown: e => {
+          if ((e.key === ' ' || e.key === 'Enter') && trial) {
+            e.preventDefault();
+            setComparing(true);
+          }
+        },
+        onKeyUp: () => setComparing(false),
+        onBlur: () => setComparing(false)
+      }, t('按住对比原色', 'Hold to compare')), /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        kind: "link",
+        disabled: !trial,
+        onClick: endPreview
+      }, t('结束预览', 'End preview'))));
+    }
+    function pauseUntil(end) {
+      stop();
+      setM(prev => ({
+        ...prev,
+        paused: {
+          ...prev.paused,
+          [id]: end
+        }
+      }));
+    }
+    function beginVerification(s) {
+      stop();
+      setError('');
+      setModal({
+        type: 'verify',
+        id: s.id,
+        phase: s.state === 'unsupported' ? 'unsupported' : s.state === 'disconnected' ? 'disconnected' : Object.values(m.saved).some(c => c.enabled) ? 'policy' : s.state === 'issue' ? 'issue' : 'prepare',
+        prepared: false
+      });
+    }
+    function disableAndContinue() {
+      if (scenario === 'save-fail') {
+        setError(t('关闭状态未能保存，尚未开始验证。', 'Could not save the off state. Verification has not started.'));
+        return;
+      }
+      setM(prev => {
+        const ids = Object.keys(prev.saved).filter(key => prev.saved[key].enabled),
+          saved = copy(prev.saved),
+          draft = copy(prev.draft);
+        ids.forEach(key => {
+          saved[key].enabled = false;
+          draft[key].enabled = false;
+        });
+        return {
+          ...prev,
+          saved,
+          draft
+        };
+      });
+      setModal(prev => ({
+        ...prev,
+        phase: hasIssue ? 'issue' : 'prepare'
+      }));
+      setError('');
+    }
+    function confirmVerification() {
+      setM(prev => ({
+        ...prev,
+        screens: prev.screens.map(x => x.id === modal.id ? {
+          ...x,
+          state: 'ready'
+        } : x),
+        selected: modal.id
+      }));
+      setModal(null);
+      setNotice(t('验证通过。可在「作息与色温」设置这块屏幕，尚未开启调节。', 'Verified. Configure this display in Schedule & color; adjustment remains off.'));
+    }
+    function rebuildOriginal() {
+      setM(prev => {
+        const draft = copy(prev.draft),
+          saved = copy(prev.saved);
+        prev.screens.filter(x => x.state === 'issue').forEach(x => {
+          draft[x.id].enabled = false;
+          saved[x.id].enabled = false;
+        });
+        return {
+          ...prev,
+          screens: prev.screens.map(x => x.state === 'issue' ? {
+            ...x,
+            state: 'unverified'
+          } : x),
+          draft,
+          saved
+        };
+      });
+      setModal(v => ({
+        ...v,
+        phase: 'prepare',
+        prepared: false
+      }));
+      setNotice(t('旧记录已备份，请重新验证（演示）。', 'Old records backed up. Verify again (demo).'));
+    }
+    function picker() {
+      return /*#__PURE__*/React.createElement("section", {
+        className: 'cp-picker ' + (ready.length > 3 ? 'many' : ''),
+        "aria-label": t('选择已验证屏幕', 'Choose a verified display')
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "cp-picker-label"
+      }, /*#__PURE__*/React.createElement("span", null, t('已验证屏幕', 'Verified displays'), " ", /*#__PURE__*/React.createElement("b", null, ready.length)), /*#__PURE__*/React.createElement(Button, {
+        kind: "link",
+        small: true,
+        onClick: () => tabTo('devices')
+      }, t('查看全部屏幕', 'View all displays'), " ", /*#__PURE__*/React.createElement("span", {
+        "aria-hidden": "true"
+      }, "\u2197"))), /*#__PURE__*/React.createElement("div", {
+        className: "cp-screen-cards",
+        role: "radiogroup",
+        "aria-label": t('当前编辑的屏幕', 'Display being edited')
+      }, ready.map(s => /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        role: "radio",
+        "aria-checked": s.id === id,
+        key: s.id,
+        className: 'cp-screen-card ' + (s.id === id ? 'selected' : ''),
+        onClick: () => choose(s.id),
+        onKeyDown: e => {
+          if (['ArrowRight', 'ArrowLeft'].includes(e.key)) {
+            e.preventDefault();
+            const next = ready[(ready.findIndex(x => x.id === s.id) + (e.key === 'ArrowRight' ? 1 : ready.length - 1)) % ready.length];
+            choose(next.id);
+            e.currentTarget.parentElement.querySelectorAll('button')[ready.indexOf(next)]?.focus();
+          }
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "monitor-drawing",
+        "aria-hidden": "true"
+      }, s.number), /*#__PURE__*/React.createElement("span", {
+        className: "cp-card-copy"
+      }, /*#__PURE__*/React.createElement("strong", null, s.name), /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("i", {
+        className: m.draft[s.id]?.enabled ? 'on' : ''
+      }), m.draft[s.id]?.enabled ? t('已开启', 'On') : t('未开启', 'Off'), changed.some(x => x.id === s.id) && ' · ' + t('待保存', 'Unsaved'))), /*#__PURE__*/React.createElement("span", {
+        className: "cp-card-check",
+        "aria-hidden": "true"
+      }, s.id === id ? '✓' : '')))), /*#__PURE__*/React.createElement("select", {
+        className: "input cp-screen-select",
+        "aria-label": t('当前编辑的屏幕', 'Display being edited'),
+        value: id || '',
+        onChange: e => choose(e.target.value)
+      }, ready.map(s => /*#__PURE__*/React.createElement("option", {
+        value: s.id,
+        key: s.id
+      }, s.number, ". ", s.name, " \xB7 ", m.draft[s.id]?.enabled ? t('已开启', 'On') : t('未开启', 'Off'), changed.some(x => x.id === s.id) ? ' · ' + t('待保存', 'Unsaved') : ''))));
+    }
+    function timeline() {
+      const day = minutes(c.dayTime),
+        night = minutes(c.nightTime);
+      if (!Number.isFinite(day) || !Number.isFinite(night) || day === night) return null;
+      const points = [0, ...[day, night].sort((a, b) => a - b), 1440];
+      return /*#__PURE__*/React.createElement("div", {
+        className: "cv-timeline"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "cv-section-label"
+      }, t('这块屏幕的一天', 'This display’s day')), /*#__PURE__*/React.createElement("div", {
+        className: "cv-track"
+      }, points.slice(0, -1).map((a, i) => {
+        const mid = (a + points[i + 1]) / 2,
+          work = day < night ? mid >= day && mid < night : mid >= day || mid < night;
+        return /*#__PURE__*/React.createElement("span", {
+          key: i,
+          className: work ? 'work' : 'rest',
+          style: {
+            width: (points[i + 1] - a) / 14.4 + '%'
+          }
+        });
+      })), /*#__PURE__*/React.createElement("div", {
+        className: "cv-hours"
+      }, /*#__PURE__*/React.createElement("span", null, "00:00"), /*#__PURE__*/React.createElement("span", null, "12:00"), /*#__PURE__*/React.createElement("span", null, "24:00")), /*#__PURE__*/React.createElement("div", {
+        className: "cv-legend"
+      }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", null), t('工作', 'Work'), " ", c.dayTime, " \u2014 ", c.nightTime, " \xB7 ", c.original ? t('原色', 'Original') : c.day + ' K'), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", null), t('休息', 'Evening'), " ", c.nightTime, " \u2014 ", c.dayTime, " \xB7 ", c.night, " K")));
+    }
+    function periodEditor(key) {
+      const day = key === 'day',
+        original = day && c.original;
+      return /*#__PURE__*/React.createElement("section", {
+        className: "cv-period " + (trial?.period === key ? "live-period" : "")
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "cv-period-head"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "cv-period-title"
+      }, /*#__PURE__*/React.createElement(Icon, {
+        name: day ? 'sun' : 'moon',
+        size: 20
+      }), /*#__PURE__*/React.createElement("h3", null, c.mode === 'manual' ? t('手动色温', 'Manual temperature') : day ? t('工作时', 'During work') : t('休息时', 'In the evening'))), c.mode === 'schedule' && /*#__PURE__*/React.createElement("label", {
+        className: "cv-time"
+      }, /*#__PURE__*/React.createElement("span", null, t('开始于', 'Starts at')), /*#__PURE__*/React.createElement("input", {
+        className: "input",
+        type: "time",
+        "aria-label": day ? t('工作开始时间', 'Work start time') : t('休息开始时间', 'Evening start time'),
+        value: c[day ? 'dayTime' : 'nightTime'],
+        onChange: e => patch({
+          [day ? 'dayTime' : 'nightTime']: e.target.value
+        })
+      }))), day && /*#__PURE__*/React.createElement("div", {
+        className: "cp-color-mode",
+        role: "radiogroup",
+        "aria-label": t('工作色温方式', 'Work color mode')
+      }, [[true, t('保持原色', 'Original color')], [false, t('自定义色温', 'Custom temperature')]].map(([value, label]) => /*#__PURE__*/React.createElement("button", {
+        key: String(value),
+        type: "button",
+        role: "radio",
+        "aria-checked": c.original === value,
+        className: c.original === value ? 'selected' : '',
+        onClick: () => {
+          stop();
+          patch({
+            original: value
+          });
+        },
+        onKeyDown: e => {
+          if (['ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            e.preventDefault();
+            stop();
+            patch({
+              original: !value
+            });
+            e.currentTarget.parentElement.querySelectorAll('button')[value ? 1 : 0]?.focus();
+          }
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "cp-mode-dot",
+        "aria-hidden": "true"
+      }), label))), original ? /*#__PURE__*/React.createElement("p", {
+        className: "cp-original-help"
+      }, t('使用屏幕原来的颜色。选择「自定义色温」可调整冷暖。', 'Keep the display’s own color, or choose Custom temperature to adjust its warmth.')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+        className: "cv-value-line"
+      }, /*#__PURE__*/React.createElement("strong", null, c[key] + ' K'), trial?.period === key && /*#__PURE__*/React.createElement("span", {
+        className: "live-value-tag"
+      }, t('预览中', 'Previewing'))), /*#__PURE__*/React.createElement("div", {
+        className: "cv-slider-line"
+      }, /*#__PURE__*/React.createElement("input", {
+        className: "kelvin",
+        type: "range",
+        min: "3500",
+        max: "6500",
+        step: "100",
+        value: c[key] || 3500,
+        "aria-label": day ? t('工作色温滑杆', 'Work temperature slider') : t('休息色温滑杆', 'Evening temperature slider'),
+        onChange: e => kelvin(key, e.target.value)
+      }), /*#__PURE__*/React.createElement("input", {
+        className: "input cv-kelvin",
+        type: "number",
+        min: "3500",
+        max: "6500",
+        step: "100",
+        value: c[key],
+        "aria-label": day ? t('工作色温数值', 'Work temperature value') : t('休息色温数值', 'Evening temperature value'),
+        onChange: e => kelvin(key, e.target.value)
+      })), /*#__PURE__*/React.createElement("div", {
+        className: "cv-warm-labels"
+      }, /*#__PURE__*/React.createElement("span", null, t('更暖', 'Warmer')), /*#__PURE__*/React.createElement("span", null, t('更接近中性', 'More neutral')))));
+    }
+    function settings() {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, previewBar(), /*#__PURE__*/React.createElement("div", {
+        className: 'cv-periods ' + (c.mode === 'manual' ? 'manual' : '')
+      }, c.mode === 'schedule' && periodEditor('day'), periodEditor('night')), c.mode === 'schedule' && timeline(), /*#__PURE__*/React.createElement("details", {
+        className: "cv-advanced"
+      }, /*#__PURE__*/React.createElement("summary", null, t('更多选项', 'More options')), /*#__PURE__*/React.createElement("div", {
+        className: "cv-option"
+      }, /*#__PURE__*/React.createElement("label", {
+        htmlFor: "cv-mode"
+      }, t('调节方式', 'Adjustment mode')), /*#__PURE__*/React.createElement("select", {
+        id: "cv-mode",
+        className: "input",
+        value: c.mode,
+        onChange: e => {
+          stop();
+          patch({
+            mode: e.target.value
+          });
+        }
+      }, /*#__PURE__*/React.createElement("option", {
+        value: "schedule"
+      }, t('固定作息', 'Fixed schedule')), /*#__PURE__*/React.createElement("option", {
+        value: "manual"
+      }, t('手动调节', 'Manual')))), c.mode === 'schedule' && /*#__PURE__*/React.createElement("div", {
+        className: "cv-option"
+      }, /*#__PURE__*/React.createElement("label", {
+        htmlFor: "cv-transition"
+      }, t('色温过渡时长', 'Color transition')), /*#__PURE__*/React.createElement("div", {
+        className: "row"
+      }, /*#__PURE__*/React.createElement("input", {
+        id: "cv-transition",
+        className: "input",
+        type: "number",
+        min: "0",
+        max: "120",
+        value: c.transition,
+        onChange: e => patch({
+          transition: e.target.value === '' ? '' : Number(e.target.value)
+        })
+      }), /*#__PURE__*/React.createElement("span", null, t('分钟', 'min')))), saved.enabled && /*#__PURE__*/React.createElement("div", {
+        className: "cv-option"
+      }, /*#__PURE__*/React.createElement("span", null, t('临时使用原色', 'Use original temporarily')), /*#__PURE__*/React.createElement("div", {
+        className: "cp-pause-options"
+      }, m.paused[id] ? /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        onClick: () => pauseUntil(0)
+      }, t('恢复调节', 'Resume adjustment')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        onClick: () => pauseUntil(performance.now() + 3600000)
+      }, t('1 小时', '1 hour')), saved.mode === 'schedule' && /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        onClick: () => pauseUntil(performance.now() + ((minutes(saved.dayTime) - 1230 + 1440) % 1440 || 1440) * 60000)
+      }, t('至下次工作时间', 'Until next work time'))))), /*#__PURE__*/React.createElement("p", null, t('原色是屏幕调节前的颜色，不等同于 6500 K。', 'Original color comes from the display before adjustment; it is not 6500 K.'))));
+    }
+    function schedule() {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, ready.length ? /*#__PURE__*/React.createElement(React.Fragment, null, picker(), /*#__PURE__*/React.createElement("section", {
+        className: "cp-screen-settings",
+        key: id
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "cp-enable"
+      }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", null, t('开启此屏幕色温调节', 'Enable color adjustment for this display')), /*#__PURE__*/React.createElement("p", null, screenDirty ? t('有未保存修改', 'Unsaved edits') : t('工作与休息，按本屏作息切换。', 'Work and rest follow this display’s schedule.'))), /*#__PURE__*/React.createElement(Toggle, {
+        checked: c.enabled,
+        onChange: value => {
+          stop();
+          patch({
+            enabled: value
+          });
+        },
+        label: t('开启 ' + screen.name + ' 的色温调节', 'Enable color adjustment for ' + screen.name)
+      })), c.enabled ? settings() : /*#__PURE__*/React.createElement("div", {
+        className: "cp-off"
+      }, /*#__PURE__*/React.createElement(Icon, {
+        name: "sun",
+        size: 26
+      }), /*#__PURE__*/React.createElement("h3", null, t('这块屏幕保留原来的颜色', 'Keep this display’s original color')), /*#__PURE__*/React.createElement("p", null, t('打开上方开关，即可设置它的工作与休息色温。', 'Turn on the switch above to set work and evening colors.')), /*#__PURE__*/React.createElement("small", null, saved.enabled ? t('关闭尚未保存，屏幕仍按原设置调节。', 'The off state is unsaved; previous settings are still active.') : t('之前设置的时间和色温会保留。', 'Previous times and temperatures are kept.'))))) : /*#__PURE__*/React.createElement("div", {
+        className: "cp-no-verified"
+      }, /*#__PURE__*/React.createElement(Icon, {
+        name: "screen",
+        size: 36
+      }), /*#__PURE__*/React.createElement("h3", null, t(m.screens.length ? '还没有可设置的屏幕' : '还没有发现屏幕', m.screens.length ? 'No displays ready to configure' : 'No displays found')), /*#__PURE__*/React.createElement("p", null, t('通过验证的屏幕会显示在这里，可分别开启和设置。', 'Verified displays appear here, each with its own switch and settings.')), /*#__PURE__*/React.createElement(Button, {
+        kind: "primary",
+        onClick: () => tabTo('devices')
+      }, t('前往屏幕与验证', 'Go to displays & verification'))));
+    }
+    function devices() {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+        className: "cp-device-heading"
+      }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", null, t('你的屏幕', 'Your displays')), /*#__PURE__*/React.createElement("p", null, t('验证屏幕是否支持独立调色，通过后再选择是否开启。', 'Check support for independent color adjustment, then decide whether to enable it.'))), /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        kind: "quiet",
+        icon: "refresh",
+        disabled: dirty,
+        onClick: () => setNotice(t('屏幕状态已重新检查（演示）。', 'Display status checked (demo).'))
+      }, t('重新检查', 'Check again'))), dirty && /*#__PURE__*/React.createElement("p", {
+        className: "cp-small-note"
+      }, t('有未保存的设置，保存或放弃后可重新检查。', 'Save or discard pending edits before checking again.')), m.screens.length ? /*#__PURE__*/React.createElement("div", {
+        className: "cp-device-list"
+      }, m.screens.map(s => /*#__PURE__*/React.createElement("section", {
+        className: "cp-device",
+        key: s.id
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "cp-device-main"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "monitor-drawing",
+        "aria-hidden": "true"
+      }, s.number), /*#__PURE__*/React.createElement("div", {
+        className: "cp-device-copy"
+      }, /*#__PURE__*/React.createElement("h3", null, s.name, s.primary && /*#__PURE__*/React.createElement("small", null, t('主屏', 'Main'))), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("span", {
+        className: 'cp-device-state ' + (s.state === 'ready' ? 'ready' : s.state === 'issue' ? 'issue' : '')
+      }, stateText(s)), /*#__PURE__*/React.createElement("span", null, s.state === 'ready' ? m.saved[s.id]?.enabled ? t('调节已开启', 'Adjustment on') : t('调节未开启', 'Adjustment off') : s.state === 'unverified' ? t('用 15 秒观察效果', 'Observe a 15-second test') : t('已保留原有设置', 'Existing settings kept')))), /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        kind: s.state === 'unverified' ? 'primary' : 'quiet',
+        onClick: () => s.state === 'ready' ? editScreen(s.id) : beginVerification(s)
+      }, s.state === 'ready' ? t('设置这块屏幕', 'Configure display') : s.state === 'unverified' ? t('开始验证', 'Verify display') : s.state === 'issue' ? t('查看并处理', 'Resolve') : t('查看原因', 'Why unavailable'))), s.state !== 'ready' && m.draft[s.id]?.enabled && /*#__PURE__*/React.createElement("div", {
+        className: "cp-device-extra"
+      }, /*#__PURE__*/React.createElement("span", null, t('已开启的策略暂不可用', 'The enabled policy is unavailable')), /*#__PURE__*/React.createElement(Button, {
+        kind: "link",
+        small: true,
+        onClick: () => setM(prev => ({
+          ...prev,
+          draft: {
+            ...prev.draft,
+            [s.id]: {
+              ...prev.draft[s.id],
+              enabled: false
+            }
+          }
+        }))
+      }, t('关闭此屏调节', 'Turn this display off')))))) : /*#__PURE__*/React.createElement("div", {
+        className: "cp-no-verified"
+      }, /*#__PURE__*/React.createElement(Icon, {
+        name: "screen",
+        size: 36
+      }), /*#__PURE__*/React.createElement("h3", null, t('连接屏幕后再来看看', 'Connect a display to get started')), /*#__PURE__*/React.createElement("p", null, t('连接后点击上方「重新检查」。', 'Connect it, then choose Check again above.'))), /*#__PURE__*/React.createElement("details", {
+        className: "cv-advanced"
+      }, /*#__PURE__*/React.createElement("summary", null, t('关于验证', 'About verification')), /*#__PURE__*/React.createElement("p", null, t('仅首次或显示模式发生变化时需要验证。验证通过不会自动开启调节；原有作息与色温会保留。', 'Verification is needed initially or after display-mode changes. Passing does not enable adjustment; existing schedules and colors are kept.')), /*#__PURE__*/React.createElement("p", null, t('测试前请退出其他调色工具，并关闭系统夜间模式。验证不等于专业校色认证。', 'Exit other color tools and disable system night light before testing. This is not a professional calibration certification.'))));
+    }
+    function verification() {
+      const s = m.screens.find(s => s.id === modal.id),
+        phase = modal.phase;
+      return /*#__PURE__*/React.createElement(Dialog, {
+        title: phase === 'issue' || phase === 'mismatch' || phase === 'rebase' ? t('确认屏幕原色', 'Check original color') : t('验证这块屏幕', 'Verify this display'),
+        subtitle: s?.name,
+        onClose: close,
+        actions: phase === 'policy' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Button, {
+          kind: "quiet",
+          onClick: close
+        }, t('暂不验证', 'Not now')), /*#__PURE__*/React.createElement(Button, {
+          kind: "primary",
+          onClick: disableAndContinue
+        }, t('关闭这些屏幕并继续验证', 'Turn these displays off and continue'))) : phase === 'prepare' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Button, {
+          kind: "quiet",
+          onClick: close
+        }, t('取消', 'Cancel')), /*#__PURE__*/React.createElement(Button, {
+          kind: "primary",
+          disabled: !modal.prepared,
+          onClick: () => setModal(v => ({
+            ...v,
+            phase: 'running',
+            end: performance.now() + 15000
+          }))
+        }, t('开始 15 秒验证', 'Start 15-second test'))) : phase === 'running' ? /*#__PURE__*/React.createElement(Button, {
+          onClick: close
+        }, t('取消并恢复原色', 'Cancel and restore')) : phase === 'observe' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Button, {
+          kind: "quiet",
+          onClick: () => setModal(v => ({
+            ...v,
+            phase: 'failed'
+          }))
+        }, t('有一项不正常', 'Something was wrong')), /*#__PURE__*/React.createElement(Button, {
+          kind: "primary",
+          disabled: !modal.checks.every(Boolean),
+          onClick: confirmVerification
+        }, t('确认通过', 'Confirm verification'))) : phase === 'issue' ? /*#__PURE__*/React.createElement(Button, {
+          kind: "primary",
+          onClick: () => setModal(v => ({
+            ...v,
+            phase: 'mismatch'
+          }))
+        }, t('重新检查原色', 'Check original color again')) : phase === 'mismatch' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Button, {
+          kind: "quiet",
+          onClick: close
+        }, t('稍后处理', 'Later')), /*#__PURE__*/React.createElement(Button, {
+          kind: "primary",
+          onClick: () => setModal(v => ({
+            ...v,
+            phase: 'rebase',
+            prepared: false
+          }))
+        }, t('画面正常，继续处理', 'Picture looks normal — continue'))) : phase === 'rebase' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Button, {
+          kind: "quiet",
+          onClick: close
+        }, t('取消', 'Cancel')), /*#__PURE__*/React.createElement(Button, {
+          kind: "primary",
+          disabled: !modal.prepared,
+          onClick: rebuildOriginal
+        }, t('备份旧记录，重新验证', 'Back up records and verify again'))) : /*#__PURE__*/React.createElement(Button, {
+          onClick: close
+        }, t('知道了', 'Got it'))
+      }, error && /*#__PURE__*/React.createElement("p", {
+        className: "cv-warning",
+        role: "alert"
+      }, error), phase === 'policy' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h3", null, t('先让屏幕回到原色', 'Return the displays to original color first')), /*#__PURE__*/React.createElement("p", {
+        className: "body-copy"
+      }, t('下面的屏幕正在调节。先关闭并保存、等待恢复原色，才能观察本次验证是否只影响目标屏幕。', 'These displays are adjusting. Save them as off and wait for original color before checking whether this test affects only its target.')), /*#__PURE__*/React.createElement("div", {
+        className: "screen-tags"
+      }, m.screens.filter(x => m.saved[x.id]?.enabled).map(x => /*#__PURE__*/React.createElement("span", {
+        key: x.id
+      }, x.name))), /*#__PURE__*/React.createElement("p", {
+        className: "cv-small"
+      }, t('作息和色温草稿会保留。验证结束后由你重新开启。', 'Schedule and temperature drafts are kept. Turn adjustment back on yourself after verification.'))) : phase === 'prepare' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+        className: "cv-test-display"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "monitor-drawing"
+      }, s.number), /*#__PURE__*/React.createElement("strong", null, s.name)), /*#__PURE__*/React.createElement("h3", null, t('看一次变暖，再看它恢复', 'Watch it warm up, then return')), /*#__PURE__*/React.createElement("p", {
+        className: "body-copy"
+      }, t('仅此屏幕轻微变暖至 5000 K，15 秒后恢复原色。请同时留意另一块屏幕是否保持不变。', 'Only this display warms to 5000 K, then returns after 15 seconds. Check that the other display stays unchanged.')), /*#__PURE__*/React.createElement("label", {
+        className: "checkline"
+      }, /*#__PURE__*/React.createElement("input", {
+        type: "checkbox",
+        checked: modal.prepared,
+        onChange: e => setModal(v => ({
+          ...v,
+          prepared: e.target.checked
+        }))
+      }), t('已退出其他调色工具，并关闭系统夜间模式等调色功能', 'Other color tools and system night-light adjustments are off')), /*#__PURE__*/React.createElement("p", {
+        className: "cv-small"
+      }, t('此页面是交互演示，不会改变真实屏幕颜色。', 'This prototype does not change real display colors.'))) : phase === 'running' ? /*#__PURE__*/React.createElement("div", {
+        className: "cv-test-running"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "cv-count"
+      }, Math.max(0, Math.ceil((modal.end - now) / 1000)), /*#__PURE__*/React.createElement("small", null, "s")), /*#__PURE__*/React.createElement("h3", null, t('请观察目标屏幕和另一屏', 'Observe this display and the other one')), /*#__PURE__*/React.createElement("p", null, t('时间结束后自动恢复原色', 'Original color returns when the timer ends')), /*#__PURE__*/React.createElement("div", {
+        className: "cv-test-meter"
+      }, /*#__PURE__*/React.createElement("span", {
+        style: {
+          width: Math.max(0, (modal.end - now) / 150) + '%'
+        }
+      })), /*#__PURE__*/React.createElement("small", null, t('验证过程模拟中', 'Simulated verification'))) : phase === 'observe' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h3", null, t('原色已恢复，请确认看到的效果', 'Original color restored. Confirm what you saw.')), /*#__PURE__*/React.createElement("div", {
+        className: "check-stack"
+      }, [t('这块屏幕确实变暖了', 'This display became warmer'), t('另一块屏幕没有跟着变化', 'The other display stayed unchanged'), t('结束后，颜色恢复正常', 'Normal color returned afterwards')].map((label, i) => /*#__PURE__*/React.createElement("label", {
+        className: "checkline",
+        key: i
+      }, /*#__PURE__*/React.createElement("input", {
+        type: "checkbox",
+        checked: modal.checks[i],
+        onChange: e => setModal(v => ({
+          ...v,
+          checks: v.checks.map((x, j) => j === i ? e.target.checked : x)
+        }))
+      }), label))), /*#__PURE__*/React.createElement("p", {
+        className: "cv-small"
+      }, t('通过验证后，仍由你决定是否用于自动调节。', 'Verification alone does not enable automatic adjustment.'))) : phase === 'issue' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h3", null, t('屏幕颜色与上次记录不同', 'The color differs from the saved original')), /*#__PURE__*/React.createElement("p", {
+        className: "body-copy"
+      }, t('先退出 f.lux 等调色工具，并确认系统夜间模式已关闭，再检查一次。', 'Exit other color tools such as f.lux and turn off system night light, then check again.')), /*#__PURE__*/React.createElement("p", {
+        className: "cv-small"
+      }, t('检查只读取颜色，不会改色或删除恢复记录。', 'The check only reads color. It does not change it or delete recovery records.'))) : phase === 'mismatch' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h3", null, t('颜色仍不一致', 'The color still differs')), /*#__PURE__*/React.createElement("p", {
+        className: "body-copy"
+      }, t('如果画面仍偏色，请先恢复正常。如果当前画面已正常，可能是旧原色记录包含了其他软件的调色，可以继续重新建立原色。', 'If the picture still looks tinted, restore it first. If it looks normal now, the old reference may contain another tool’s tint; rebuild the original-color record next.'))) : phase === 'rebase' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h3", null, t('重新建立原色', 'Rebuild the original-color record')), /*#__PURE__*/React.createElement("p", {
+        className: "body-copy"
+      }, t('以下屏幕会备份旧记录，并需要重新验证。这个步骤不会调色，也不会自动启用。', 'Old records for these displays will be backed up, and each will need verification again. This does not change colors or turn adjustment on.')), /*#__PURE__*/React.createElement("div", {
+        className: "screen-tags"
+      }, m.screens.filter(x => x.state === 'issue').map(x => /*#__PURE__*/React.createElement("span", {
+        key: x.id
+      }, x.name))), /*#__PURE__*/React.createElement("label", {
+        className: "checkline"
+      }, /*#__PURE__*/React.createElement("input", {
+        type: "checkbox",
+        checked: modal.prepared,
+        onChange: e => setModal(v => ({
+          ...v,
+          prepared: e.target.checked
+        }))
+      }), t('我确认列出的屏幕当前画面正常，其他调色功能已关闭', 'All listed displays look normal, and other color adjustments are off'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h3", null, phase === 'unsupported' ? t('此屏幕目前开启了 HDR', 'HDR is on for this display') : phase === 'disconnected' ? t('请先重新连接这块屏幕', 'Reconnect this display first') : t('本次未通过验证', 'Verification was not completed')), /*#__PURE__*/React.createElement("p", {
+        className: "body-copy"
+      }, phase === 'unsupported' ? t('当前调节只支持已验证的 SDR 扩展屏。切换为 SDR 后，再回来验证。', 'Adjustment currently requires a verified SDR extended display. Switch to SDR before trying again.') : phase === 'disconnected' ? t('已保存设置会保留；连接后重新检查屏幕状态。', 'Saved settings are kept. Check its status after reconnecting.') : t('没有新增验证资格。请检查其他调色功能是否已关闭，再重新尝试。', 'No verification was added. Check other color tools are off before trying again.'))));
+    }
+    return /*#__PURE__*/React.createElement("div", {
+      className: "cv-root cp-root live-root",
+      "data-screen-label": "Color live preview"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "live-demo-tint",
+      "aria-hidden": "true",
+      style: {
+        opacity: trial && !comparing && trial.value !== null ? Math.max(0, 6500 - trial.value) / 3000 * .22 : 0
+      }
+    }), /*#__PURE__*/React.createElement("header", {
+      className: "cv-head"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", null, t('色温调节', 'Color temperature')), /*#__PURE__*/React.createElement("p", null, t('每一块屏幕，都有适合自己的光线。', 'A comfortable light for each display.'))), /*#__PURE__*/React.createElement("span", {
+      className: "cp-active-count"
+    }, active.length ? t(active.length + ' 块屏幕正在调节', active.length + ' display' + (active.length === 1 ? '' : 's') + ' adjusting') : t('当前未在调节', 'No displays adjusting'))), /*#__PURE__*/React.createElement(Tabs, {
+      label: t('色温设置页签', 'Color settings tabs'),
+      items: [["schedule", t('作息与色温', 'Schedule & color'), 'sun'], ['devices', t('屏幕与验证', 'Displays & verification'), 'screen']],
+      value: m.tab,
+      onChange: tabTo
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "cv-scroll",
+      key: m.tab
+    }, m.tab === 'schedule' ? schedule() : devices()), (error || notice) && /*#__PURE__*/React.createElement("div", {
+      className: 'cv-feedback ' + (error ? 'error' : ''),
+      role: error ? 'alert' : 'status'
+    }, error || notice), /*#__PURE__*/React.createElement("footer", {
+      className: "cv-footer"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "cv-save-state"
+    }, dirty ? t(changed.length + ' 块屏幕有未保存修改', changed.length + ' display' + (changed.length === 1 ? '' : 's') + ' with unsaved edits') : t('设置已保存', 'Settings saved'), dirty && /*#__PURE__*/React.createElement("small", null, t('保存此模块的全部修改', 'Saves all edits in this module'))), /*#__PURE__*/React.createElement("div", {
+      className: "cv-footer-buttons"
+    }, /*#__PURE__*/React.createElement(Button, {
+      kind: "quiet",
+      disabled: !dirty,
+      onClick: () => {
+        stop();
+        setM(prev => ({
+          ...prev,
+          draft: copy(prev.saved)
+        }));
+        setError('');
+        setNotice(t('已放弃所有屏幕的未保存修改。', 'Discarded unsaved edits for all displays.'));
+      }
+    }, t('放弃更改', 'Discard changes')), /*#__PURE__*/React.createElement(Button, {
+      kind: "primary",
+      disabled: !dirty,
+      onClick: save
+    }, t('保存修改', 'Save changes')))), modal && verification());
+  }
+  window.SKColor = {
+    Workspace,
+    initial
+  };
+})();

@@ -29,7 +29,7 @@ namespace OLED_Sleeper.Storage
             }
             catch (Exception ex)
             {
-                error = $"OLED Sleeper cannot write to:{Environment.NewLine}{storageRoot.DirectoryPath}{Environment.NewLine}{Environment.NewLine}{ex.Message}";
+                error = $"多屏管家 ScreenKeeper 无法写入以下目录：{Environment.NewLine}{storageRoot.DirectoryPath}{Environment.NewLine}{Environment.NewLine}{ex.Message}";
                 return false;
             }
         }

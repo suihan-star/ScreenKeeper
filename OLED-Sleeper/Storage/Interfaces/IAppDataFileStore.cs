@@ -5,6 +5,8 @@ namespace OLED_Sleeper.Storage.Interfaces
     /// </summary>
     public interface IAppDataFileStore
     {
+        /// <summary>Flushes a write-ahead recovery document before atomic replacement. Unsupported stores fail closed.</summary>
+        bool TryWriteDurable<T>(string fileName, T value) => false;
         /// <summary>
         /// Reads a file and deserializes its contents.
         /// </summary>

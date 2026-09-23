@@ -116,5 +116,28 @@ namespace OLED_Sleeper.Tests.Features.MonitorBehavior.Handlers
                 foregroundWindowHandle: 0,
                 reason: ActivityReason.None);
         }
+
+        [Fact]
+        public async Task StaleSleepDoesNotGuardOrBlackoutTheDisplay()
+        {
+            var privacy = new Mock<OLED_Sleeper.Features.MonitorPrivacy.IMonitorPrivacyService>();
+            var handler = new ApplyMonitorIdleBehaviorCommandHandler(_mediatorMock.Object, privacy.Object);
+            var args = CreateEventArgs(MonitorBehaviorType.Blackout); args.StillIdle = () => false;
+            await handler.HandleAsync(new(args));
+            Assert.True(args.IsIgnored); privacy.VerifyNoOtherCalls(); _mediatorMock.VerifyNoOtherCalls();
+        }
+        [Theory]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        public async Task GuardVetoOrActivityDuringGuardCancelsSleep(bool permitted, bool remainsIdle)
+        {
+            bool idle = true;
+            var privacy = new Mock<OLED_Sleeper.Features.MonitorPrivacy.IMonitorPrivacyService>();
+            privacy.Setup(p => p.TryPrepareForSleepAsync(HardwareId, It.IsAny<Func<bool>>()))
+                .Returns(() => { idle = remainsIdle; return Task.FromResult(permitted); });
+            var handler = new ApplyMonitorIdleBehaviorCommandHandler(_mediatorMock.Object, privacy.Object);
+            var args = CreateEventArgs(MonitorBehaviorType.Blackout); args.StillIdle = () => idle;
+            await handler.HandleAsync(new(args)); Assert.True(args.IsIgnored); _mediatorMock.VerifyNoOtherCalls();
+        }
     }
 }

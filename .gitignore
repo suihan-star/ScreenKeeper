@@ -83,3 +83,34 @@ _ReSharper*/
 # Claude
 CLAUDE.md
 .claude/
+
+# ScreenKeeper local data and diagnostics (keep sources and design assets)
+[Dd]ata/
+PrivacyImages/
+HealthImages/
+settings.json
+ui-preferences.json
+health-reminder.json
+health-reminder-runtime.json
+color-temperature.json
+color-temperature-validation.json
+color-temperature-recovery.json
+color-temperature-archive-*.json
+original-brightness.json
+*.dmp
+*.tmp
+*.bak
+*.log
+.codex/
+.agents/
+
+# Local credentials / signing material
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+id_rsa
+id_ed25519

@@ -1,0 +1,158 @@
+{
+  "type": "design",
+  "designSystems": [],
+  "primaryDesignSystem": null,
+  "assets": {
+    "ScreenKeeper 静绿双主题原型": {
+      "versions": [
+        {
+          "path": "index.html",
+          "createdAt": "2026-09-16T07:06:33.878Z",
+          "status": "approved",
+          "viewport": {
+            "width": 1100,
+            "height": 1000
+          }
+        }
+      ]
+    },
+    "ScreenKeeper 托盘图标设计": {
+      "versions": [
+        {
+          "path": "tray-icon.html",
+          "createdAt": "2026-09-16T08:27:44.544Z",
+          "status": "approved",
+          "viewport": {
+            "width": 1100,
+            "height": 1200
+          }
+        }
+      ]
+    },
+    "ScreenKeeper 设置布局 v2": {
+      "versions": [
+        {
+          "path": "settings-v2.html",
+          "createdAt": "2026-09-17T02:32:31.101Z",
+          "status": "approved",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          }
+        }
+      ]
+    },
+    "ScreenKeeper 隐私设置 v3": {
+      "versions": [
+        {
+          "path": "settings-v3.html",
+          "createdAt": "2026-09-17T08:33:25.822Z",
+          "status": "approved",
+          "subtitle": "已确认：启用开关、专属设置与折叠高级选项；移除通用设置配置说明",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          }
+        }
+      ]
+    },
+    "ScreenKeeper 全应用布局 v4": {
+      "versions": [
+        {
+          "path": "settings-v4.html",
+          "createdAt": "2026-09-18T15:49:40.656Z",
+          "status": "needs-review",
+          "subtitle": "共用山林背景：默认山林、纯色、自定义图片；健康静景与休息背景同步",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          }
+        },
+        {
+          "path": "settings-v5.html",
+          "createdAt": "2026-09-21T02:54:41.667Z",
+          "status": "approved",
+          "subtitle": "已实施：独立休息与隐私、可选免打扰与暂缓、双时段原色／自定义及保存摘要",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          }
+        }
+      ]
+    },
+    "ScreenKeeper 色温上手优化 v5": {
+      "versions": [
+        {
+          "path": "color-v5.html",
+          "createdAt": "2026-09-20T07:45:59.926Z",
+          "status": "approved",
+          "subtitle": "双页签逐屏设置；显式原色／自定义色温选项；标题栏口号",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          }
+        },
+        {
+          "path": "color-v6.html",
+          "createdAt": "2026-09-21T02:12:40.802Z",
+          "status": "needs-review",
+          "subtitle": "实时预览：拖动即预览／先开启预览对照",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          }
+        }
+      ]
+    },
+    "ScreenKeeper 健康提醒与隐私幕": {
+      "versions": [
+        {
+          "path": "health-card-v2.html",
+          "createdAt": "2026-09-21T02:26:30.108Z",
+          "status": "needs-review",
+          "subtitle": "居中放大卡片、操作层级及三组润色文案",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          }
+        },
+        {
+          "path": "health-card-v3.html",
+          "createdAt": "2026-09-21T09:01:49.854Z",
+          "status": "needs-review",
+          "subtitle": "确定关怀正文；长圆角主按钮、胶囊稍后、轻量跳过；已同步客户端",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          }
+        },
+        {
+          "path": "health-card-v4.html",
+          "createdAt": "2026-09-21T09:18:46.793Z",
+          "status": "approved",
+          "subtitle": "已确认 A：标题居中、暂停方块与跳过箭头；实施客户端",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          }
+        }
+      ]
+    },
+    "ScreenKeeper 任务栏图标可见度 v6": {
+      "versions": [
+        {
+          "path": "taskbar-icon-v6.html",
+          "createdAt": "2026-09-23T08:10:36.398Z",
+          "status": "approved",
+          "subtitle": "已确认并接入 A：任务栏与托盘统一采用雾绿轮廓，跟随 Windows 系统主题",
+          "viewport": {
+            "width": 1120,
+            "height": 1000
+          }
+        }
+      ]
+    }
+  },
+  "createdAt": "2026-09-16T07:06:33.880Z",
+  "updatedAt": "2026-09-23T08:34:40.966Z"
+}

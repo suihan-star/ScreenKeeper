@@ -10,6 +10,7 @@ namespace OLED_Sleeper.UI.Services.Interfaces
         /// Whether any monitor has changes that have not been written to disk.
         /// </summary>
         bool IsDirty { get; }
+        string DirtyModules => string.Empty;
 
         /// <summary>
         /// Validates the current settings and writes them.

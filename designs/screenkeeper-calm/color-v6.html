@@ -1,0 +1,28 @@
+﻿<!doctype html>
+<!-- V6 live preview exploration: prototype only; no native client changes. Reuses the approved Calm shell.
+     Focus: persistent two-tab settings, independent per-display schedules, contextual verification.
+     ScreenKeeper v4: module navigation, focused settings, contextual recovery.
+     Source: approved Calm theme, settings-v3, and docs/tasks/008-app-layout-design.md.
+     Review prototype: all settings, screen states, timers and verification are simulations.
+     No product data, native windows or display hardware are accessed. -->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>屏幕良伴 · 色温实时预览 v6</title>
+  <link rel="icon" href="settings-v2-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="settings-v4.css?v=20260920-forest">
+  <link rel="stylesheet" href="settings-v4-themes.css?v=20260920-forest">
+  <link rel="stylesheet" href="color-v5.css?v=3">
+  <link rel="stylesheet" href="color-v6.css?v=1">
+</head>
+<body>
+  <div id="root"></div>
+  <script src="vendor/react.min.js"></script>
+  <script src="vendor/react-dom.min.js"></script>
+  <script src="settings-v2-components.js"></script>
+  <script src="settings-v4-ui.js?v=20260920-forest"></script>
+  <script src="color-v6-flow.js?v=1"></script>
+  <script src="color-v6-shell.js?v=1"></script>
+</body>
+</html>

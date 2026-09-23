@@ -1,219 +1,97 @@
-﻿<Window x:Class="OLED_Sleeper.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:converters="clr-namespace:OLED_Sleeper.UI.Converters"
-        xmlns:viewModels1="clr-namespace:OLED_Sleeper.UI.ViewModels"
-        xmlns:views="clr-namespace:OLED_Sleeper.UI.Views"
-        mc:Ignorable="d"
-        Title="{Binding WindowTitle}"
-        d:DataContext="{d:DesignInstance viewModels1:MainViewModel}"
-        Height="650" Width="800" MinHeight="500" MinWidth="700"
-        FontFamily="Bahnschrift"
-        Background="{StaticResource PrimaryBackgroundColor}"
-        WindowStyle="None"
-        AllowsTransparency="True"
-        WindowChrome.IsHitTestVisibleInChrome="True"
-        Icon="/Assets/icon.ico">
-
+<Window x:Class="OLED_Sleeper.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:views="clr-namespace:OLED_Sleeper.UI.Views" xmlns:c="clr-namespace:OLED_Sleeper.UI.Converters" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" xmlns:l="clr-namespace:OLED_Sleeper.UI.Localization" Title="{Binding WindowTitle}" Width="1000" Height="736" MinWidth="700" MinHeight="500" FontFamily="Segoe UI, Microsoft YaHei UI" FontSize="14" Background="{DynamicResource PrimaryBackgroundColor}" Foreground="{DynamicResource PrimaryForegroundColor}" WindowStyle="None" ResizeMode="CanResize" Icon="/ScreenKeeper;component/Assets/icon-dark.ico" UseLayoutRounding="True" SnapsToDevicePixels="True">
+    <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="44" ResizeBorderThickness="6" CornerRadius="0" GlassFrameThickness="0" UseAeroCaptionButtons="False" /></shell:WindowChrome.WindowChrome>
     <Window.Resources>
-        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" IsReversed="False" />
-        <converters:NullToVisibilityConverter x:Key="NotNullToVisibilityConverter" IsReversed="True" />
-
-        <Style x:Key="WindowButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource PrimaryForegroundColor}" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Width" Value="46" />
-            <Setter Property="Height" Value="32" />
-            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource TertiaryBackgroundColor}" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="CloseButtonStyle" TargetType="Button" BasedOn="{StaticResource WindowButtonStyle}">
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource DestructiveColorBrush}" />
-                    <Setter Property="Foreground" Value="White" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="ModernActionButton" TargetType="Button">
-            <Setter Property="Foreground" Value="{StaticResource PrimaryForegroundColor}" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="Padding" Value="15,8" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border"
-                                Padding="{TemplateBinding Padding}"
-                                CornerRadius="5"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Opacity" Value="0.5" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="LoadingProgressBarStyle" TargetType="ProgressBar">
-            <Setter Property="Foreground" Value="{StaticResource AccentColorBrush}" />
-            <Setter Property="Background" Value="{StaticResource TertiaryBackgroundColor}" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Height" Value="8" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ProgressBar">
-                        <Grid x:Name="TemplateRoot">
-                            <Border x:Name="PART_Track"
-                            CornerRadius="4"
-                            Background="{TemplateBinding Background}" />
-
-                            <Border x:Name="PART_Indicator"
-                            CornerRadius="4"
-                            Background="{TemplateBinding Foreground}"
-                            HorizontalAlignment="Left" />
-
-                            <Border x:Name="IndeterminateRoot"
-                            CornerRadius="4"
-                            Background="Transparent"
-                            ClipToBounds="True"
-                            Visibility="Collapsed">
-                                <Rectangle x:Name="IndeterminateIndicator"
-                                   Height="{TemplateBinding Height}"
-                                   Width="100"
-                                   Fill="{TemplateBinding Foreground}">
-                                    <Rectangle.RenderTransform>
-                                        <TranslateTransform X="-100" />
-                                    </Rectangle.RenderTransform>
-                                </Rectangle>
-                            </Border>
-                        </Grid>
-
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsIndeterminate" Value="True">
-                                <Setter TargetName="PART_Indicator" Property="Visibility" Value="Collapsed" />
-                                <Setter TargetName="IndeterminateRoot" Property="Visibility" Value="Visible" />
-
-                                <Trigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard RepeatBehavior="Forever">
-                                            <DoubleAnimation
-                                        Storyboard.TargetName="IndeterminateIndicator"
-                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
-                                        From="-300"
-                                        To="300"
-                                        Duration="0:0:2" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </Trigger.EnterActions>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+        <c:BooleanToVisibilityConverter x:Key="BoolVisibility" />
+        <c:NullToVisibilityConverter x:Key="NullVisibility" IsReversed="False" />
+        <c:NullToVisibilityConverter x:Key="NotNullVisibility" IsReversed="True" />
+        <Style x:Key="ModuleNavigation" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="12,13"/><Setter Property="BorderBrush" Value="Transparent"/><Setter Property="Margin" Value="0,0,0,8"/>
+            <Style.Triggers><DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True"><Setter Property="Background" Value="{DynamicResource SelectedSurfaceBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource SeparatorColorBrush}"/></DataTrigger></Style.Triggers>
         </Style>
     </Window.Resources>
-
-    <Border BorderBrush="{StaticResource TertiaryBackgroundColor}" BorderThickness="1">
+    <Border BorderBrush="{DynamicResource SeparatorColorBrush}" BorderThickness="1" Background="{DynamicResource PrimaryBackgroundColor}">
         <Grid>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="32" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <Grid Grid.Row="0" Background="{StaticResource SecondaryBackgroundColor}" MouseDown="TitleBar_MouseDown">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <Image Source="/Assets/icon.ico" Width="18" Height="18" Margin="8,0,0,0" />
-                        <TextBlock Text="{Binding WindowTitle}" Foreground="{StaticResource PrimaryForegroundColor}" Margin="10,0,0,0" VerticalAlignment="Center" />
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Style="{StaticResource WindowButtonStyle}" Content="&#xE921;" Click="MinimizeButton_Click" ToolTip="Minimize" />
-                        <Button Style="{StaticResource WindowButtonStyle}" Content="&#xE922;" Click="MaximizeButton_Click" ToolTip="Maximize" />
-                        <Button Style="{StaticResource CloseButtonStyle}" Content="&#xE8BB;" Click="CloseButton_Click" ToolTip="Close" />
-                    </StackPanel>
-                </Grid>
-
-                <Grid Margin="15" Grid.Row="1">
-                    <views:MonitorLayoutView />
-                </Grid>
-
-                <Border Grid.Row="2" Margin="15,0,15,15"
-                        Background="{StaticResource SecondaryBackgroundColor}" CornerRadius="8"
-                        Visibility="{Binding SelectedMonitor, Converter={StaticResource NotNullToVisibilityConverter}}">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <views:MonitorConfigurationView Grid.Row="0" DataContext="{Binding SelectedMonitor.Configuration}" />
-
-                        <Border Grid.Row="1" BorderBrush="{StaticResource SeparatorColorBrush}" BorderThickness="0,1,0,0" Margin="0,10,0,0" Padding="15">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,0">
-                                <Button Content="Discard Changes"
-                                        Command="{Binding DiscardChangesCommand}"
-                                        IsEnabled="{Binding IsDirty}"
-                                        Style="{StaticResource ModernActionButton}"
-                                        Background="Transparent" BorderBrush="{StaticResource SecondaryForegroundColor}" BorderThickness="1" />
-                                <Button Content="{Binding SaveButtonText}"
-                                        Command="{Binding SaveSettingsCommand}"
-                                        IsEnabled="{Binding IsDirty}"
-                                        Style="{StaticResource ModernActionButton}"
-                                        Background="{StaticResource AccentColorBrush}" Margin="15,0,0,0" />
-                            </StackPanel>
-                        </Border>
+            <Grid.RowDefinitions><RowDefinition Height="44"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+            <Border BorderBrush="{DynamicResource SoftBorderBrush}" BorderThickness="0,0,0,1" Background="{DynamicResource NavigationBackgroundBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <Grid Margin="18,0,12,0" VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <Image Source="{Binding ThemeIcon}" Width="20" Height="20" Margin="0,0,9,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <TextBlock Grid.Column="1" Text="{l:Text Key=屏幕良伴}" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="BrandTagline" Grid.Column="2" Text="{l:Text Key=照顾屏幕，也照顾自己}" ToolTip="{l:Text Key=照顾屏幕，也照顾自己}" Foreground="{DynamicResource SecondaryForegroundColor}" FontSize="10" VerticalAlignment="Center" Margin="12,0,0,0" TextTrimming="CharacterEllipsis"/>
                     </Grid>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                        <ComboBox x:Name="ThemeSelector" Width="115" MinHeight="28" Height="28" Margin="0,0,8,0" SelectedValuePath="Tag" SelectedValue="{Binding Theme, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{l:Text Key=外观主题}" ToolTip="{l:Text Key=外观主题}">
+                            <ComboBoxItem Tag="forest" Content="{l:Text Key=深绿}"/><ComboBoxItem Tag="fog" Content="{l:Text Key=雾白绿}"/>
+                        </ComboBox>
+                        <ComboBox x:Name="LanguageSelector" Width="100" MinHeight="28" Height="28" Margin="0,0,12,0" SelectedValuePath="Tag" SelectedValue="{Binding Language, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="语言 / Language">
+                            <ComboBoxItem Tag="zh-CN" Content="简体中文"/><ComboBoxItem Tag="en" Content="English"/>
+                        </ComboBox>
+                        <Button Style="{StaticResource ChromeButton}" Content="&#xE921;" Click="MinimizeButton_Click" ToolTip="{l:Text Key=最小化}" AutomationProperties.Name="{l:Text Key=最小化}"/>
+                        <Button x:Name="MaximizeButton" Style="{StaticResource ChromeButton}" Content="&#xE922;" Click="MaximizeButton_Click"/>
+                        <Button Style="{StaticResource ChromeButton}" Content="&#xE8BB;" Click="CloseButton_Click" ToolTip="{l:Text Key=隐藏到托盘}" AutomationProperties.Name="{l:Text Key=隐藏到托盘}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="154"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <Border Background="{DynamicResource NavigationBackgroundBrush}" BorderBrush="{DynamicResource SoftBorderBrush}" BorderThickness="0,0,1,0" Padding="10,22,10,14">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Bottom">
+                            <Button Content="{l:Text Key=通用设置}" Click="General_Click" Style="{StaticResource ModuleNavigation}"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="{l:Text Key=我的工作空间}" Style="{StaticResource MutedText}" FontSize="11" Margin="10,0,0,18"/>
+                            <Button Command="{Binding SelectModuleCommand}" CommandParameter="Displays" Tag="{Binding IsDisplaysPage}" Style="{StaticResource ModuleNavigation}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition/></Grid.ColumnDefinitions><TextBlock Text="&#xE7F4;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center"/><TextBlock Grid.Column="1" Text="{Binding DisplaysNavigation}" TextWrapping="Wrap"/></Grid></Button>
+                            <Button Command="{Binding SelectModuleCommand}" CommandParameter="Privacy" Tag="{Binding IsPrivacyPage}" Style="{StaticResource ModuleNavigation}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition/></Grid.ColumnDefinitions><TextBlock Text="&#xE72E;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center"/><TextBlock Grid.Column="1" Text="{Binding PrivacyNavigation}" TextWrapping="Wrap"/></Grid></Button>
+                            <Button Command="{Binding SelectModuleCommand}" CommandParameter="Health" Tag="{Binding IsHealthPage}" Style="{StaticResource ModuleNavigation}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition/></Grid.ColumnDefinitions><TextBlock Text="&#xE823;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center"/><TextBlock Grid.Column="1" Text="{Binding HealthNavigation}" TextWrapping="Wrap"/></Grid></Button>
+                            <Button Command="{Binding SelectModuleCommand}" CommandParameter="Color" Tag="{Binding IsColorPage}" Style="{StaticResource ModuleNavigation}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition/></Grid.ColumnDefinitions><TextBlock Text="&#xE706;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center"/><TextBlock Grid.Column="1" Text="{Binding ColorNavigation}" TextWrapping="Wrap"/></Grid></Button>
+                        </StackPanel>
+                    </DockPanel>
                 </Border>
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <DockPanel Margin="22,18,18,8">
+                        <TextBlock DockPanel.Dock="Bottom" Visibility="{Binding ConfigurationError, Converter={StaticResource NotNullVisibility}}" Text="{Binding ConfigurationError}" Style="{StaticResource ErrorText}" MaxHeight="54" TextTrimming="CharacterEllipsis" ToolTip="{Binding ConfigurationError}"/>
+                        <Grid>
+                            <Grid Visibility="{Binding IsScreenPage, Converter={StaticResource BoolVisibility}}">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Top">
+                                        <Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <StackPanel><TextBlock Text="{Binding ScreenPageTitle}" FontSize="24" FontWeight="SemiBold"/><TextBlock Text="{Binding ScreenPageDescription}" Style="{StaticResource MutedText}" Margin="0,4,8,0"/></StackPanel>
 
-                <Border Grid.Row="2" MinHeight="220" Margin="15,0,15,15"
-                        Background="{StaticResource SecondaryBackgroundColor}" CornerRadius="8"
-                        Visibility="{Binding SelectedMonitor, Converter={StaticResource NullToVisibilityConverter}}">
-                    <TextBlock Text="Click a monitor above to configure its settings."
-                               Foreground="{StaticResource SecondaryForegroundColor}" FontSize="16"
-                               HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </Border>
-            </Grid>
-
-            <Grid Background="#A0000000"
-                  Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <ProgressBar Style="{StaticResource LoadingProgressBarStyle}"
-                                 IsIndeterminate="True"
-                                 Width="300" />
-                    <TextBlock Text="Loading monitors..."
-                               Foreground="White"
-                               FontSize="16"
-                               Margin="0,15,0,0"
-                               HorizontalAlignment="Center" />
-                </StackPanel>
+                                        </Grid>
+                                        <DockPanel Margin="0,0,0,8">
+                                            <Button DockPanel.Dock="Right" Content="↻" FontSize="20" Width="38" Padding="0" Margin="8,0,0,0" Command="{Binding ReloadMonitorsCommand}" ToolTip="{l:Text Key=刷新显示器}" AutomationProperties.Name="{l:Text Key=刷新显示器}"/>
+                                            <Grid>
+                                                <ComboBox ItemsSource="{Binding Monitors}" SelectedItem="{Binding SelectedMonitor}" Visibility="{Binding UseScreenDropdown, Converter={StaticResource BoolVisibility}}" AutomationProperties.Name="{l:Text Key=选择屏幕}"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding SelectionLabel}" TextTrimming="CharacterEllipsis" ToolTip="{Binding MonitorTitle}"/></DataTemplate></ComboBox.ItemTemplate></ComboBox>
+                                                <ListBox x:Name="MonitorList" ItemContainerStyle="{StaticResource ScreenSelectorItem}" ItemsSource="{Binding Monitors}" SelectedItem="{Binding SelectedMonitor}" Visibility="{Binding UseScreenChips, Converter={StaticResource BoolVisibility}}" Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" AutomationProperties.Name="{l:Text Key=选择屏幕}">
+                                                    <ListBox.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ListBox.ItemsPanel>
+                                                    <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding SelectionLabel}" MaxWidth="150" TextTrimming="CharacterEllipsis" ToolTip="{Binding MonitorTitle}" FontSize="12"/></DataTemplate></ListBox.ItemTemplate>
+                                                </ListBox>
+                                            </Grid>
+                                        </DockPanel>
+                                        <TextBlock Text="{Binding WorkspaceMessage}" Style="{StaticResource NoticeText}"/>
+                                    </StackPanel>
+                                    <Grid><Grid Visibility="{Binding IsMonitorSelected, Converter={StaticResource BoolVisibility}}">
+                                        <views:MonitorConfigurationView DataContext="{Binding SelectedMonitor.Configuration}" Visibility="{Binding DataContext.IsDisplaysPage, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolVisibility}}"/>
+                                        <views:PrivacySettingsView DataContext="{Binding SelectedMonitor.Configuration}" Visibility="{Binding DataContext.IsPrivacyPage, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolVisibility}}"/></Grid>
+                                        <TextBlock Text="{l:Text Key=未选择屏幕，请检查连接或刷新显示器。}" Style="{StaticResource MutedText}" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding SelectedMonitor, Converter={StaticResource NullVisibility}}"/>
+                                    </Grid>
+                                </DockPanel>
+                            </Grid>
+                            <Grid Visibility="{Binding IsHealthPage, Converter={StaticResource BoolVisibility}}"><views:HealthSettingsView DataContext="{Binding Health}"/></Grid>
+                            <Grid Visibility="{Binding IsColorPage, Converter={StaticResource BoolVisibility}}"><views:ColorSettingsView DataContext="{Binding Color}"/></Grid>
+                        </Grid>
+                    </DockPanel>
+                    <Border Grid.Row="1" Background="{DynamicResource SecondaryBackgroundColor}" BorderBrush="{DynamicResource SoftBorderBrush}" BorderThickness="0,1,0,0" Padding="16,12">
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,8,0"><TextBlock Text="{Binding StatusText}" Style="{StaticResource MutedText}" FontSize="11"/><TextBlock Text="{Binding SaveScopeText}" Style="{StaticResource MutedText}" FontSize="10" Margin="0,3,0,0"/></StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal"><Button Content="{l:Text Key=放弃更改}" Command="{Binding DiscardChangesCommand}" Padding="10,8"/><Button Content="{Binding SaveButtonText}" Command="{Binding SaveSettingsCommand}" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" Padding="12,8"/></StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
             </Grid>
         </Grid>
     </Border>

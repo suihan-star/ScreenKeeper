@@ -1,5 +1,6 @@
 using OLED_Sleeper.Features.UserSettings.Services.Interfaces;
 using OLED_Sleeper.UI.Helpers;
+using OLED_Sleeper.UI.Localization;
 using OLED_Sleeper.UI.Services.Interfaces;
 using OLED_Sleeper.UI.ViewModels;
 
@@ -24,19 +25,26 @@ namespace OLED_Sleeper.UI.Services
 
         /// <inheritdoc />
         public bool TrySave(IReadOnlyList<MonitorLayoutViewModel> monitors)
+            => TrySave(monitors, Features.UserSettings.Models.MonitorSettingsScope.All);
+
+        public bool TrySave(IReadOnlyList<MonitorLayoutViewModel> monitors, Features.UserSettings.Models.MonitorSettingsScope scope)
         {
-            var error = MonitorSettingsValidator.BuildValidationError(monitors);
+            var error = MonitorSettingsValidator.BuildValidationError(monitors, scope);
             if (error != null)
             {
-                _dialogService.ShowError(error, "Monitor Configuration Error");
+                _dialogService.ShowError(error, UiText.Get("显示器设置有误"));
                 return false;
             }
 
-            _settingsService.SaveSettings(monitors.Select(m => m.Configuration.ToSettings()).ToList());
+            if (!_settingsService.SaveSettings(monitors.Select(m => m.Configuration.ToSettings(scope)).ToList()))
+            {
+                _dialogService.ShowError(UiText.Get("请确认配置目录可写后重试。你的更改仍保留在当前窗口中。"), UiText.Get("设置未能保存"));
+                return false;
+            }
 
             foreach (var monitor in monitors)
             {
-                monitor.Configuration.MarkAsSaved();
+                monitor.Configuration.MarkAsSaved(scope);
             }
 
             return true;

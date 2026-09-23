@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using OLED_Sleeper.Features.MonitorBlackout.Services.Interfaces;
+using OLED_Sleeper.Features.MonitorPrivacy;
 using OLED_Sleeper.Infrastructure.Helpers;
 using OLED_Sleeper.Infrastructure.Hosting.Interfaces;
 using OLED_Sleeper.Infrastructure.Runtime;
@@ -26,7 +28,7 @@ namespace OLED_Sleeper.Infrastructure.Hosting
         private const int RestoreOnShutdownTimeoutMs = 10000;
 
         /// <summary>The title of the dialog shown when the storage root cannot be written to.</summary>
-        private const string StorageErrorCaption = "OLED Sleeper";
+        private const string StorageErrorCaption = ProductIdentity.DisplayName;
 
         private readonly ApplicationOptions _applicationOptions = CommandLineHelper.ParseArguments(args);
 
@@ -48,7 +50,9 @@ namespace OLED_Sleeper.Infrastructure.Hosting
         private IApplicationInstanceManager? _instanceManager;
         private IApplicationOrchestrator? _orchestrator;
         private IUnsavedSettingsService? _unsavedSettingsService;
+        private WellbeingCoordinator? _wellbeing;
         private bool _isExiting = false;
+        private bool _interactiveExit;
 
         /// <summary>
         /// Initializes the application: storage, logging, single-instance, DI, orchestrator, main window, and tray icon.
@@ -71,9 +75,12 @@ namespace OLED_Sleeper.Infrastructure.Hosting
             }
 
             ConfigureServices();
+            _serviceProvider!.GetRequiredService<UiPreferencesService>().Load();
             StartOrchestrator();
 
             SetupMainWindowService();
+            _wellbeing = _serviceProvider!.GetRequiredService<WellbeingCoordinator>();
+            _wellbeing.Start();
             SetupTrayIconService();
             HookInstanceManagerShowWindow();
         }
@@ -95,8 +102,8 @@ namespace OLED_Sleeper.Infrastructure.Hosting
             }
 
             var guidance = BuildMode.IsPortable
-                ? "Move the OLED Sleeper folder somewhere you can write to, such as your Desktop, and start it again."
-                : "Check that your user profile is accessible and start OLED Sleeper again.";
+                ? "请将 ScreenKeeper 文件夹移到可写入的位置（如桌面），然后重新启动。"
+                : "请检查当前用户的数据目录是否可访问，然后重新启动多屏管家。";
 
             new MessageBoxDialogService(new MainWindowAccessor()).ShowError($"{error}{Environment.NewLine}{Environment.NewLine}{guidance}", StorageErrorCaption);
             _applicationShutdown.Shutdown();
@@ -169,12 +176,14 @@ namespace OLED_Sleeper.Infrastructure.Hosting
         /// </summary>
         private void ConfirmAndShutdown()
         {
+            if (_isExiting) return;
             if (_unsavedSettingsService?.ConfirmExit() == false)
             {
                 Log.Information("Exit cancelled. Unsaved settings were kept.");
                 return;
             }
 
+            _interactiveExit = true;
             ShutdownApp();
         }
 
@@ -197,8 +206,21 @@ namespace OLED_Sleeper.Infrastructure.Hosting
             _isExiting = true;
 
             _mainWindowService?.PrepareForShutdown();
+            _wellbeing?.StopPresentation();
+
+            // The UI is still available here. Remove topmost covers before stopping wake detection
+            // or opening a recovery dialog, and reject any already queued presentation requests.
+            (_serviceProvider?.GetService<IMonitorPrivacyService>() as IDisposable)?.Dispose();
+            _serviceProvider?.GetService<IMonitorBlackoutService>()?.Stop();
+            Log.Information("Shutdown screen overlays cleared.");
 
             StopOrchestrator();
+            if (_interactiveExit && _wellbeing?.Color.States.Any(s => s.State is Features.ColorTemperature.ColorControlState.RecoveryPending or Features.ColorTemperature.ColorControlState.Failed or Features.ColorTemperature.ColorControlState.Conflict) == true)
+            {
+                Log.Warning("Showing shutdown color recovery notice after closing screen overlays.");
+                new UI.Views.AppDialog(UI.Localization.UiText.Get("部分屏幕的原色恢复尚未完成，恢复记录已保留。下次启动请检查色温页面。"), UI.Localization.UiText.Get("色温调节"), false)
+                { ShowInTaskbar = true, WindowStartupLocation = WindowStartupLocation.CenterScreen }.ShowDialog();
+            }
 
             _trayIconService?.Dispose();
             _instanceManager?.Dispose();
@@ -226,7 +248,10 @@ namespace OLED_Sleeper.Infrastructure.Hosting
 
             try
             {
-                var stopTask = Task.Run(() => _orchestrator.StopAsync());
+                var stopTask = Task.Run(async () =>
+                {
+                    await Task.WhenAll(_orchestrator.StopAsync(), _wellbeing?.RestoreColorAsync() ?? Task.CompletedTask);
+                });
                 if (!stopTask.Wait(RestoreOnShutdownTimeoutMs))
                 {
                     Log.Warning("Monitor restore did not finish within {TimeoutMs} ms. Exiting anyway.", RestoreOnShutdownTimeoutMs);

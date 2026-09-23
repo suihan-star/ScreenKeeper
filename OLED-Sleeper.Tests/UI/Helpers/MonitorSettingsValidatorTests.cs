@@ -51,10 +51,10 @@ namespace OLED_Sleeper.Tests.UI.Helpers
 
             // Assert
             Assert.NotNull(error);
-            Assert.Contains("Monitor 2", error);
-            Assert.Contains("A monitor behavior must be selected.", error);
-            Assert.Contains("Idle time value must be a number greater than zero.", error);
-            Assert.Contains("At least one 'Consider Active When' option must be selected.", error);
+            Assert.Contains("显示器 2", error);
+            Assert.Contains("请选择一种空闲时的操作。", error);
+            Assert.Contains("空闲时长必须是大于零的数字。", error);
+            Assert.Contains("请至少选择一项保持唤醒的条件。", error);
         }
 
         [Fact]
@@ -74,9 +74,9 @@ namespace OLED_Sleeper.Tests.UI.Helpers
 
             // Assert
             Assert.NotNull(error);
-            Assert.Contains("Monitor 1", error);
-            Assert.Contains("Monitor 2", error);
-            Assert.DoesNotContain("Monitor 3", error);
+            Assert.Contains("显示器 1", error);
+            Assert.Contains("显示器 2", error);
+            Assert.DoesNotContain("显示器 3", error);
         }
 
         /// <summary>

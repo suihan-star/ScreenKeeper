@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>屏幕良伴 · 健康提醒按钮造型</title>
+<link rel="icon" href="settings-v2-icon.svg" type="image/svg+xml">
+<!-- Continue the approved copy, Calm palette and 430px card from v3. This review explores
+     pause-square / skip-arrow / lightning / exclamation shapes. Captions and full rectangular
+     hit targets remain accessible. No client behavior, settings or real timers are accessed. -->
+<style>
+:root{font-family:"Segoe UI","Microsoft YaHei UI",sans-serif;color:#173326;background:#e4e9dd;font-synthesis:none}
+*{box-sizing:border-box}body{margin:0;padding:28px 32px}button,select{font:inherit}button{cursor:pointer}
+button:focus-visible,select:focus-visible{outline:2px solid #648858;outline-offset:4px}
+header,main,footer{max-width:1280px;margin:auto}header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px}
+h1{font-size:19px;font-weight:600;margin:0 0 6px}.subhead{font-size:12px;color:#5b6b5d;margin:0}
+nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}nav button,nav select{border:1px solid #b6c4b0;background:transparent;color:#264632;border-radius:6px;padding:8px 12px;font-size:12px}
+.display{position:relative;display:grid;place-items:center;min-height:440px;height:min(72vh,700px);border:1px solid #5f765d;border-radius:12px;background:#102a23 url('forest-mist.png') center/cover;overflow:hidden;isolation:isolate}
+.display:before{content:"";position:absolute;inset:0;background:#0c281cb3;z-index:-1}
+.health-card{width:430px;max-width:calc(100% - 32px);background:#17372e;color:#e8efe5;border:1px solid #3e6250;border-radius:12px;padding:24px 28px 26px;box-shadow:0 16px 48px #06190d30}
+.heading{display:grid;grid-template-columns:28px minmax(0,1fr) 28px;align-items:center;gap:12px}.heading h2{grid-column:2;grid-row:1;text-align:center;font-size:21px;font-weight:500;line-height:28px;margin:0}.heading .close{grid-column:3;grid-row:1}
+.close{width:28px;height:28px;flex-shrink:0;border:0;background:transparent;color:#acc2b3;border-radius:6px;font-size:21px;line-height:1}.close:hover{background:#294c3c}
+.copy{font-size:14px;line-height:24px;color:#acc2b3;margin:16px 0 22px;overflow-wrap:break-word}
+.actions{display:flex;flex-direction:column;gap:12px}.secondary{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.action{padding:10px 14px;min-height:40px;border:1px solid #acc2b3;border-radius:7px;font-size:13px;background:transparent;color:#e8efe5;line-height:18px;transition:border-color .15s,opacity .15s}
+.action:hover{border-color:#b4d6a1}.action:active{opacity:.8}.action.primary{min-height:46px;width:100%;border-radius:12px;background:#b4d6a1;color:#173326;border-color:#b4d6a1;font-weight:600}
+.action.snooze,.action.quiet{display:flex;align-items:center;gap:11px;background:none;border:0;padding:0;min-height:56px;min-width:132px;border-radius:8px;color:#acc2b3;text-align:left}
+.action.quiet{justify-content:flex-end}.action.snooze:hover,.action.quiet:hover{color:#e8efe5}.action.snooze:hover .pause-tile{background:#294c3c;border-color:#d4e9c6}
+.pause-tile{display:grid;place-items:center;width:48px;height:48px;flex-shrink:0;border:1px solid #829f8c;border-radius:10px;transition:background .15s,border-color .15s}.pause-tile svg{width:20px;height:20px;fill:currentColor}
+.skip-tile{display:grid;place-items:center;width:54px;height:54px;flex-shrink:0}.skip-tile svg{width:54px;height:54px;overflow:visible}.outline-shape{fill:#244738;stroke:#829f8c;stroke-width:1.1;stroke-linejoin:round;transition:fill .15s,stroke .15s}.action.quiet:hover .outline-shape{fill:#315842;stroke:#d4e9c6}
+.skip-glyph{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.skip-tile .bolt,.skip-tile .bang{display:none}
+[data-variant="bolt"] .skip-tile .arrow,[data-variant="bang"] .skip-tile .arrow{display:none}[data-variant="bolt"] .skip-tile .bolt,[data-variant="bang"] .skip-tile .bang{display:block}
+.variants{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.variants label{font-size:12px;color:#5b6b5d}.variants select{font-size:12px;background:#edf1e8;color:#264632;border:1px solid #b6c4b0;border-radius:6px;padding:9px 12px}.variant-note{margin:0 0 0 auto;max-width:580px;font-size:12px;line-height:1.7;color:#5b6b5d}
+.health-card button:focus-visible{outline:2px solid #d4e9c6;outline-offset:3px}.countdown{font-size:48px;font-weight:300;margin:0 0 20px;font-variant-numeric:tabular-nums}
+.rest-actions{display:flex;gap:8px;flex-wrap:wrap}.rest-actions .action.primary{width:auto;min-height:40px;border-radius:7px}
+.result{max-width:430px;margin:24px;padding:26px 28px;background:#17372e;color:#e8efe5;border-radius:12px;line-height:1.8;font-size:14px}.result p{margin:0 0 18px}
+.hidden{display:none!important}.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:22px}.legend div{display:flex;gap:12px;align-items:flex-start}.legend strong{display:block;font-size:12px;font-weight:600;margin-bottom:4px}.legend p{margin:0;font-size:12px;line-height:1.7;color:#5b6b5d}
+.shape{flex-shrink:0;display:block;width:32px;height:20px;margin-top:2px;background:#b4d6a1;border:1px solid #648858;border-radius:6px}.shape.pill{display:grid;place-items:center;background:transparent;width:24px;height:24px;border-radius:5px;font-style:normal;font-weight:700;font-size:12px}.shape.flat{background:#648858;clip-path:polygon(0 0,70% 0,100% 50%,70% 100%,0 100%);border:0;border-radius:2px;width:28px;height:24px}
+[data-variant="bolt"] .shape.flat{clip-path:polygon(60% 0,50% 40%,95% 40%,25% 100%,40% 58%,0 58%)}
+[data-variant="bang"] .shape.flat{clip-path:none;background:linear-gradient(#648858 0 0) center top/6px 16px no-repeat,radial-gradient(circle,#648858 65%,transparent 70%) center bottom/6px 6px no-repeat}
+footer{font-size:11px;color:#637460;line-height:1.8;margin:24px auto 0}
+@media(max-width:660px){body{padding:16px}header{align-items:flex-start;flex-direction:column}.display{height:500px}.health-card{padding:22px}.legend{grid-template-columns:1fr;gap:14px}.secondary{gap:10px}.action{padding:10px 12px}.action.snooze,.action.quiet{min-width:0;gap:8px}.variant-note{flex-basis:100%;margin:0}}
+@media(max-width:400px){.health-card{padding:20px 18px}.secondary .action{flex-direction:column;gap:6px;min-width:90px;padding:4px}.action.quiet{justify-content:center}}
+@media(prefers-reduced-motion:reduce){.action{transition:none}}
+</style>
+</head>
+<body data-variant="arrow">
+<header><div><h1 id="pageTitle">健康提醒 · 给自己一个休息的空隙</h1><p class="subhead" id="subtitle">确定正文 · 三种形状，对应三种选择</p></div><nav aria-label="预览控制"><button id="reset">重新预览</button><select id="language" aria-label="预览语言"><option value="zh">简体中文</option><option value="en">English</option></select></nav></header>
+<main>
+<section class="variants" aria-label="造型对照"><label id="variantLabel" for="variant">跳过按钮造型</label><select id="variant"><option value="arrow">A · 向右跳过</option><option value="bolt">B · 闪电轮廓</option><option value="bang">C · 感叹号轮廓</option></select><p class="variant-note" id="variantNote"></p></section>
+<div class="display" aria-label="模拟屏幕">
+<section class="health-card" id="card" role="dialog" aria-labelledby="cardTitle" aria-describedby="cardCopy">
+<div class="heading"><h2 id="cardTitle">该休息一下了</h2><button class="close" id="close" aria-label="关闭">×</button></div>
+<p class="copy" id="cardCopy">专注了这么久，辛苦啦。眨眨眼，伸个懒腰，让紧绷的自己放松片刻...</p>
+<div class="countdown hidden" id="countdown">05:00</div>
+<div class="actions" id="reminderActions"><button class="action primary" id="start">开始休息</button><div class="secondary">
+<button class="action snooze" id="snooze"><span class="pause-tile" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="4" y="3" width="4" height="14" rx="1"></rect><rect x="12" y="3" width="4" height="14" rx="1"></rect></svg></span><span id="snoozeText">稍后</span></button>
+<button class="action quiet" id="skip"><span class="skip-tile" aria-hidden="true">
+<svg class="arrow" viewBox="0 0 54 54"><path class="outline-shape" d="M8 5H32Q35 5 37 8L49 24Q51 27 49 30L37 46Q35 49 32 49H8Q4 49 4 45V9Q4 5 8 5Z"></path><path class="skip-glyph" d="M20 19L29 27L20 35M33 19V35"></path></svg>
+<svg class="bolt" viewBox="0 0 54 54"><path class="outline-shape" d="M30 3Q32 1 31 6L28 21H42Q45 21 42 24L22 50Q19 53 20 48L24 32H11Q8 32 11 28Z"></path></svg>
+<svg class="bang" viewBox="0 0 54 54"><path class="outline-shape" d="M23 4H31Q35 4 34 8L31 31Q31 33 29 33H25Q23 33 23 31L20 8Q19 4 23 4Z"></path><circle class="outline-shape" cx="27" cy="44" r="5"></circle></svg>
+</span><span id="skipText">跳过本次</span></button>
+</div></div>
+<div class="rest-actions hidden" id="restActions"><button class="action primary" id="collapse">收起到托盘</button><button class="action" id="end">提前结束</button></div>
+</section>
+<section class="result hidden" id="result" role="status"><p id="resultText"></p><button class="action" id="again">再次查看提醒</button></section>
+</div>
+<section class="legend" aria-label="按钮说明"><div><i class="shape" aria-hidden="true"></i><section><strong id="startLabel">开始休息</strong><p id="startDesc">圆角长按钮 · 现在开始休息倒计时</p></section></div><div><i class="shape pill" aria-hidden="true">Ⅱ</i><section><strong id="snoozeLabel">稍后</strong><p id="snoozeDesc">暂停方块 · 按设置的时长，过会儿再提醒</p></section></div><div><i class="shape flat" aria-hidden="true"></i><section><strong id="skipLabel">跳过本次</strong><p id="skipDesc">向右跳过 · 开始新的工作周期</p></section></div></section>
+</main>
+<footer id="footnote">这是可点击效果稿，休息倒计时使用 5 分钟示例，不会改变客户端设置或真实工作周期。</footer>
+<script>
+'use strict';
+const byId=id=>document.getElementById(id);
+const copy={zh:{pageTitle:'健康提醒 · 给自己一个休息的空隙',subtitle:'确定正文 · 三种形状，对应三种选择',reset:'重新预览',reminderTitle:'该休息一下了',restTitle:'休息倒计时',note:'专注了这么久，辛苦啦。眨眨眼，伸个懒腰，让紧绷的自己放松片刻...',restNote:'按自己的节奏休息，计时结束不会唤亮屏幕。',start:'开始休息',snooze:'稍后',skip:'跳过本次',collapse:'收起到托盘',end:'提前结束',again:'再次查看提醒',close:'关闭',startDesc:'圆角长按钮 · 现在开始休息倒计时',snoozeDesc:'胶囊描边 · 按设置的时长，过会儿再提醒',skipDesc:'轻量文字 · 跳过这一轮，开始新的工作周期',startTip:'开始本次休息倒计时。',snoozeTip:'按设置的稍后时长，再提醒一次。',skipTip:'跳过这次提醒，开始新的工作周期。',snoozed:'稍后再提醒你。这次只是演示，不启动真实计时。',skipped:'已跳过这次提醒。客户端会开始新的工作周期。',closed:'提醒已收起。客户端会按稍后时长再次提醒。',collapsed:'休息卡片已收起。这次演示到这里结束；客户端倒计时会继续。',ended:'本次示例休息已结束。',footnote:'这是可点击效果稿，休息倒计时使用 5 分钟示例，不会改变客户端设置或真实工作周期。'},en:{pageTitle:'A little room to rest',subtitle:'One caring note. Three distinct choices.',reset:'Replay',reminderTitle:'Time for a break',restTitle:'Break countdown',note:'You’ve been focused for so long—thank you for your hard work. Blink, stretch, and give yourself a moment to unwind...',restNote:'Take your time. The timer will not wake your display.',start:'Start break',snooze:'Snooze',skip:'Skip this time',collapse:'Collapse to tray',end:'End early',again:'Show reminder again',close:'Close',startDesc:'Rounded bar · Start your break countdown now',snoozeDesc:'Outlined pill · Remind you after your chosen interval',skipDesc:'Quiet text · Skip this reminder and start a new work cycle',startTip:'Start the countdown for this break.',snoozeTip:'Remind you again after your chosen snooze interval.',skipTip:'Skip this reminder and start a new work cycle.',snoozed:'We’ll remind you later. This demo does not start a real timer.',skipped:'Reminder skipped. The app starts a new work cycle.',closed:'Reminder dismissed. The app will remind you after your snooze interval.',collapsed:'Break card minimized. This demo ends here; the app keeps its countdown running.',ended:'The demo break has ended.',footnote:'Clickable preview with a sample five-minute break. It does not change app settings or your real work cycle.'}};
+Object.assign(copy.zh,{pageTitle:'健康提醒 · 按钮造型',subtitle:'暂停一下，或轻轻跳过这一轮',snoozeDesc:'暂停方块 · 按设置的时长，过会儿再提醒',variantLabel:'跳过按钮造型',variants:{arrow:'A · 向右跳过',bolt:'B · 闪电轮廓',bang:'C · 感叹号轮廓'},variantNotes:{arrow:'建议选 A：暂停与跳过，像熟悉的播放控件；保留文字，不必猜图标。',bolt:'闪电更有个性，但也容易让人联想到加速。放在这里对照看看。',bang:'感叹号更醒目，也更像警告；与温和的休息提醒气质有些不同。'},skipDescriptions:{arrow:'向右跳过 · 开始新的工作周期',bolt:'闪电造型 · 跳过这一轮，开始新的工作周期',bang:'感叹号造型 · 跳过这一轮，开始新的工作周期'},footnote:'已确认 A 方案：标题居中、暂停方块与跳过箭头。B/C 保留为历史对照；此处为可点击演示，不改变真实设置。'});
+Object.assign(copy.en,{pageTitle:'Health reminder · Button shapes',subtitle:'A moment of pause, or a gentle skip',snoozeDesc:'Pause square · Remind you after your chosen interval',variantLabel:'Skip button shape',variants:{arrow:'A · Skip arrow',bolt:'B · Lightning',bang:'C · Exclamation'},variantNotes:{arrow:'Suggested: familiar pause and skip controls, with visible labels to keep choices clear.',bolt:'Lightning adds character, but can also suggest speed. Try it here for comparison.',bang:'An exclamation mark stands out, but may suggest a warning rather than a gentle reminder.'},skipDescriptions:{arrow:'Forward arrow · Start a new work cycle',bolt:'Lightning shape · Skip to a new work cycle',bang:'Exclamation shape · Skip to a new work cycle'},footnote:'Approved: centered title, pause square and skip arrow. B/C remain as alternatives. This demo does not change real settings.'});
+let language='zh',phase='reminder',variant='arrow',resultKey='',seconds=300,timer=null;
+function stopTimer(){clearInterval(timer);timer=null;}
+function render(){
+const c=copy[language];document.documentElement.lang=language==='zh'?'zh-CN':'en';document.body.dataset.variant=variant;
+for(const id of ['pageTitle','subtitle','reset','start','collapse','end','again','startDesc','snoozeDesc','footnote','variantLabel'])byId(id).textContent=c[id];
+byId('snoozeText').textContent=c.snooze;byId('skipText').textContent=c.skip;
+for(const action of ['start','snooze','skip']){byId(action+'Label').textContent=c[action];byId(action).title=c[action+'Tip'];}
+for(const option of byId('variant').options)option.textContent=c.variants[option.value];
+byId('variantNote').textContent=c.variantNotes[variant];byId('skipDesc').textContent=c.skipDescriptions[variant];
+byId('close').setAttribute('aria-label',phase==='rest'?c.collapse:c.close);byId('cardTitle').textContent=phase==='rest'?c.restTitle:c.reminderTitle;byId('cardCopy').textContent=phase==='rest'?c.restNote:c.note;
+byId('card').classList.toggle('hidden',phase==='result');byId('result').classList.toggle('hidden',phase!=='result');byId('resultText').textContent=resultKey?c[resultKey]:'';
+byId('reminderActions').classList.toggle('hidden',phase!=='reminder');byId('restActions').classList.toggle('hidden',phase!=='rest');byId('countdown').classList.toggle('hidden',phase!=='rest');byId('countdown').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+}
+function reset(){stopTimer();phase='reminder';resultKey='';seconds=300;render();}
+function finish(key){stopTimer();resultKey=key;phase='result';render();}
+byId('start').onclick=()=>{phase='rest';seconds=300;render();timer=setInterval(()=>{seconds=Math.max(0,seconds-1);if(!seconds)finish('ended');else render();},1000);};
+byId('snooze').onclick=()=>finish('snoozed');byId('skip').onclick=()=>finish('skipped');byId('collapse').onclick=()=>finish('collapsed');byId('end').onclick=()=>finish('ended');byId('close').onclick=()=>finish(phase==='rest'?'collapsed':'closed');byId('again').onclick=reset;byId('reset').onclick=reset;byId('language').onchange=e=>{language=e.target.value;render();};
+byId('variant').onchange=e=>{variant=e.target.value;reset();};
+render();
+</script>
+</body>
+</html>

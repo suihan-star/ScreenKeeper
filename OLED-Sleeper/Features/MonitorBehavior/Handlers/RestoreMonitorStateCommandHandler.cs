@@ -13,22 +13,27 @@ namespace OLED_Sleeper.Features.MonitorBehavior.Handlers
     public class RestoreMonitorStateCommandHandler : ICommandHandler<RestoreMonitorStateCommand>
     {
         private readonly IMediator _mediator;
+        private readonly Infrastructure.Runtime.ReminderDisplayGate? _reminders;
 
-        public RestoreMonitorStateCommandHandler(IMediator mediator)
+        public RestoreMonitorStateCommandHandler(IMediator mediator, Infrastructure.Runtime.ReminderDisplayGate? reminders = null)
         {
             _mediator = mediator;
+            _reminders = reminders;
         }
 
         /// <summary>
         /// Handles the command to restore the monitor's state.
         /// </summary>
         /// <param name="command">The command containing the monitor's hardware ID.</param>
-        public Task HandleAsync(RestoreMonitorStateCommand command)
+        public async Task HandleAsync(RestoreMonitorStateCommand command)
         {
             Log.Information("Restoring state for monitor {HardwareId}.", command.HardwareId);
-            _mediator.SendAsync(new HideBlackoutOverlayCommand { HardwareId = command.HardwareId });
-            _mediator.SendAsync(new ApplyUndimCommand { HardwareId = command.HardwareId });
-            return Task.CompletedTask;
+            bool restored = true;
+            try { await _mediator.SendAsync(new HideBlackoutOverlayCommand { HardwareId = command.HardwareId }); }
+            catch (Exception ex) { restored = false; Log.Error(ex, "Overlay restore failed."); }
+            try { await _mediator.SendAsync(new ApplyUndimCommand { HardwareId = command.HardwareId }); }
+            catch (Exception ex) { restored = false; Log.Error(ex, "Brightness restore failed."); }
+            if (restored) _reminders?.Awake(command.HardwareId);
         }
     }
 }

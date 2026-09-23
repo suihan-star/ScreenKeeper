@@ -33,6 +33,32 @@ namespace OLED_Sleeper.Tests.UI.ViewModels
         }
 
         [Fact]
+        public void RecalculateLayout_WhenEmpty_ExplainsHowToRetry()
+        {
+            LoadMonitors();
+            Assert.Contains("未检测到显示器", _viewModel.WorkspaceMessage);
+            Assert.False(_viewModel.IsLoading);
+
+            LoadMonitors(CreateMonitor("MON-1"));
+            Assert.Empty(_viewModel.WorkspaceMessage);
+        }
+
+        [Fact]
+        public void RecalculateLayout_WhenBuildFails_ShowsErrorAndClearsItAfterRecovery()
+        {
+            _workspaceServiceMock
+                .Setup(x => x.BuildWorkspaceAsync(It.IsAny<double>(), It.IsAny<double>()))
+                .ThrowsAsync(new InvalidOperationException("Test failure"));
+
+            _viewModel.RecalculateLayout(800, 600);
+            Assert.Contains("加载失败", _viewModel.WorkspaceMessage);
+            Assert.False(_viewModel.IsLoading);
+
+            LoadMonitors(CreateMonitor("MON-1"));
+            Assert.Empty(_viewModel.WorkspaceMessage);
+        }
+
+        [Fact]
         public void RecalculateLayout_PopulatesMonitors()
         {
             // Arrange
@@ -144,7 +170,7 @@ namespace OLED_Sleeper.Tests.UI.ViewModels
         }
 
         [Fact]
-        public void RefreshMonitors_WhenSelectionNotPreserved_ClearsSelection()
+        public void RefreshMonitors_WhenSelectionNotPreserved_SelectsFirstScreen()
         {
             // Arrange
             var original = CreateMonitor("MON-1");
@@ -156,8 +182,8 @@ namespace OLED_Sleeper.Tests.UI.ViewModels
             _viewModel.RefreshMonitors(false);
 
             // Assert
-            Assert.Null(_viewModel.SelectedMonitor);
-            Assert.False(_viewModel.IsMonitorSelected);
+            Assert.Same(_viewModel.Monitors[0], _viewModel.SelectedMonitor);
+            Assert.True(_viewModel.IsMonitorSelected);
         }
 
         [Fact]
@@ -172,7 +198,7 @@ namespace OLED_Sleeper.Tests.UI.ViewModels
 
             // Assert
             Assert.True(_viewModel.IsDirty);
-            Assert.Equal("OLED Sleeper Settings*", _viewModel.WindowTitle);
+            Assert.Equal("多屏管家 ScreenKeeper · 设置*", _viewModel.WindowTitle);
         }
 
         [Fact]
@@ -342,7 +368,7 @@ namespace OLED_Sleeper.Tests.UI.ViewModels
             // Assert
             Assert.True(saved);
             Assert.False(_viewModel.IsDirty);
-            Assert.Equal("Save Settings", _viewModel.SaveButtonText);
+            Assert.Equal("保存屏幕休息", _viewModel.SaveButtonText);
         }
 
         [Fact]
@@ -375,9 +401,9 @@ namespace OLED_Sleeper.Tests.UI.ViewModels
             _viewModel.SaveSettingsCommand.Execute(null);
 
             // Assert
-            _saveServiceMock.Verify(x => x.TrySave(_viewModel.Monitors), Times.Once);
+            _saveServiceMock.Verify(x => x.TrySave(_viewModel.Monitors, OLED_Sleeper.Features.UserSettings.Models.MonitorSettingsScope.Rest), Times.Once);
             Assert.False(_viewModel.IsDirty);
-            Assert.Equal("Saved!", _viewModel.SaveButtonText);
+            Assert.Equal("已保存", _viewModel.SaveButtonText);
         }
 
         [Fact]
@@ -393,7 +419,7 @@ namespace OLED_Sleeper.Tests.UI.ViewModels
             _viewModel.SaveSettingsCommand.Execute(null);
 
             // Assert
-            Assert.Equal("Save Settings", _viewModel.SaveButtonText);
+            Assert.Equal("保存屏幕休息", _viewModel.SaveButtonText);
             Assert.True(_viewModel.IsDirty);
         }
 
@@ -473,6 +499,9 @@ namespace OLED_Sleeper.Tests.UI.ViewModels
         /// <param name="succeeds">Whether the save service should report the settings as written.</param>
         private void SetupSaveOutcome(bool succeeds)
         {
+            _saveServiceMock.Setup(x => x.TrySave(It.IsAny<IReadOnlyList<MonitorLayoutViewModel>>(), It.IsAny<OLED_Sleeper.Features.UserSettings.Models.MonitorSettingsScope>()))
+                .Returns<IReadOnlyList<MonitorLayoutViewModel>, OLED_Sleeper.Features.UserSettings.Models.MonitorSettingsScope>((monitors, scope) =>
+                { if (!succeeds) return false; foreach (var monitor in monitors) monitor.Configuration.MarkAsSaved(scope); return true; });
             _saveServiceMock
                 .Setup(x => x.TrySave(It.IsAny<IReadOnlyList<MonitorLayoutViewModel>>()))
                 .Returns<IReadOnlyList<MonitorLayoutViewModel>>(monitors =>
@@ -486,6 +515,23 @@ namespace OLED_Sleeper.Tests.UI.ViewModels
 
                     return true;
                 });
+        }
+
+        [Fact]
+        public void SwitchingDisplaysOnPrivacyPageKeepsThePageAndRestDraft()
+        {
+            var one = CreateMonitor("one"); var two = CreateMonitor("two"); LoadMonitors(one, two);
+            one.Configuration.DimLevel = 45;
+            _viewModel.CurrentModule = "Privacy";
+            one.Configuration.IsPrivacyEnabled = true;
+            _viewModel.SelectedMonitor = two;
+            Assert.Equal("Privacy", _viewModel.CurrentModule);
+            _viewModel.SelectedMonitor = one;
+            _viewModel.DiscardChangesCommand.Execute(null);
+            Assert.False(one.Configuration.IsPrivacyEnabled);
+            Assert.True(one.Configuration.IsRestDirty);
+            Assert.False(_viewModel.CurrentModuleDirty);
+            Assert.True(_viewModel.IsDirty);
         }
 
         /// <summary>

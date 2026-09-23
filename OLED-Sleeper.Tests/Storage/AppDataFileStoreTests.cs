@@ -6,7 +6,7 @@ namespace OLED_Sleeper.Tests.Storage
     public class AppDataFileStoreTests
     {
         private const string FileName = "state.json";
-        private const string StoreDirectory = @"C:\FakeAppData\OLED-Sleeper";
+        private const string StoreDirectory = @"C:\FakeAppData\ScreenKeeper";
         private const string TargetPath = StoreDirectory + @"\" + FileName;
         private const string BackupPath = TargetPath + ".bak";
         private const string TempPath = TargetPath + ".tmp";

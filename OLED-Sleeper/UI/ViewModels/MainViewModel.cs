@@ -1,5 +1,9 @@
-﻿using OLED_Sleeper.Infrastructure.Runtime.Interfaces;
+using OLED_Sleeper.Features.MonitorPrivacy;
+using OLED_Sleeper.Infrastructure;
+using OLED_Sleeper.Infrastructure.Runtime.Interfaces;
 using OLED_Sleeper.UI.Commands;
+using OLED_Sleeper.UI.Localization;
+using OLED_Sleeper.UI.Services;
 using OLED_Sleeper.UI.Services.Interfaces;
 using Serilog;
 using System.Collections.ObjectModel;
@@ -13,7 +17,7 @@ namespace OLED_Sleeper.UI.ViewModels
     /// The main ViewModel for the application's main window.
     /// It orchestrates the various services and manages the overall state of the UI.
     /// </summary>
-    public class MainViewModel : ViewModelBase, IUnsavedSettings
+    public partial class MainViewModel : ViewModelBase, IUnsavedSettings
     {
         #region Private Fields
 
@@ -55,12 +59,12 @@ namespace OLED_Sleeper.UI.ViewModels
         /// <summary>
         /// The text displayed in the main window's title bar.
         /// </summary>
-        private string _windowTitle = "OLED Sleeper Settings";
+        private string _windowTitle = UiText.Get(ProductIdentity.SettingsTitle);
 
         /// <summary>
         /// The text displayed on the save button.
         /// </summary>
-        private string _saveButtonText = "Save Settings";
+        private string _saveButtonText = "保存全部设置";
 
         /// <summary>
         /// Indicates whether the workspace is currently loading.
@@ -87,9 +91,11 @@ namespace OLED_Sleeper.UI.ViewModels
             {
                 if (_selectedMonitor != null) { _selectedMonitor.IsSelected = false; }
                 _selectedMonitor = value;
+                if (!IsLoading && value != null && !IsScreenPage) CurrentModule = "Displays";
                 if (_selectedMonitor != null) { _selectedMonitor.IsSelected = true; }
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsMonitorSelected));
+                RefreshSnooze();
             }
         }
 
@@ -104,13 +110,14 @@ namespace OLED_Sleeper.UI.ViewModels
         /// </summary>
         public bool IsDirty
         {
-            get => _isDirty;
+            get => _isDirty || Health?.IsDirty == true || Color?.IsDirty == true;
             set
             {
                 if (_isDirty == value) return;
                 _isDirty = value;
                 OnPropertyChanged();
-                WindowTitle = "OLED Sleeper Settings" + (_isDirty ? "*" : "");
+                OnPropertyChanged(nameof(StatusText));
+                WindowTitle = UiText.Get(ProductIdentity.SettingsTitle) + (IsDirty ? "*" : "");
             }
         }
 
@@ -124,11 +131,11 @@ namespace OLED_Sleeper.UI.ViewModels
         }
 
         /// <summary>
-        /// Gets or sets the text for the save button (e.g., "Save Settings" or "Saved!").
+        /// Gets or sets the text for the save button (e.g., "保存设置" or "已保存").
         /// </summary>
         public string SaveButtonText
         {
-            get => _saveButtonText;
+            get => UiText.Get(_saveButtonText == "已保存" ? _saveButtonText : CurrentModule switch { "Health" => "保存健康提醒", "Color" => "保存色温设置", "Privacy" => "保存隐私保护", _ => "保存屏幕休息" });
             set { _saveButtonText = value; OnPropertyChanged(); }
         }
 
@@ -146,7 +153,70 @@ namespace OLED_Sleeper.UI.ViewModels
             set { _isLoading = value; OnPropertyChanged(); }
         }
 
+        private string _workspaceMessage = string.Empty;
+
+        /// <summary>Explains an empty layout or failed refresh without exposing exception details.</summary>
+        public string WorkspaceMessage
+        {
+            get => UiText.Get(_workspaceMessage);
+            private set { _workspaceMessage = value; OnPropertyChanged(); }
+        }
+
         #endregion Public Properties
+
+        private readonly UiPreferencesService? _preferences;
+        private readonly IDialogService? _dialogs;
+        private readonly IMonitorPrivacyService? _privacy;
+        public ICommand ProtectPrivacyCommand { get; }
+        public ICommand ProtectSelectedPrivacyCommand { get; }
+        public ICommand PausePrivacyCommand { get; }
+        public string PrivacyStatus => UiText.Get(_privacy?.GetStatus(SelectedMonitor?.HardwareId) ?? "保存并启用本屏隐私保护后，可使用立即保护和暂缓。");
+        public string PausePrivacyText => _snooze == null ? UiText.Get(SelectedMonitor != null && _privacy?.IsPaused(SelectedMonitor.HardwareId) == true ? "恢复自动保护" : "暂缓…") : PauseText(Features.UserSettings.Models.MonitorSettingsScope.Privacy);
+        public string PrivacyRuntimeNotice
+        {
+            get
+            {
+                if (SelectedMonitor == null || _privacy?.IsConfigured(SelectedMonitor.HardwareId) != true) return "";
+                var paused = SnoozeNotice(Features.UserSettings.Models.MonitorSettingsScope.Privacy);
+                if (paused.Length > 0) return paused;
+                var status = _privacy.GetStatus(SelectedMonitor.HardwareId);
+                return status == "按本屏实际操作独立计时。" ? "" : UiText.Get(status);
+            }
+        }
+        private void RefreshPrivacyStatus()
+        {
+            OnPropertyChanged(nameof(PrivacyRuntimeTitle));
+            OnPropertyChanged(nameof(PrivacyRuntimeDetail));
+            OnPropertyChanged(nameof(PrivacyRuntimeError));
+            OnPropertyChanged(nameof(PrivacyStatus));
+            OnPropertyChanged(nameof(PrivacyRuntimeNotice));
+            OnPropertyChanged(nameof(PausePrivacyText));
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+        }
+        public string Language
+        {
+            get => UiText.Current.Language;
+            set
+            {
+                if (value == Language) return;
+                if (_preferences == null) UiText.Current.SetLanguage(value);
+                else if (!_preferences.TrySetLanguage(value))
+                {
+                    _dialogs?.ShowError(UiText.Get("语言偏好未能保存，请检查配置目录的写入权限后重试。"), UiText.Get("设置未能保存"));
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public string? ConfigurationError => CurrentModule switch { "Health" => Health?.Error, "Color" => Color?.Error, _ => UI.Helpers.MonitorSettingsValidator.BuildValidationError(Monitors, ScreenScope) };
+        public string StatusText => UiText.Get(CurrentModuleDirty ? "有未保存的更改" : "设置已保存");
+        private void OnLanguageChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            ModulesChanged();
+            RefreshPrivacyStatus();
+            OnPropertyChanged(nameof(ConfigurationError));
+            WindowTitle = UiText.Get(ProductIdentity.SettingsTitle) + (IsDirty ? "*" : "");
+            foreach (var name in new[] { nameof(Language), nameof(StatusText), nameof(SaveButtonText), nameof(WorkspaceMessage) }) OnPropertyChanged(name);
+        }
 
         #region Commands
 
@@ -177,16 +247,39 @@ namespace OLED_Sleeper.UI.ViewModels
         public MainViewModel(
             IWorkspaceService workspaceService,
             IMonitorSettingsSaveService saveService,
-            IDispatcher dispatcher)
+            IDispatcher dispatcher,
+            UiPreferencesService? preferences = null,
+            IDialogService? dialogs = null,
+            IMonitorPrivacyService? privacy = null,
+            PrivacyImageStore? images = null, IApplicationWindowAccess? applicationWindows = null, IScreenApplicationService? applications = null, IScreenDesktopService? desktop = null,
+            Infrastructure.Hosting.WellbeingCoordinator? wellbeing = null, HealthSettingsViewModel? healthSettings = null, ColorSettingsViewModel? colorSettings = null, Themes.UiTheme? theme = null, Features.MonitorIdleDetection.Services.ScreenSnoozeService? snooze = null)
         {
+            Monitors.CollectionChanged += (_, _) => SetCompactLayout(_compactScreens);
             _workspaceService = workspaceService;
             _saveService = saveService;
             _dispatcher = dispatcher;
+            _preferences = preferences;
+            _theme = theme ?? Themes.UiTheme.Current;
+            _dialogs = dialogs;
+            _privacy = privacy;
+            InitializeSnooze(snooze);
+            Health = wellbeing?.HealthSettings ?? healthSettings; Color = wellbeing?.ColorSettings ?? colorSettings;
+            if (Health != null) Health.PropertyChanged += (_, _) => ModulesChanged();
+            if (Color != null) Color.PropertyChanged += (_, _) => ModulesChanged();
+            SelectModuleCommand = new RelayCommand(p => CurrentModule = p as string ?? "Displays");
+            Images = images; ApplicationWindows = applicationWindows; Applications = applications; Desktop = desktop;
+            if (_privacy != null) _privacy.Changed += RefreshPrivacyStatus;
+            ProtectPrivacyCommand = new AsyncRelayCommand(() => _privacy!.ProtectAllAsync(), () => _privacy?.HasConfiguredScreens == true);
+            ProtectSelectedPrivacyCommand = new AsyncRelayCommand(() => SelectedMonitor is { } monitor ? _privacy!.ProtectScreenAsync(monitor.HardwareId) : Task.CompletedTask,
+                () => SelectedMonitor is { } monitor && _privacy?.IsConfigured(monitor.HardwareId) == true && !_privacy.IsProtected(monitor.HardwareId));
+            PausePrivacyCommand = new RelayCommand(PauseSelected, () => SelectedMonitor != null && _privacy?.IsConfigured(SelectedMonitor.HardwareId) == true);
+            PropertyChangedEventManager.AddHandler(UiText.Current, OnLanguageChanged, string.Empty);
 
+            PropertyChangedEventManager.AddHandler(_theme, (_, _) => { OnPropertyChanged(nameof(Theme)); OnPropertyChanged(nameof(ThemeIcon)); }, string.Empty);
             SelectMonitorCommand = new RelayCommand(ExecuteSelectMonitor);
-            ReloadMonitorsCommand = new RelayCommand(() => RefreshMonitors(false));
-            SaveSettingsCommand = new AsyncRelayCommand(ExecuteSaveSettings, () => IsDirty);
-            DiscardChangesCommand = new RelayCommand(DiscardChanges, () => IsDirty);
+            ReloadMonitorsCommand = new RelayCommand(() => RefreshMonitors(false), () => !IsDirty && !IsLoading);
+            SaveSettingsCommand = new AsyncRelayCommand(ExecuteSaveSettings, () => CurrentModuleDirty && !IsLoading && ConfigurationError == null);
+            DiscardChangesCommand = new RelayCommand(DiscardCurrentModule, () => CurrentModuleDirty);
         }
 
         #endregion Constructor
@@ -199,6 +292,7 @@ namespace OLED_Sleeper.UI.ViewModels
         /// <param name="preserveSelection">Whether to reselect the current monitor once the rebuild finishes.</param>
         public void RefreshMonitors(bool preserveSelection)
         {
+            if (IsDirty || IsLoading) return;
             ApplyWorkspace(_workspaceService.RefreshWorkspaceAsync, _containerWidth, _containerHeight, preserveSelection);
         }
 
@@ -215,7 +309,9 @@ namespace OLED_Sleeper.UI.ViewModels
         /// <inheritdoc />
         public bool TrySaveChanges()
         {
-            if (!_saveService.TrySave(Monitors)) return false;
+            if ((_isDirty || (Health == null && Color == null)) && !_saveService.TrySave(Monitors)) return false;
+            if (Health?.IsDirty == true && !Health.TrySave()) return false;
+            if (Color?.IsDirty == true && !Color.TrySave()) return false;
 
             CheckDirtyState();
             return true;
@@ -224,6 +320,7 @@ namespace OLED_Sleeper.UI.ViewModels
         /// <inheritdoc />
         public void DiscardChanges()
         {
+            Health?.Discard(); Color?.Discard();
             foreach (var monitor in Monitors)
             {
                 monitor.Configuration.Revert();
@@ -242,7 +339,7 @@ namespace OLED_Sleeper.UI.ViewModels
         /// <param name="parameter">The monitor to select.</param>
         private void ExecuteSelectMonitor(object? parameter)
         {
-            if (parameter is MonitorLayoutViewModel monitor) { SelectedMonitor = monitor; }
+            if (parameter is MonitorLayoutViewModel monitor) { if (!IsScreenPage) CurrentModule = "Displays"; SelectedMonitor = monitor; }
         }
 
         /// <summary>
@@ -250,7 +347,9 @@ namespace OLED_Sleeper.UI.ViewModels
         /// </summary>
         private async Task ExecuteSaveSettings()
         {
-            if (!TrySaveChanges()) return;
+            bool saved = CurrentModule switch { "Health" => Health?.TrySave() == true, "Color" => Color?.TrySave() == true, _ => _saveService.TrySave(Monitors, ScreenScope) };
+            CheckDirtyState(); ModulesChanged();
+            if (!saved) return;
 
             await ProvideSaveFeedbackAsync();
         }
@@ -266,9 +365,9 @@ namespace OLED_Sleeper.UI.ViewModels
         /// </summary>
         private async Task ProvideSaveFeedbackAsync()
         {
-            SaveButtonText = "Saved!";
+            SaveButtonText = "已保存";
             await Task.Delay(2000);
-            SaveButtonText = "Save Settings";
+            SaveButtonText = "保存全部设置";
         }
 
         // --- Monitor Update Helpers ---
@@ -293,6 +392,7 @@ namespace OLED_Sleeper.UI.ViewModels
 
             var generation = ++_buildGeneration;
             var monitorIdToRestore = preserveSelection ? SelectedMonitor?.HardwareId : null;
+            WorkspaceMessage = "正在检测显示器…";
             IsLoading = true;
 
             try
@@ -300,15 +400,26 @@ namespace OLED_Sleeper.UI.ViewModels
                 var newMonitorLayoutViewModels = await build(width, height);
                 if (generation != _buildGeneration) return;
 
+                foreach (var monitor in newMonitorLayoutViewModels)
+                {
+                    var previous = Monitors.FirstOrDefault(m => m.HardwareId == monitor.HardwareId);
+                    if (previous?.IsDirty == true) monitor.Configuration.PreserveDraftFrom(previous.Configuration);
+                    else if (previous != null) monitor.Configuration.RetainWindowIdentityFrom(previous.Configuration);
+                }
                 PopulateMonitors(newMonitorLayoutViewModels);
                 RestoreSelection(monitorIdToRestore);
                 CheckDirtyState();
+                WorkspaceMessage = Monitors.Count == 0 ? "未检测到显示器，请检查连接后点击右上角重新检测。" : string.Empty;
                 IsLoading = false;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Failed to build the monitor workspace.");
-                if (generation == _buildGeneration) { IsLoading = false; }
+                if (generation == _buildGeneration)
+                {
+                    WorkspaceMessage = "显示器加载失败，请点击右上角重新检测。";
+                    IsLoading = false;
+                }
             }
         }
 
@@ -356,7 +467,7 @@ namespace OLED_Sleeper.UI.ViewModels
         {
             SelectedMonitor = hardwareId != null
                 ? Monitors.FirstOrDefault(m => m.HardwareId == hardwareId)
-                : null;
+                : Monitors.FirstOrDefault();
         }
 
         /// <summary>
@@ -365,6 +476,9 @@ namespace OLED_Sleeper.UI.ViewModels
         private void CheckDirtyState()
         {
             IsDirty = Monitors.Any(m => m.IsDirty);
+            OnPropertyChanged(nameof(ConfigurationError));
+            ModulesChanged();
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
 
         #endregion Private Helper Methods

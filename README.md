@@ -1,59 +1,70 @@
-﻿# OLED Sleeper 😴 – Blackout or Dim Secondary Monitors on Windows
+# 屏幕良伴 · ScreenKeeper
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+面向 Windows 多显示器用户的屏幕管理工具：让闲置屏幕休息、保护旁人不宜看到的内容，并提供健康提醒与逐屏色温设置。
 
-OLED Sleeper is a lightweight Windows tool to blackout or dim idle monitors, helping users prevent OLED burn-in and temporarily sleep secondary monitors for focus, gaming, or distraction-free work.
+首版版本号为 **1.0.0**，本仓库保留源码、测试、设计稿和开发记录。实际硬件兼容与发布验收边界见 [首版记录](CHANGELOG.md) 和 [验证结果](docs/tasks/013-first-version-plan.md)。
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/0f7c9110-094c-4fdb-8109-62fdd11e87cd" alt="OLED Sleeper Demonstration"> 
-</p>
+## 主要功能
 
----
+- **屏幕休息**：每屏设置空闲时长、遮黑／调暗、保持唤醒条件与临时暂缓。
+- **隐私保护**：隐私幕、回到桌面、指定应用；可选使用免打扰、跨屏移动和自定义背景。
+- **健康提醒**：独立工作／休息周期、渐显山林或动态雾光、开始休息／稍后／跳过。
+- **色温调节**：验证后逐屏启用，设置工作／休息作息与原色／自定义色温，保留恢复保护。
+- **界面与效率**：简体中文／英文、深绿／雾白绿、显示器型号识别、批量应用设置及托盘快捷操作。
 
-## The Problem
+[使用指南](docs/user-guide.md) · [开发说明](docs/development.md) · [文档索引](docs/README.md) · [设计原型](designs/screenkeeper-calm/README.md)
 
-Many users have multi-monitor setups but want to turn off or dim secondary monitors temporarily without putting the entire computer to sleep. OLED and other displays can also suffer from burn-in or image retention if static images stay on screen too long. Windows’ built-in power settings are all-or-nothing — there’s no per-monitor control.
+## 快速开始
 
-## The Solution
+构建环境：Windows、.NET 8 SDK。生成安装包还需要 Inno Setup 6。
 
-OLED Sleeper monitors each screen for activity. When a monitor is idle for a set time, it will either black it out or dim its brightness based on your preference. 
+```powershell
+dotnet restore OLED-Sleeper.sln
+dotnet build OLED-Sleeper.sln -c Release --no-restore
+dotnet test OLED-Sleeper.sln -c Release --no-build --no-restore
+dotnet format OLED-Sleeper.sln --verify-no-changes --no-restore
+```
 
-<p align="center">
-  <img width="500" height="410" alt="oled-sleeper-002" src="https://github.com/user-attachments/assets/20022234-fe5f-4573-a4e4-ff5ef07b622b" />
-</p>
+运行 `OLED-Sleeper/bin/Release/net8.0-windows/ScreenKeeper.exe`。首次启动各管理功能默认关闭，按需开启并保存；窗口关闭按钮隐藏到托盘，完全退出请使用托盘菜单。
 
----
+生成本地安装包与便携包：
 
-## Features
+```powershell
+.\build.ps1
+```
 
-* **Three Idle Detection Modes:** Customize how the application determines if a monitor is idle:
-    * **Mouse:** Tracks cursor movement specifically on the target monitor.
-    * **Focused Application:** Tracks activity within the active window currently displayed on that monitor.
-    * **System-Wide Input:** Tracks overall keyboard and mouse input across the entire system (similar to standard Windows idle detection).
-* **Per-Monitor Control:** Blackout or dim any monitor independently.
-* **Two Action Modes:** Full blackout or dimming (DDC/CI supported).
-* **Instant Wake-Up:** Restore the monitor immediately when activity is detected.
-* **Native WPF Application:** Built from the ground up using native Win32 calls. Requires no external dependencies or third-party tools.
+产物写入 `artifacts/`，不进入 Git。该命令只生成本地文件，不上传或发布。
 
----
+## 配置与恢复
 
-## Requirements
+- 普通／安装版：`%APPDATA%\ScreenKeeper`。
+- 便携版：程序旁 `Data\ScreenKeeper`；移动程序时一同保留该目录。
+- 本产品使用独立身份和数据，不继承 OLED Sleeper 配置；重装保留自身配置与恢复记录。
+- 色温首次启用需要用户观察验证；外部调色冲突时保留记录，不能删除记录绕过保护。
+- 隐私幕用于减少意外暴露，不替代 Windows 锁屏或访问控制。详细适用范围见 [使用指南](docs/user-guide.md)。
 
-* **Operating System:** Windows 10 or 11
-* **DDC/CI Support (for Dimming Mode):** Dimming requires a monitor that supports DDC/CI brightness control via VCP codes. Most modern monitors support this, but it is not guaranteed on all displays.
+## 仓库结构
 
----
+| 路径 | 内容 |
+| --- | --- |
+| `OLED-Sleeper/` | ScreenKeeper WPF 应用；历史目录名和命名空间保留 |
+| `OLED-Sleeper.Tests/` | 自动化测试与可选渲染／原生验收 |
+| `designs/screenkeeper-calm/` | 可点击原型、设计源文件与素材 |
+| `docs/` | 使用、开发、任务设计与验收记录 |
+| `tools/` | 图标生成与受控色温观察工具 |
+| `installer/`、`build.ps1` | 安装器及本地打包入口 |
+| `.github/workflows/` | 可选 GitHub 镜像检查／手动构建；Codeup 不执行这些工作流 |
 
-## How to Use
+## 源码仓库与贡献
 
-1. Download the latest installer or the portable zip from the [Releases page](https://github.com/Quorthon13/OLED-Sleeper/releases).
-2. Run the installer and follow the on-screen prompts. During installation, you will be prompted to configure automatic startup and create shortcuts. For the portable version, just extract the zip anywhere and run it.
-3. Open OLED Sleeper from your Start Menu or desktop shortcut.
-4. Use the interface to select your target monitors, choose your preferred idle detection mode, and set your idle timers.
-5. Apply your settings. The application will minimize to the system tray and run in the background.
+产品主分支为 `main`，功能分支使用 `codex/` 前缀。Codeup 为 `origin`：
 
----
+```text
+<private-repository>
+```
 
-## License
+`upstream` 保留 [Quorthon13/OLED-Sleeper](https://github.com/Quorthon13/OLED-Sleeper)。本产品从上游 `v2.2.0`（`27f1c777a9a1dca6002692b66fe0ec6cf4d71724`）开始独立开发，保留完整历史。版本策略、验证要求和发布边界见 [开发说明](docs/development.md)；开发前阅读 [AGENTS.md](AGENTS.md)。
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## 许可与来源
+
+保留上游 [MIT License](LICENSE) 和原作者版权声明，LICENSE 随构建／打包输出。原 README 和自动发布工作流保存在 [上游归档](docs/upstream/README.md)。图标与山林背景来源见 [素材说明](OLED-Sleeper/Assets/README.md)，设计稿 React 许可见 [第三方许可文件](designs/screenkeeper-calm/vendor/LICENSE-react.txt)。正式分发前仍需补齐随包组件与运行时许可核验，不把本次源码提交当作完整发行验收。

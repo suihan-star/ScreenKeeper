@@ -1,9 +1,12 @@
-﻿using OLED_Sleeper.Features.MonitorBehavior.Models;
+using OLED_Sleeper.Features.MonitorBehavior.Models;
 using OLED_Sleeper.Features.MonitorInformation.Models;
 using OLED_Sleeper.Features.UserSettings.Models;
 using OLED_Sleeper.UI.Helpers;
+using OLED_Sleeper.UI.Localization;
 using OLED_Sleeper.UI.Models;
 using System.ComponentModel;
+using System.Globalization;
+using System.Windows;
 
 namespace OLED_Sleeper.UI.ViewModels
 {
@@ -11,7 +14,7 @@ namespace OLED_Sleeper.UI.ViewModels
     /// ViewModel for configuring an individual monitor's behavior and settings.
     /// Handles state management, validation, and dirty tracking for the monitor configuration UI.
     /// </summary>
-    public class MonitorConfigurationViewModel : ViewModelBase, IDataErrorInfo
+    public partial class MonitorConfigurationViewModel : ViewModelBase, IDataErrorInfo
     {
         /// <summary>
         /// The underlying monitor information model.
@@ -44,10 +47,14 @@ namespace OLED_Sleeper.UI.ViewModels
             set
             {
                 _isManaged = value;
+                OnPropertyChanged(nameof(RestEnabled));
+                OnPropertyChanged(nameof(ManagementText));
+                OnPropertyChanged(nameof(PrivacyError));
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IdleValueError));
                 OnPropertyChanged(nameof(ActiveConditionsError));
                 OnPropertyChanged(nameof(BehaviorError)); // Ensure all errors update
+                RefreshPrivacy();
                 UpdateDirtyState();
             }
         }
@@ -64,13 +71,13 @@ namespace OLED_Sleeper.UI.ViewModels
         {
             get
             {
-                string baseTooltip = "Choose how the monitor reacts after the idle timer expires.\n\n" +
-                                    "• Blackout: Turns the monitor completely black.\n" +
-                                     "• Dim: Reduces the monitor's brightness using DDC/CI.";
+                string baseTooltip = UiText.Get("选择显示器达到空闲时长后执行的操作。\n\n") +
+                                    UiText.Get("• 遮黑：用黑色遮罩覆盖屏幕，不关闭显示器电源。\n") +
+                                     UiText.Get("• 调暗：通过 DDC/CI 降低显示器亮度。");
 
                 if (_monitorInfo.Capabilities?.IsSupported != true)
                 {
-                    baseTooltip = "THE SELECTED MONITOR DOES NOT SUPPORT DIMMING.\n\n" + baseTooltip;
+                    baseTooltip = UiText.Get("当前显示器不支持 DDC/CI 调暗。\n\n") + baseTooltip;
                 }
 
                 return baseTooltip;
@@ -94,6 +101,10 @@ namespace OLED_Sleeper.UI.ViewModels
                 if (_behavior == MonitorBehaviorType.Blackout) { DimLevel = 0; }
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsDimSliderEnabled));
+                OnPropertyChanged(nameof(IsSleepEnabled));
+                OnPropertyChanged(nameof(IsBlackout));
+                OnPropertyChanged(nameof(IdleValueError));
+                OnPropertyChanged(nameof(ActiveConditionsError));
                 OnPropertyChanged(nameof(IsLowerBrightnessOptionEnabled));
                 OnPropertyChanged(nameof(LowerBrightnessTooltip));
                 OnPropertyChanged(nameof(BehaviorError));
@@ -123,7 +134,7 @@ namespace OLED_Sleeper.UI.ViewModels
         /// <summary>
         /// Returns true if the dim slider should be enabled (only for Dim behavior).
         /// </summary>
-        public bool IsDimSliderEnabled => Behavior == MonitorBehaviorType.Dim;
+        public bool IsDimSliderEnabled => Behavior == MonitorBehaviorType.Dim && IsDimBehaviorEnabled;
 
         // --- LowerBrightnessOnBlackout ---
         private bool _lowerBrightnessOnBlackout;
@@ -157,16 +168,16 @@ namespace OLED_Sleeper.UI.ViewModels
         {
             get
             {
-                string baseTooltip = "Takes the monitor's own brightness down to zero\n" +
-                                     "as well as covering the screen with the black overlay.\n\n" +
-                                     "Useful on non-OLED displays, where the backlight\n" +
-                                     "stays lit behind the black overlay.";
+                string baseTooltip = UiText.Get("在黑色遮罩覆盖屏幕的同时，\n") +
+                                     UiText.Get("将显示器自身亮度降至零。\n\n") +
+                                     UiText.Get("适用于非 OLED 显示器，可降低黑色遮罩\n") +
+                                     UiText.Get("背后仍然亮着的背光。");
 
                 if (!IsDimBehaviorEnabled)
-                    return "THE SELECTED MONITOR DOES NOT SUPPORT DIMMING.\n\n" + baseTooltip;
+                    return UiText.Get("当前显示器不支持 DDC/CI 调暗。\n\n") + baseTooltip;
 
                 if (Behavior != MonitorBehaviorType.Blackout)
-                    return "AVAILABLE ONLY WHEN BLACKOUT IS SELECTED.\n\n" + baseTooltip;
+                    return UiText.Get("仅在选择“遮黑”时可用。\n\n") + baseTooltip;
 
                 return baseTooltip;
             }
@@ -178,6 +189,25 @@ namespace OLED_Sleeper.UI.ViewModels
         /// </summary>
         public List<TimeUnit> TimeUnits { get; } = Enum.GetValues(typeof(TimeUnit)).Cast<TimeUnit>().ToList();
 
+        private string? _idleValueText;
+        public string IdleValueText
+        {
+            get => _idleValueText ?? IdleValue?.ToString(CultureInfo.InvariantCulture) ?? string.Empty;
+            set
+            {
+                IdleValue = int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var parsed) ? parsed : null;
+                _idleValueText = value;
+                OnPropertyChanged();
+            }
+        }
+        public string ManagementText => UiText.Get(IsManaged ? "已启用管理" : "未启用管理");
+        public string CapabilityText => UiText.Get(IsDimBehaviorEnabled ? "单独设置，仅影响这块屏幕" : "此显示器不支持 DDC/CI 亮度调节");
+        public string SelectedTimeUnitText => UiText.Get(SelectedTimeUnit switch { TimeUnit.Seconds => "秒", TimeUnit.Hours => "小时", _ => "分钟" });
+        public void RefreshLanguage()
+        {
+            OptionsChanged();
+            foreach (var name in new[] { nameof(SavedRule), nameof(MonitorTitle), nameof(ManagementText), nameof(CapabilityText), nameof(SelectedTimeUnitText), nameof(BehaviorSectionTooltip), nameof(LowerBrightnessTooltip), nameof(IdleValueError), nameof(ActiveConditionsError), nameof(BehaviorError) }) OnPropertyChanged(name);
+        }
         private int? _idleValue;
         private int? _initialIdleValue;
 
@@ -190,6 +220,8 @@ namespace OLED_Sleeper.UI.ViewModels
             set
             {
                 _idleValue = value;
+                _idleValueText = null;
+                OnPropertyChanged(nameof(IdleValueText));
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IdleValueError));
                 UpdateDirtyState();
@@ -205,7 +237,7 @@ namespace OLED_Sleeper.UI.ViewModels
         public TimeUnit SelectedTimeUnit
         {
             get => _selectedTimeUnit;
-            set { _selectedTimeUnit = value; OnPropertyChanged(); UpdateDirtyState(); }
+            set { _selectedTimeUnit = value; OnPropertyChanged(); OnPropertyChanged(nameof(SelectedTimeUnitText)); OnPropertyChanged(nameof(IdleValueError)); UpdateDirtyState(); }
         }
 
         // --- Active Conditions ---
@@ -270,6 +302,7 @@ namespace OLED_Sleeper.UI.ViewModels
         public MonitorConfigurationViewModel(MonitorInfo monitorInfo)
         {
             _monitorInfo = monitorInfo;
+            PropertyChangedEventManager.AddHandler(UiText.Current, (_, _) => RefreshLanguage(), string.Empty);
 
             ApplySettings(new MonitorSettings());
             MarkAsSaved();
@@ -289,7 +322,7 @@ namespace OLED_Sleeper.UI.ViewModels
         private void UpdateDirtyState()
         {
             const double epsilon = 0.0001;
-            IsDirty = IsManaged != _initialIsManaged ||
+            IsDirty = !Options.SameAs(_initialOptions) || PrivacyMode != _initialPrivacyMode || PrivacyIdleSeconds != _initialPrivacySeconds || IsManaged != _initialIsManaged ||
                        Behavior != _initialBehavior ||
                        Math.Abs(DimLevel - _initialDimLevel) > epsilon ||
                        LowerBrightnessOnBlackout != _initialLowerBrightnessOnBlackout ||
@@ -299,40 +332,87 @@ namespace OLED_Sleeper.UI.ViewModels
                        IsActiveOnMousePosition != _initialIsActiveOnMousePosition ||
                        IsActiveOnActiveWindow != _initialIsActiveOnActiveWindow;
 
+            OnPropertyChanged(nameof(IsRestDirty));
+            OnPropertyChanged(nameof(IsPrivacyDirty));
             OnPropertyChanged(nameof(IsDirty));
+            OnPropertyChanged(nameof(IsValid));
         }
 
         /// <summary>
         /// Marks the current state as saved, updating the initial values for dirty tracking.
         /// </summary>
-        public void MarkAsSaved()
+        public void PreserveDraftFrom(MonitorConfigurationViewModel source)
         {
-            _initialIsManaged = IsManaged;
-            _initialBehavior = Behavior;
-            _initialDimLevel = DimLevel;
-            _initialLowerBrightnessOnBlackout = LowerBrightnessOnBlackout;
-            _initialIdleValue = IdleValue;
-            _initialSelectedTimeUnit = SelectedTimeUnit;
-            _initialIsActiveOnInput = IsActiveOnInput;
-            _initialIsActiveOnMousePosition = IsActiveOnMousePosition;
-            _initialIsActiveOnActiveWindow = IsActiveOnActiveWindow;
+            ApplySettings(source.ToSettings());
+            _initialOptions = source._initialOptions.Copy();
+            _idleValueText = source._idleValueText;
+            _privacyIdleText = source._privacyIdleText;
+            OnPropertyChanged(nameof(PrivacyIdleText));
+            _initialPrivacyMode = source._initialPrivacyMode;
+            _initialPrivacySeconds = source._initialPrivacySeconds;
+            _initialIsManaged = source._initialIsManaged;
+            _initialBehavior = source._initialBehavior;
+            _initialDimLevel = source._initialDimLevel;
+            _initialLowerBrightnessOnBlackout = source._initialLowerBrightnessOnBlackout;
+            _initialIdleValue = source._initialIdleValue;
+            _initialSelectedTimeUnit = source._initialSelectedTimeUnit;
+            _initialIsActiveOnInput = source._initialIsActiveOnInput;
+            _initialIsActiveOnMousePosition = source._initialIsActiveOnMousePosition;
+            _initialIsActiveOnActiveWindow = source._initialIsActiveOnActiveWindow;
+            RefreshPrivacy();
+            UpdateDirtyState();
+            OnPropertyChanged(nameof(IdleValueText));
+        }
+
+        public void MarkAsSaved(MonitorSettingsScope scope = MonitorSettingsScope.All)
+        {
+            if (scope != MonitorSettingsScope.Rest)
+            {
+                _initialOptions = Options.Copy();
+                _initialPrivacyMode = PrivacyMode;
+                _initialPrivacySeconds = PrivacyIdleSeconds;
+            }
+            if (scope != MonitorSettingsScope.Privacy)
+            {
+                _initialIsManaged = IsManaged;
+                _initialBehavior = Behavior;
+                _initialDimLevel = DimLevel;
+                _initialLowerBrightnessOnBlackout = LowerBrightnessOnBlackout;
+                _initialIdleValue = IdleValue;
+                _initialSelectedTimeUnit = SelectedTimeUnit;
+                _initialIsActiveOnInput = IsActiveOnInput;
+                _initialIsActiveOnMousePosition = IsActiveOnMousePosition;
+                _initialIsActiveOnActiveWindow = IsActiveOnActiveWindow;
+            }
+            OnPropertyChanged(nameof(SavedRule));
+            OnPropertyChanged(nameof(SavedRestRule)); OnPropertyChanged(nameof(HasSavedRest));
+            RefreshPrivacy();
             UpdateDirtyState();
         }
 
         /// <summary>
         /// Returns every tracked property to the value it had when the configuration was last saved.
         /// </summary>
-        public void Revert()
+        public void Revert(MonitorSettingsScope scope = MonitorSettingsScope.All)
         {
-            IsManaged = _initialIsManaged;
-            Behavior = _initialBehavior;
-            DimLevel = _initialDimLevel;
-            LowerBrightnessOnBlackout = _initialLowerBrightnessOnBlackout;
-            IdleValue = _initialIdleValue;
-            SelectedTimeUnit = _initialSelectedTimeUnit;
-            IsActiveOnInput = _initialIsActiveOnInput;
-            IsActiveOnMousePosition = _initialIsActiveOnMousePosition;
-            IsActiveOnActiveWindow = _initialIsActiveOnActiveWindow;
+            if (scope != MonitorSettingsScope.Rest)
+            {
+                Options = _initialOptions.Copy();
+                PrivacyMode = _initialPrivacyMode;
+                PrivacyIdleSeconds = _initialPrivacySeconds;
+            }
+            if (scope != MonitorSettingsScope.Privacy)
+            {
+                IsManaged = _initialIsManaged;
+                Behavior = _initialBehavior;
+                DimLevel = _initialDimLevel;
+                LowerBrightnessOnBlackout = _initialLowerBrightnessOnBlackout;
+                IdleValue = _initialIdleValue;
+                SelectedTimeUnit = _initialSelectedTimeUnit;
+                IsActiveOnInput = _initialIsActiveOnInput;
+                IsActiveOnMousePosition = _initialIsActiveOnMousePosition;
+                IsActiveOnActiveWindow = _initialIsActiveOnActiveWindow;
+            }
             UpdateDirtyState();
         }
 
@@ -342,7 +422,11 @@ namespace OLED_Sleeper.UI.ViewModels
         /// <param name="settings">The settings to apply.</param>
         public void ApplySettings(MonitorSettings settings)
         {
-            IsManaged = settings.IsManaged;
+            Options = (settings.PrivacyOptions ?? new()).Copy();
+            if (settings.PrivacyMode != Features.MonitorPrivacy.PrivacyMode.None) Options.LastEnabledMode = settings.PrivacyMode;
+            PrivacyMode = settings.HasPrivacy ? settings.PrivacyMode : Features.MonitorPrivacy.PrivacyMode.None;
+            PrivacyIdleSeconds = settings.PrivacyIdleSeconds;
+            IsManaged = settings.IsManaged && !(settings.PrivacyEnabled == null && settings.Behavior == MonitorBehaviorType.None);
             Behavior = settings.Behavior;
             DimLevel = settings.DimLevel;
             LowerBrightnessOnBlackout = settings.LowerBrightnessOnBlackout && IsDimBehaviorEnabled;
@@ -362,6 +446,10 @@ namespace OLED_Sleeper.UI.ViewModels
             return new MonitorSettings
             {
                 HardwareId = _monitorInfo.HardwareId,
+                PrivacyOptions = Options.Copy(),
+                PrivacyMode = PrivacyMode,
+                PrivacyEnabled = IsPrivacyEnabled,
+                PrivacyIdleSeconds = PrivacyIdleSeconds,
                 IsManaged = IsManaged,
                 Behavior = Behavior,
                 DimLevel = DimLevel,
@@ -385,9 +473,9 @@ namespace OLED_Sleeper.UI.ViewModels
         {
             get
             {
-                if (!IsManaged) return true; // Unmanaged monitors are always "valid"
+                if (!IsManaged) return ValidatePrivacy() == null;
 
-                return ValidateIdleValue() == null && ValidateActiveConditions() == null && ValidateBehavior() == null;
+                return ValidatePrivacy() == null && ValidateIdleValue() == null && ValidateActiveConditions() == null && ValidateBehavior() == null;
             }
         }
 
@@ -434,8 +522,11 @@ namespace OLED_Sleeper.UI.ViewModels
         /// <returns>An error message if invalid, otherwise null.</returns>
         private string? ValidateIdleValue()
         {
+            if (!IsSleepEnabled && IsPrivacyEnabled) return null;
+            var factor = SelectedTimeUnit == TimeUnit.Hours ? 3600000L : SelectedTimeUnit == TimeUnit.Minutes ? 60000L : 1000L;
+            if (IdleValue > int.MaxValue / factor) return UiText.Get("空闲时长过大，请缩短时长或更换单位。");
             if (IdleValue == null || IdleValue <= 0)
-                return "Idle time value must be a number greater than zero.";
+                return UiText.Get("空闲时长必须是大于零的数字。");
             return null;
         }
 
@@ -445,8 +536,9 @@ namespace OLED_Sleeper.UI.ViewModels
         /// <returns>An error message if invalid, otherwise null.</returns>
         private string? ValidateActiveConditions()
         {
+            if (!IsSleepEnabled && IsPrivacyEnabled) return null;
             if (!IsActiveOnInput && !IsActiveOnMousePosition && !IsActiveOnActiveWindow)
-                return "At least one 'Consider Active When' option must be selected.";
+                return UiText.Get("请至少选择一项保持唤醒的条件。");
             return null;
         }
 
@@ -458,8 +550,10 @@ namespace OLED_Sleeper.UI.ViewModels
         /// </returns>
         private string? ValidateBehavior()
         {
-            if (Behavior == MonitorBehaviorType.None)
-                return "A monitor behavior must be selected.";
+            if (Behavior == MonitorBehaviorType.Dim && !IsDimBehaviorEnabled)
+                return UiText.Get("此显示器不支持 DDC/CI 亮度调节");
+            if (Behavior == MonitorBehaviorType.None && !IsPrivacyEnabled)
+                return UiText.Get("请选择一种空闲时的操作。");
             return null;
         }
 

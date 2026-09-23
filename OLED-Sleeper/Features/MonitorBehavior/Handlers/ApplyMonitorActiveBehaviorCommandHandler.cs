@@ -27,18 +27,18 @@ namespace OLED_Sleeper.Features.MonitorBehavior.Handlers
         /// Handles the monitor activation event, restoring monitor state if not triggered by overlay window.
         /// </summary>
         /// <param name="command">The command containing the event arguments for the monitor activation event.</param>
-        public Task HandleAsync(ApplyMonitorActiveBehaviorCommand command)
+        public async Task HandleAsync(ApplyMonitorActiveBehaviorCommand command)
         {
             var e = command.EventArgs;
             if (e.Reason == ActivityReason.ActiveWindow && _monitorBlackoutService.IsOverlayWindow(e.ForegroundWindowHandle))
             {
                 Log.Debug("Monitor #{DisplayNumber} became active due to an overlay window. Flagging event as ignored.", e.DisplayNumber);
                 e.IsIgnored = true;
-                return Task.CompletedTask;
+                return;
             }
             Log.Information("Monitor became active. Initiating state restore for monitor #{DisplayNumber}.", e.DisplayNumber);
-            _mediator.SendAsync(new RestoreMonitorStateCommand { HardwareId = e.HardwareId });
-            return Task.CompletedTask;
+            try { await _mediator.SendAsync(new RestoreMonitorStateCommand { HardwareId = e.HardwareId }); }
+            catch (Exception ex) { Log.Error(ex, "Monitor restore failed; reminder eligibility remains blocked."); }
         }
     }
 }

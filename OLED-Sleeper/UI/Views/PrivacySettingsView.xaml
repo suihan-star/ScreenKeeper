@@ -1,0 +1,147 @@
+<UserControl x:Class="OLED_Sleeper.UI.Views.PrivacySettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:OLED_Sleeper.UI.Converters"
+             xmlns:p="clr-namespace:OLED_Sleeper.Features.MonitorPrivacy"
+             xmlns:u="clr-namespace:OLED_Sleeper.UI.Models"
+             xmlns:l="clr-namespace:OLED_Sleeper.UI.Localization">
+    <UserControl.Resources>
+        <c:BooleanToVisibilityConverter x:Key="VisibleWhen" />
+        <c:EnumToBooleanConverter x:Key="EnumBool" />
+        <Style x:Key="PrivacyErrorText" TargetType="TextBlock" BasedOn="{StaticResource ErrorText}">
+            <Style.Triggers><Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed"/></Trigger></Style.Triggers>
+        </Style>
+        <Style x:Key="PrivacyNotice" TargetType="TextBlock" BasedOn="{StaticResource MutedText}">
+            <Setter Property="Margin" Value="0,6,0,0"/>
+            <Style.Triggers><Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed"/></Trigger></Style.Triggers>
+        </Style>
+        <Style x:Key="PrivacyExpander" TargetType="Expander">
+            <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Expander">
+                <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="0,8,0,0">
+                    <StackPanel>
+                        <ToggleButton Content="{TemplateBinding Header}" Foreground="{TemplateBinding Foreground}" FocusVisualStyle="{StaticResource FocusRing}"
+                                      IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                            <ToggleButton.Template><ControlTemplate TargetType="ToggleButton">
+                                <Grid Background="Transparent" Height="24">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                    <Path x:Name="Arrow" Data="M 2,1 L 7,6 L 2,11" Width="9" Height="12" Stroke="{DynamicResource SecondaryForegroundColor}" StrokeThickness="1.4" VerticalAlignment="Center" HorizontalAlignment="Left" RenderTransformOrigin="0.5,0.5"/>
+                                    <ContentPresenter Grid.Column="1" VerticalAlignment="Center"/>
+                                </Grid>
+                                <ControlTemplate.Triggers><Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Arrow" Property="RenderTransform"><Setter.Value><RotateTransform Angle="90"/></Setter.Value></Setter>
+                                </Trigger></ControlTemplate.Triggers>
+                            </ControlTemplate></ToggleButton.Template>
+                        </ToggleButton>
+                        <ContentPresenter x:Name="ExpandedBody" ContentSource="Content" Visibility="Collapsed"/>
+                    </StackPanel>
+                </Border>
+                <ControlTemplate.Triggers><Trigger Property="IsExpanded" Value="True"><Setter TargetName="ExpandedBody" Property="Visibility" Value="Visible"/></Trigger></ControlTemplate.Triggers>
+            </ControlTemplate></Setter.Value></Setter>
+        </Style>
+        <Style x:Key="PrivacySegment" TargetType="RadioButton" BasedOn="{StaticResource ModeButton}">
+            <Setter Property="FontSize" Value="12"/><Setter Property="Margin" Value="2"/><Setter Property="Padding" Value="8,9"/>
+        </Style>
+        <Style x:Key="PrivacySection" TargetType="Border"><Setter Property="BorderBrush" Value="{DynamicResource SoftBorderBrush}"/><Setter Property="BorderThickness" Value="0,0,0,1"/><Setter Property="Padding" Value="0,16"/></Style>
+        <Style x:Key="PrivacySectionTitle" TargetType="TextBlock"><Setter Property="FontSize" Value="12"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Foreground" Value="{DynamicResource AccentColorBrush}"/><Setter Property="Margin" Value="0,0,0,12"/></Style>
+        <Style x:Key="PrivacyLink" TargetType="Button" BasedOn="{StaticResource ScreenSettingsLink}"/>
+    </UserControl.Resources>
+    <DockPanel>
+        <Border x:Name="RuntimeRow" DockPanel.Dock="Top" Background="{DynamicResource SecondaryBackgroundColor}" BorderThickness="1" CornerRadius="7" Padding="13,11" Margin="0,0,8,12">
+            <Border.Style><Style TargetType="Border"><Setter Property="BorderBrush" Value="{DynamicResource SoftBorderBrush}"/><Style.Triggers><DataTrigger Binding="{Binding DataContext.PrivacyRuntimeError, RelativeSource={RelativeSource AncestorType=Window}}" Value="True"><Setter Property="BorderBrush" Value="{DynamicResource DestructiveColorBrush}"/></DataTrigger></Style.Triggers></Style></Border.Style>
+            <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <StackPanel Margin="0,0,14,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding DataContext.PrivacyRuntimeTitle, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding DataContext.PrivacyRuntimeDetail, RelativeSource={RelativeSource AncestorType=Window}}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,4,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <StackPanel.Style><Style TargetType="StackPanel"><Setter Property="Orientation" Value="Horizontal"/><Style.Triggers><DataTrigger Binding="{Binding DataContext.UseScreenDropdown, RelativeSource={RelativeSource AncestorType=Window}}" Value="True"><Setter Property="Orientation" Value="Vertical"/></DataTrigger></Style.Triggers></Style></StackPanel.Style>
+                    <Button Content="{Binding DataContext.PausePrivacyText, RelativeSource={RelativeSource AncestorType=Window}}" Command="{Binding DataContext.PausePrivacyCommand, RelativeSource={RelativeSource AncestorType=Window}}" FontSize="11" MinHeight="29" Padding="9,5"/>
+                    <Button Content="{l:Text Key=立即保护}" Command="{Binding DataContext.ProtectSelectedPrivacyCommand, RelativeSource={RelativeSource AncestorType=Window}}" HorizontalAlignment="Center" ToolTip="{l:Text Key=仅保护当前所选屏幕，使用已保存规则。}"><Button.Style><Style TargetType="Button" BasedOn="{StaticResource PrivacyLink}"><Setter Property="Margin" Value="8,0,0,0"/><Style.Triggers><DataTrigger Binding="{Binding DataContext.UseScreenDropdown, RelativeSource={RelativeSource AncestorType=Window}}" Value="True"><Setter Property="Margin" Value="0"/></DataTrigger></Style.Triggers></Style></Button.Style></Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+        <ScrollViewer x:Name="PrivacyScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,16">
+            <StackPanel>
+                <Border x:Name="EnableSection" Style="{StaticResource PrivacySection}" Padding="0,6,0,15">
+                    <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,0,14,0"><TextBlock Text="{l:Text Key=开启此屏幕隐私保护}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap"/><TextBlock Text="{Binding PrivacyEditStatus}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,5,0,0"/></StackPanel>
+                        <CheckBox x:Name="PrivacySwitch" Grid.Column="1" IsChecked="{Binding IsPrivacyEnabled}" Style="{StaticResource ManagementSwitch}" AutomationProperties.Name="{l:Text Key=开启此屏幕隐私保护}"/>
+                    </Grid>
+                </Border>
+                <StackPanel x:Name="PrivacyContent" Visibility="{Binding IsPrivacyEnabled, Converter={StaticResource VisibleWhen}}">
+                    <Border x:Name="WhenSection" Style="{StaticResource PrivacySection}"><StackPanel>
+                        <TextBlock Text="{l:Text Key=何时保护}" Style="{StaticResource PrivacySectionTitle}"/>
+                        <Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="{l:Text Key=本屏空闲多久后保护}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,12,0" FontSize="13"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <TextBox Height="34" Padding="8,3" Width="66" Text="{Binding PrivacyIdleText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{l:Text Key=隐私等待时长}"/>
+                                <ComboBox Height="34" Width="100" Margin="8,0,0,0" SelectedValuePath="Tag" SelectedValue="{Binding PrivacyUnit}" AutomationProperties.Name="{l:Text Key=隐私等待时间单位}">
+                                    <ComboBoxItem Tag="{x:Static u:TimeUnit.Seconds}" Content="{l:Text Key=秒}"/><ComboBoxItem Tag="{x:Static u:TimeUnit.Minutes}" Content="{l:Text Key=分钟}"/><ComboBoxItem Tag="{x:Static u:TimeUnit.Hours}" Content="{l:Text Key=小时}"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Text="{Binding PrivacyIdleError}" Style="{StaticResource PrivacyErrorText}"/>
+                        <Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <StackPanel Margin="0,0,14,0"><TextBlock Text="{l:Text Key=使用时不打扰}" FontSize="13"/><TextBlock Text="{l:Text Key=由你选择哪些情况下，暂不触发保护。}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,4,0,0"/></StackPanel>
+                            <CheckBox x:Name="QuietSwitch" Grid.Column="1" Content="{l:Text Key=使用时不打扰}" IsChecked="{Binding QuietWhileInUse}" Style="{StaticResource ManagementSwitch}" AutomationProperties.Name="{l:Text Key=使用时不打扰}"/>
+                        </Grid>
+                        <Border x:Name="QuietConditions" BorderBrush="{DynamicResource SoftBorderBrush}" BorderThickness="2,0,0,0" Padding="16,0,0,0" Margin="0,0,0,8" Visibility="{Binding QuietWhileInUse, Converter={StaticResource VisibleWhen}}"><StackPanel>
+                            <TextBlock Text="{l:Text Key=满足以下任一条件时，暂不进入隐私保护。}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,0,0,4"/>
+                            <CheckBox Content="{l:Text Key=鼠标停留在本屏}" IsChecked="{Binding QuietOnMousePosition}" FontSize="12" Margin="0,5"/>
+                            <CheckBox Content="{l:Text Key=前台窗口在本屏}" IsChecked="{Binding QuietOnActiveWindow}" FontSize="12" Margin="0,5"/>
+                            <CheckBox Content="{l:Text Key=电脑有键盘或鼠标输入}" IsChecked="{Binding QuietOnInput}" FontSize="12" Margin="0,5"/>
+                            <TextBlock Text="{Binding QuietConditionsError}" Style="{StaticResource PrivacyErrorText}"/>
+                        </StackPanel></Border>
+                        <Expander Header="{l:Text Key=与日常操作、暂缓保护有什么区别？}" Style="{StaticResource PrivacyExpander}" FontSize="11" Foreground="{DynamicResource SecondaryForegroundColor}">
+                            <StackPanel Margin="0,8,0,0"><TextBlock Text="{l:Text Key=本屏实际操作会重新计时；使用时不打扰按你勾选的任一条件生效。}" Style="{StaticResource MutedText}" FontSize="11"/><TextBlock Text="{l:Text Key=条件不再满足后重新等待；已有隐私幕不会自动解除。免打扰期间也会延后屏幕休息。}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,6,0,0"/></StackPanel>
+                        </Expander>
+                    </StackPanel></Border>
+                    <Border x:Name="HowSection" Style="{StaticResource PrivacySection}"><StackPanel>
+                        <TextBlock Text="{l:Text Key=如何保护}" Style="{StaticResource PrivacySectionTitle}"/>
+                        <Border BorderBrush="{DynamicResource SoftBorderBrush}" BorderThickness="1" CornerRadius="7" Padding="2"><UniformGrid Columns="3">
+                            <RadioButton Content="{l:Text Key=隐私幕}" Style="{StaticResource PrivacySegment}" GroupName="Privacy" IsChecked="{Binding PrivacyMode, Converter={StaticResource EnumBool}, ConverterParameter={x:Static p:PrivacyMode.Curtain}}"/>
+                            <RadioButton Content="{l:Text Key=回到桌面}" Style="{StaticResource PrivacySegment}" GroupName="Privacy" IsChecked="{Binding PrivacyMode, Converter={StaticResource EnumBool}, ConverterParameter={x:Static p:PrivacyMode.Desktop}}"/>
+                            <RadioButton Content="{l:Text Key=指定应用}" Style="{StaticResource PrivacySegment}" GroupName="Privacy" IsChecked="{Binding PrivacyMode, Converter={StaticResource EnumBool}, ConverterParameter={x:Static p:PrivacyMode.Application}}"/>
+                        </UniformGrid></Border>
+                        <StackPanel x:Name="CurtainSection" Visibility="{Binding IsCurtain, Converter={StaticResource VisibleWhen}}" Margin="0,16,0,0">
+                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                <Button Click="Preview_Click" Width="160" Height="96" Margin="0,0,16,0" AutomationProperties.Name="{l:Text Key=预览隐私幕}">
+                                    <Button.Template><ControlTemplate TargetType="Button"><Border Background="#102A23" BorderBrush="{DynamicResource SeparatorColorBrush}" BorderThickness="1" CornerRadius="6" ClipToBounds="True"><ContentPresenter/></Border></ControlTemplate></Button.Template>
+                                    <Grid><Image x:Name="CurtainThumbnail" IsHitTestVisible="False"/><Border x:Name="CurtainThumbnailShade" Background="#380C201A" IsHitTestVisible="False" Visibility="Hidden"/><Border Background="#DE17372E" BorderBrush="#ACC2B3" BorderThickness="1" CornerRadius="3" Padding="7,5" Margin="6" HorizontalAlignment="Center" VerticalAlignment="Center"><TextBlock Text="{l:Text Key=进入此屏幕}" Foreground="#E8EFE5" FontSize="9"/></Border></Grid>
+                                </Button>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock Text="{l:Text Key=隐私幕外观}" FontSize="12" FontWeight="SemiBold"/><TextBlock Text="{Binding PrivacyAppearanceSummary}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,5,0,7"/><Button x:Name="AppearanceButton" Content="{l:Text Key=调整外观}" Click="Images_Click" Padding="9,5" MinHeight="29" FontSize="11" HorizontalAlignment="Left"/><TextBlock Text="{l:Text Key=唤亮后仍隐藏内容，点击按钮再进入。}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,6,0,0"/></StackPanel>
+                            </Grid>
+                            <TextBlock Text="{Binding AppearanceError}" Style="{StaticResource PrivacyErrorText}"/>
+                        </StackPanel>
+                        <StackPanel x:Name="DesktopSection" Visibility="{Binding IsDesktop, Converter={StaticResource VisibleWhen}}" Margin="0,13,0,0"><TextBlock Text="{l:Text Key=先遮挡，再收起本屏窗口。唤亮后保持桌面，不自动还原。}" Style="{StaticResource MutedText}"/><Button Content="{l:Text Key=测试回到桌面}" Click="TestDesktop_Click" Style="{StaticResource PrivacyLink}" Margin="0,6,0,0"/></StackPanel>
+                        <StackPanel x:Name="ApplicationSection" Visibility="{Binding IsApplication, Converter={StaticResource VisibleWhen}}" Margin="0,13,0,0">
+                            <DockPanel><Button DockPanel.Dock="Right" Content="{Binding ChooseApplicationText}" Click="Application_Click" Margin="12,0,0,0" Padding="9,6" VerticalAlignment="Center"/><StackPanel><TextBlock Text="{Binding ApplicationName}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding ApplicationDetail}" Style="{StaticResource MutedText}" MaxHeight="36" TextTrimming="CharacterEllipsis" FontSize="11" Margin="0,5,0,0"/></StackPanel></DockPanel>
+                            <TextBlock Text="{Binding ApplicationError}" Style="{StaticResource PrivacyErrorText}"/><TextBlock Text="{l:Text Key=先安全隐藏私人窗口，再切换；失败时保留隐私幕。}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,8,0,0"/>
+                            <Button Content="{l:Text Key=测试切换}" Click="TestApplication_Click" IsEnabled="{Binding HasApplication}" Style="{StaticResource PrivacyLink}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </StackPanel></Border>
+                    <Border x:Name="ApplicationOptionsSection" Style="{StaticResource PrivacySection}" Visibility="{Binding IsApplication, Converter={StaticResource VisibleWhen}}">
+                        <StackPanel>
+                            <TextBlock Text="{l:Text Key=所选应用的原有内容不会清空，请选择可以公开展示的窗口。}" Style="{StaticResource MutedText}" FontSize="12" Margin="0,0,0,10"/>
+                            <CheckBox IsChecked="{Binding LaunchIfMissing}" AutomationProperties.Name="{l:Text Key=未运行时允许启动}">
+                                <TextBlock Text="{l:Text Key=未运行时允许启动}" TextWrapping="Wrap"/>
+                            </CheckBox>
+                            <CheckBox IsChecked="{Binding MoveFromOtherScreen}" AutomationProperties.Name="{l:Text Key=允许从其他屏幕移到本屏}">
+                                <TextBlock Text="{l:Text Key=允许从其他屏幕移到本屏}" TextWrapping="Wrap"/>
+                            </CheckBox>
+                            <TextBlock Text="{l:Text Key=允许移动会改变另一块屏幕的布局。}" Style="{StaticResource MutedText}" FontSize="11" Margin="27,0,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border x:Name="MoreSettings" Style="{StaticResource PrivacySection}" BorderThickness="0,1,0,1" Margin="0,-1,0,0">
+                        <StackPanel><TextBlock Text="{l:Text Key=更多设置}" Style="{StaticResource PrivacySectionTitle}"/><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <StackPanel Margin="0,0,12,0"><TextBlock Text="{l:Text Key=默认暂缓时长}" FontSize="13"/><TextBlock Text="{l:Text Key=用于下次暂缓，不改变正在进行的暂缓。}" Style="{StaticResource MutedText}" FontSize="11" Margin="0,4,0,0"/></StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal"><TextBox Height="34" Padding="8,3" Width="66" Text="{Binding PauseValueText, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{l:Text Key=默认暂缓时长}"/><ComboBox Height="34" Width="100" Margin="8,0,0,0" SelectedValuePath="Tag" SelectedValue="{Binding PauseUnit}" AutomationProperties.Name="{l:Text Key=暂缓时间单位}"><ComboBoxItem Tag="{x:Static u:TimeUnit.Minutes}" Content="{l:Text Key=分钟}"/><ComboBoxItem Tag="{x:Static u:TimeUnit.Hours}" Content="{l:Text Key=小时}"/></ComboBox></StackPanel>
+                        </Grid><TextBlock Text="{Binding PauseError}" Style="{StaticResource PrivacyErrorText}"/></StackPanel>
+                    </Border>
+                </StackPanel>
+                <StackPanel x:Name="PrivacyOffState" Visibility="{Binding IsPrivacyDisabled, Converter={StaticResource VisibleWhen}}" Margin="0,34,0,24"><TextBlock Text="{l:Text Key=需要时，再开启隐私保护}" FontSize="16" TextAlignment="Center"/><TextBlock Text="{l:Text Key=已保留上次的保护方式与设置。}" Style="{StaticResource MutedText}" Margin="0,12,0,0" TextAlignment="Center"/><TextBlock Text="{l:Text Key=屏幕休息仍按自己的规则运行。}" Style="{StaticResource MutedText}" Margin="0,5,0,0" TextAlignment="Center"/></StackPanel>
+                <Button x:Name="CopySettingsButton" Content="{l:Text Key=应用到其他屏幕 ↗}" Click="Copy_Click" Style="{StaticResource ScreenSettingsLink}" Margin="0,16,0,0"/>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

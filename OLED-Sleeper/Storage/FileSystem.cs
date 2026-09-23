@@ -27,6 +27,13 @@ namespace OLED_Sleeper.Storage
 
         /// <inheritdoc />
         public void WriteAllText(string path, string contents) => File.WriteAllText(path, contents);
+        public void WriteAllTextDurable(string path, string contents)
+        {
+            using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough);
+            var bytes = System.Text.Encoding.UTF8.GetBytes(contents);
+            stream.Write(bytes);
+            stream.Flush(true);
+        }
 
         /// <inheritdoc />
         public void Replace(string sourcePath, string destinationPath, string backupPath)

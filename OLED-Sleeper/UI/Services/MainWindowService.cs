@@ -68,6 +68,7 @@ namespace OLED_Sleeper.UI.Services
 
             if (unsavedSettingsService.ConfirmHide())
             {
+                mainViewModel.LeaveSettingsWindow();
                 mainWindow.Hide();
             }
         }

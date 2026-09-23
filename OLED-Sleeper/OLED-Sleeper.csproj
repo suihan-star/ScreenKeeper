@@ -1,9 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <RootNamespace>OLED_Sleeper</RootNamespace>
+    <AssemblyName>ScreenKeeper</AssemblyName>
+    <Product>多屏管家 ScreenKeeper</Product>
+    <Title>多屏管家 ScreenKeeper</Title>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
@@ -12,18 +15,20 @@
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
   </PropertyGroup>
 
-  <!-- MinVer derives the version from the nearest v* tag. It is the project's only version declaration. -->
+  <!-- MinVer derives the version from the nearest screenkeeper-v* tag. It is the project's only version declaration. -->
   <PropertyGroup>
-    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <MinVerTagPrefix>screenkeeper-v</MinVerTagPrefix>
   </PropertyGroup>
 
-  <!-- Publishing with -p:Portable=true builds the portable distribution, which keeps its state beside the executable. -->
+  <!-- Publishing with -p:Portable=true builds the portable distribution, which keeps its state in Data/ScreenKeeper beside the executable. -->
   <PropertyGroup Condition="'$(Portable)' == 'true'">
     <DefineConstants>$(DefineConstants);PORTABLE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Assets\icon.ico" />
+    <None Remove="Assets\icon-dark.ico" />
+    <None Remove="Assets\forest-mist.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,7 +42,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\LICENSE" Link="LICENSE" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Assets\icon.ico" />
+    <Resource Include="Assets\icon-dark.ico" />
+    <Resource Include="Assets\forest-mist.png" />
+    <EmbeddedResource Include="UI/Localization/English.json" LogicalName="ScreenKeeper.English.json" />
   </ItemGroup>
 
 </Project>

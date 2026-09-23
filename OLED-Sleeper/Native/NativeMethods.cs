@@ -8,6 +8,9 @@ namespace OLED_Sleeper.Native
     /// </summary>
     internal static class NativeMethods
     {
+        [DllImport("user32.dll")]
+        internal static extern int GetSystemMetrics(int index);
+
         #region User Input and Window Management
 
         /// <summary>

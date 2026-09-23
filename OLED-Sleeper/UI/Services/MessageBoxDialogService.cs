@@ -1,4 +1,5 @@
 using OLED_Sleeper.UI.Services.Interfaces;
+using OLED_Sleeper.UI.Views;
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 
@@ -17,9 +18,11 @@ namespace OLED_Sleeper.UI.Services
         {
             var owner = Owner();
 
-            return owner == null
-                ? MessageBox.Show(message, caption, MessageBoxButton.YesNoCancel, MessageBoxImage.Warning)
-                : MessageBox.Show(owner, message, caption, MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+            var dialog = new AppDialog(message, caption, true);
+            if (owner != null) dialog.Owner = owner;
+            else dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            dialog.ShowDialog();
+            return dialog.Result;
         }
 
         /// <inheritdoc />
@@ -27,13 +30,10 @@ namespace OLED_Sleeper.UI.Services
         {
             var owner = Owner();
 
-            if (owner == null)
-            {
-                MessageBox.Show(message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            MessageBox.Show(owner, message, caption, MessageBoxButton.OK, MessageBoxImage.Error);
+            var dialog = new AppDialog(message, caption, false);
+            if (owner != null) dialog.Owner = owner;
+            else dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            dialog.ShowDialog();
         }
 
         /// <summary>

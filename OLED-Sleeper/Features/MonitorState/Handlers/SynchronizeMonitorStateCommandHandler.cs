@@ -26,7 +26,7 @@ public class SynchronizeMonitorStateCommandHandler(
     IMonitorIdleDetectionService idleDetectionService,
     IMonitorSettingsFileService settingsFileService,
     IMonitorDimmingService dimmingService,
-    IMonitorBlackoutService blackoutService)
+    IMonitorBlackoutService blackoutService, Infrastructure.Runtime.ReminderDisplayGate? reminders = null)
     : ICommandHandler<SynchronizeMonitorStateCommand>
 {
     /// <summary>
@@ -38,8 +38,8 @@ public class SynchronizeMonitorStateCommandHandler(
     {
         idleDetectionService.Stop();
 
-        RemoveOverlaysAndResetBrightness(command.OldMonitors);
-        RemoveOverlaysAndResetBrightness(GetNewlyConnectedMonitors(command.NewMonitors, command.OldMonitors));
+        await RemoveOverlaysAndResetBrightness(command.OldMonitors);
+        await RemoveOverlaysAndResetBrightness(GetNewlyConnectedMonitors(command.NewMonitors, command.OldMonitors));
 
         var savedSettings = settingsFileService.LoadSettings();
         UpdateManagedSettings(savedSettings, command.NewMonitors);
@@ -55,12 +55,16 @@ public class SynchronizeMonitorStateCommandHandler(
     /// Removes blackout overlays and resets brightness for the specified monitors.
     /// </summary>
     /// <param name="monitors">The collection of monitors to process.</param>
-    private void RemoveOverlaysAndResetBrightness(IEnumerable<MonitorInfo> monitors)
+    private async Task RemoveOverlaysAndResetBrightness(IEnumerable<MonitorInfo> monitors)
     {
         foreach (var monitor in monitors)
         {
-            blackoutService.HideBlackoutOverlayAsync(monitor.HardwareId);
-            dimmingService.UndimMonitorAsync(monitor.HardwareId);
+            bool restored = true;
+            try { await blackoutService.HideBlackoutOverlayAsync(monitor.HardwareId); }
+            catch (Exception ex) { restored = false; Log.Error(ex, "Overlay restore failed during topology change."); }
+            try { await dimmingService.UndimMonitorAsync(monitor.HardwareId); }
+            catch (Exception ex) { restored = false; Log.Error(ex, "Brightness restore failed during topology change."); }
+            if (restored) reminders?.Awake(monitor.HardwareId);
         }
     }
 

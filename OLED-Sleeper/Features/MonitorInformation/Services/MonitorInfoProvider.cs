@@ -37,6 +37,7 @@ namespace OLED_Sleeper.Features.MonitorInformation.Services
                     {
                         DeviceName = mi.szDevice,
                         HardwareId = identity.HardwareId ?? string.Empty,
+                        ModelName = identity.ModelName ?? string.Empty,
                         TopologyLabel = identity.TopologyLabel ?? string.Empty,
                         Bounds = new Rect(
                             mi.rcMonitor.left,
@@ -52,6 +53,12 @@ namespace OLED_Sleeper.Features.MonitorInformation.Services
             };
 
             NativeMethods.EnumDisplayMonitors(nint.Zero, nint.Zero, callback, nint.Zero);
+            foreach (var group in monitors.Where(m => !string.IsNullOrWhiteSpace(m.ModelName))
+                .GroupBy(m => m.ModelName.Trim(), StringComparer.OrdinalIgnoreCase))
+            {
+                bool shared = group.Count() > 1;
+                foreach (var monitor in group) monitor.HasSharedModelName = shared;
+            }
             return monitors;
         }
 
@@ -122,7 +129,7 @@ namespace OLED_Sleeper.Features.MonitorInformation.Services
         {
             var identitiesByDeviceName = new Dictionary<string, MonitorIdentity>();
             var adapter = new NativeMethods.DISPLAY_DEVICE { cb = Marshal.SizeOf(typeof(NativeMethods.DISPLAY_DEVICE)) };
-            List<DisplayPath>? displayPaths = null;
+            var displayPaths = ReadActiveDisplayPaths();
 
             for (uint adapterIndex = 0; NativeMethods.EnumDisplayDevices(null, adapterIndex, ref adapter, 0); adapterIndex++)
             {
@@ -132,8 +139,9 @@ namespace OLED_Sleeper.Features.MonitorInformation.Services
                 if (hardwareIds.Count == 0) continue;
 
                 var identity = hardwareIds.Count == 1
-                    ? new MonitorIdentity(hardwareIds[0], string.Empty)
-                    : ResolveDuplicatedIdentity(adapter.DeviceName, hardwareIds, displayPaths ??= ReadActiveDisplayPaths());
+                    ? new MonitorIdentity(hardwareIds[0], string.Empty, displayPaths.FirstOrDefault(path =>
+                        string.Equals(path.GdiDeviceName, adapter.DeviceName, StringComparison.OrdinalIgnoreCase)).ModelName ?? string.Empty)
+                    : ResolveDuplicatedIdentity(adapter.DeviceName, hardwareIds, displayPaths);
 
                 if (string.IsNullOrEmpty(identity.HardwareId)) continue;
 
@@ -214,7 +222,9 @@ namespace OLED_Sleeper.Features.MonitorInformation.Services
 
             displayNumbers.Sort();
             string topologyLabel = displayNumbers.Count > 1 ? string.Join('|', displayNumbers) : string.Empty;
-            return new MonitorIdentity(hardwareId, topologyLabel);
+            string modelName = displayPaths.FirstOrDefault(path =>
+                string.Equals(path.DevicePath, surfaceDevicePath, StringComparison.OrdinalIgnoreCase)).ModelName ?? string.Empty;
+            return new MonitorIdentity(hardwareId, topologyLabel, modelName);
         }
 
         /// <summary>
@@ -272,7 +282,8 @@ namespace OLED_Sleeper.Features.MonitorInformation.Services
 
                 displayPaths.Add(new DisplayPath(
                     sourceRead ? sourceName.viewGdiDeviceName : string.Empty,
-                    targetRead ? targetName.monitorDevicePath : string.Empty));
+                    targetRead ? targetName.monitorDevicePath : string.Empty,
+                    targetRead ? targetName.monitorFriendlyDeviceName : string.Empty));
             }
 
             return displayPaths;
@@ -298,13 +309,15 @@ namespace OLED_Sleeper.Features.MonitorInformation.Services
         /// </summary>
         /// <param name="HardwareId">The hardware ID of the monitor the surface belongs to.</param>
         /// <param name="TopologyLabel">The display numbers sharing the surface, such as <c>1|2</c>. Empty when it is not duplicated.</param>
-        private readonly record struct MonitorIdentity(string HardwareId, string TopologyLabel);
+        /// <param name="ModelName">The model reported by Windows, used only for presentation.</param>
+        private readonly record struct MonitorIdentity(string HardwareId, string TopologyLabel, string ModelName);
 
         /// <summary>
         /// One active display path: a desktop surface and the panel it drives.
         /// </summary>
         /// <param name="GdiDeviceName">The source's GDI device name, such as <c>\\.\DISPLAY1</c>.</param>
         /// <param name="DevicePath">The target's device interface path.</param>
-        private readonly record struct DisplayPath(string GdiDeviceName, string DevicePath);
+        /// <param name="ModelName">The target's friendly model name.</param>
+        private readonly record struct DisplayPath(string GdiDeviceName, string DevicePath, string ModelName);
     }
 }

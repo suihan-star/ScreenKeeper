@@ -1,13 +1,13 @@
 ﻿<#
 .SYNOPSIS
-    Builds the OLED Sleeper release artifacts: the dual-architecture installer and the portable x64 zip.
+    Builds the ScreenKeeper release artifacts: the dual-architecture installer and the portable x64 zip.
 
 .DESCRIPTION
     Publishes the two framework-dependent payloads the installer packs, publishes the self-contained
     portable build, compiles the Inno Setup script and zips the portable output. Every artifact carries
-    the same version, which MinVer derives from the nearest v* tag.
+    the same version, which MinVer derives from the nearest screenkeeper-v* tag.
 
-    Both the CI release workflow and a local build run this script, so the two cannot drift.
+    Both the optional manual CI build and local packaging use this script; neither publishes a release.
 
 .PARAMETER OutputDirectory
     Where the finished artifacts are collected. Defaults to 'artifacts' in the repository root.
@@ -85,7 +85,7 @@ Then re-run this script, or pass the path directly:
 
 <#
 .SYNOPSIS
-    Reads the version MinVer derives from the nearest v* tag.
+    Reads the version MinVer derives from the nearest screenkeeper-v* tag.
 #>
 function Get-BuildVersion {
     # MinVer's targets arrive with the package, so a clean checkout has to restore before the target exists.
@@ -164,23 +164,23 @@ Write-Step 'Compiling the installer'
 & $iscc "/DAppVersion=$version" $scriptPath
 if ($LASTEXITCODE -ne 0) { throw 'The Inno Setup compile failed.' }
 
-$setupPath = Join-Path $OutputDirectory "OLED-Sleeper-$version-Setup.exe"
+$setupPath = Join-Path $OutputDirectory "ScreenKeeper-$version-Setup.exe"
 if (-not (Test-Path -LiteralPath $setupPath)) { throw "The installer was not produced at $setupPath." }
 
 if (-not $SkipPortable) {
     Write-Step 'Publishing the portable build'
-    $portableX64 = Join-Path $stagingDirectory 'portable\OLED-Sleeper'
+    $portableX64 = Join-Path $stagingDirectory 'portable\ScreenKeeper'
     Publish-Payload -Runtime 'win-x64' -Destination $portableX64 -Portable
 
     Write-Step 'Zipping the portable build'
-    $zipPath = Join-Path $OutputDirectory "OLED-Sleeper-$version-Portable-x64.zip"
+    $zipPath = Join-Path $OutputDirectory "ScreenKeeper-$version-Portable-x64.zip"
     if (Test-Path -LiteralPath $zipPath) { Remove-Item -LiteralPath $zipPath -Force }
-    # The zip carries its own OLED-Sleeper folder, so extracting it never scatters files loose.
+    # The zip carries its own ScreenKeeper folder, so extracting it never scatters files loose.
     Compress-Archive -Path $portableX64 -DestinationPath $zipPath
 }
 
 Write-Step 'Writing checksums'
-$checksumPath = Join-Path $OutputDirectory "OLED-Sleeper-$version-SHA256SUMS.txt"
+$checksumPath = Join-Path $OutputDirectory "ScreenKeeper-$version-SHA256SUMS.txt"
 if (Test-Path -LiteralPath $checksumPath) { Remove-Item -LiteralPath $checksumPath -Force }
 $lines = Get-ChildItem -LiteralPath $OutputDirectory -File |
     Where-Object { $_.Extension -in '.exe', '.zip' } |

@@ -18,5 +18,11 @@ namespace OLED_Sleeper.Features.MonitorBlackout.Commands
         /// Whether to also set the monitor's hardware brightness to zero. False when unset.
         /// </summary>
         public bool LowerBrightness { get; init; } = false;
+
+        /// <summary>Rechecked on the UI thread immediately before creating the overlay.</summary>
+        public Func<bool>? StillIdle { get; init; }
+
+        /// <summary>A rejected or failed request must let the idle detector start waiting again.</summary>
+        public bool IsIgnored { get; set; }
     }
 }

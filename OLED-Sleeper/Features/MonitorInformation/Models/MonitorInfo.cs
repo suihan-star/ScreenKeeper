@@ -20,6 +20,12 @@ namespace OLED_Sleeper.Features.MonitorInformation.Models
         /// </summary>
         public string HardwareId { get; set; } = string.Empty;
 
+        /// <summary>The model reported by Windows. Presentation only; never used as a device identity.</summary>
+        public string ModelName { get; set; } = string.Empty;
+
+        /// <summary>Whether another connected desktop surface reports the same model.</summary>
+        public bool HasSharedModelName { get; set; }
+
         /// <summary>
         /// Gets or sets how Windows numbers the panels showing this desktop surface, such as <c>1|2</c> for a
         /// duplicated one. Empty when the surface is not duplicated.

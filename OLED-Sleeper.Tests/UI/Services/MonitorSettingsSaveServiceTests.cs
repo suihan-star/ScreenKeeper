@@ -27,11 +27,23 @@ namespace OLED_Sleeper.Tests.UI.Services
 
             _settingsServiceMock
                 .Setup(x => x.SaveSettings(It.IsAny<List<MonitorSettings>>()))
-                .Callback<List<MonitorSettings>>(settings => _writtenSettings = settings);
+                .Callback<List<MonitorSettings>>(settings => _writtenSettings = settings)
+                .Returns(true);
 
             _service = new MonitorSettingsSaveService(
                 _settingsServiceMock.Object,
                 _dialogServiceMock.Object);
+        }
+
+        [Fact]
+        public void TrySave_WhenWriteFails_KeepsDraftDirtyAndReportsError()
+        {
+            _settingsServiceMock.Setup(x => x.SaveSettings(It.IsAny<List<MonitorSettings>>())).Returns(false);
+            var monitor = CreateManagedMonitor("MON-FAIL");
+            monitor.Configuration.DimLevel = 60;
+            Assert.False(_service.TrySave(new[] { monitor }));
+            Assert.True(monitor.IsDirty);
+            _dialogServiceMock.Verify(x => x.ShowError(It.IsAny<string>(), "设置未能保存"), Times.Once);
         }
 
         [Fact]
@@ -81,7 +93,7 @@ namespace OLED_Sleeper.Tests.UI.Services
 
             // Assert
             Assert.False(saved);
-            _dialogServiceMock.Verify(x => x.ShowError(It.IsAny<string>(), "Monitor Configuration Error"), Times.Once);
+            _dialogServiceMock.Verify(x => x.ShowError(It.IsAny<string>(), "显示器设置有误"), Times.Once);
             _settingsServiceMock.Verify(x => x.SaveSettings(It.IsAny<List<MonitorSettings>>()), Times.Never);
         }
 

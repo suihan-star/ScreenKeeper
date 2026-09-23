@@ -54,21 +54,23 @@ namespace OLED_Sleeper.Features.UserSettings.Services
         }
 
         /// <inheritdoc />
-        public void SaveSettings(List<MonitorSettings> settings)
+        public bool SaveSettings(List<MonitorSettings> settings)
         {
             try
             {
                 var merged = MergeWithStoredSettings(settings);
                 var document = new MonitorSettingsDocument { SchemaVersion = CurrentSchemaVersion, Monitors = merged };
 
-                if (!_fileStore.TryWrite(SettingsFileName, document)) return;
+                if (!_fileStore.TryWrite(SettingsFileName, document)) return false;
 
                 Log.Information("Saved {Count} monitor settings.", merged.Count);
                 SettingsChanged?.Invoke(settings);
+                return true;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Failed to save monitor settings.");
+                return false;
             }
         }
 

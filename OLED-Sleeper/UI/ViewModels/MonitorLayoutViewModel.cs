@@ -1,5 +1,7 @@
-﻿using OLED_Sleeper.Features.MonitorInformation.Models;
+using OLED_Sleeper.Features.MonitorInformation.Models;
 using OLED_Sleeper.UI.Helpers;
+using OLED_Sleeper.UI.Localization;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Media;
 
@@ -40,9 +42,10 @@ namespace OLED_Sleeper.UI.ViewModels
         public bool IsDirty => Configuration.IsDirty;
 
         /// <summary>
-        /// The display title for the monitor, including primary indicator if applicable. A duplicated surface
-        /// is titled the way Windows titles it, such as <c>Monitor 1|2</c>.
+        /// Model-first display title, including a primary indicator and disambiguating number where applicable.
         /// </summary>
+        public string SelectionLabel => MonitorTitle + (IsDirty ? " •" : "");
+
         public string MonitorTitle => MonitorTitleFormatter.Format(_monitor);
 
         /// <summary>
@@ -95,6 +98,7 @@ namespace OLED_Sleeper.UI.ViewModels
         public MonitorLayoutViewModel(MonitorInfo monitor, double scale, Rect totalBounds, double offsetX, double offsetY)
         {
             _monitor = monitor;
+            PropertyChangedEventManager.AddHandler(UiText.Current, (_, _) => { OnPropertyChanged(nameof(MonitorTitle)); OnPropertyChanged(nameof(SelectionLabel)); }, string.Empty);
             Configuration = new MonitorConfigurationViewModel(monitor);
             SubscribeToConfigurationDirtyState();
             ScaledWidth = _monitor.Bounds.Width * scale;
@@ -114,7 +118,7 @@ namespace OLED_Sleeper.UI.ViewModels
             {
                 if (e.PropertyName == nameof(MonitorConfigurationViewModel.IsDirty))
                 {
-                    OnPropertyChanged(nameof(IsDirty));
+                    OnPropertyChanged(nameof(IsDirty)); OnPropertyChanged(nameof(SelectionLabel));
                 }
             };
         }

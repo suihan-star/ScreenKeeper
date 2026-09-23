@@ -5,6 +5,7 @@ namespace OLED_Sleeper.Storage.Interfaces
     /// </summary>
     public interface IFileSystem
     {
+        void WriteAllTextDurable(string path, string contents) => throw new NotSupportedException("Durable writes are unavailable.");
         /// <summary>
         /// Gets the roaming application data directory for the current user.
         /// </summary>

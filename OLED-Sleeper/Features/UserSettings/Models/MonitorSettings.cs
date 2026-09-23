@@ -8,6 +8,13 @@ namespace OLED_Sleeper.Features.UserSettings.Models
     /// </summary>
     public class MonitorSettings
     {
+        public OLED_Sleeper.Features.MonitorPrivacy.PrivacyMode PrivacyMode { get; set; }
+        public OLED_Sleeper.Features.MonitorPrivacy.PrivacyOptions? PrivacyOptions { get; set; } = new();
+        public int? PrivacyIdleSeconds { get; set; } = 30;
+        public bool? PrivacyEnabled { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public bool HasPrivacy => (PrivacyEnabled ?? IsManaged) && PrivacyMode != Features.MonitorPrivacy.PrivacyMode.None;
+
         /// <summary>
         /// Gets or sets the unique hardware ID for the monitor.
         /// </summary>

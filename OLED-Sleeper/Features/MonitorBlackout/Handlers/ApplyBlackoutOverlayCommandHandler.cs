@@ -33,7 +33,7 @@ namespace OLED_Sleeper.Features.MonitorBlackout.Handlers
         /// <summary>
         /// Executes the blackout logic asynchronously based on the command's data.
         /// It shows a blackout overlay and, if the command asks for it and the monitor supports DDC/CI,
-        /// it simultaneously dims the monitor's brightness to 0.
+        /// it then dims the monitor's brightness to 0 after the overlay request is accepted.
         /// Exceptions are caught and logged to avoid silent failures.
         /// </summary>
         /// <param name="command">The command containing the details of the monitor to black out.</param>
@@ -41,6 +41,9 @@ namespace OLED_Sleeper.Features.MonitorBlackout.Handlers
         {
             try
             {
+                command.IsIgnored = true;
+                bool StillIdle() => command.StillIdle?.Invoke() ?? true;
+                if (!StillIdle()) return;
                 Log.Information("Executing ApplyBlackoutCommand for monitor {HardwareId}.", command.HardwareId);
 
                 var monitors = await _monitorInfoManager.GetCurrentMonitorsAsync();
@@ -51,27 +54,26 @@ namespace OLED_Sleeper.Features.MonitorBlackout.Handlers
                     return;
                 }
 
-                var showOverlayTask = _monitorBlackoutService.ShowBlackoutOverlayAsync(monitorInfo.HardwareId, monitorInfo.Bounds);
+                if (!await _monitorBlackoutService.TryShowBlackoutOverlayAsync(monitorInfo.HardwareId, monitorInfo.Bounds, StillIdle))
+                {
+                    Log.Information("Skipped a stale or stopped blackout request.");
+                    return;
+                }
+                command.IsIgnored = false;
 
                 if (!command.LowerBrightness)
                 {
                     Log.Information("Blackout for monitor {HardwareId} leaves hardware brightness untouched by user setting.", monitorInfo.HardwareId);
-                    await showOverlayTask;
                 }
                 else if (monitorInfo.Capabilities?.IsSupported == true)
                 {
                     Log.Information("Monitor {HardwareId} supports DDC/CI. Setting brightness to 0 for blackout.", monitorInfo.HardwareId);
-                    var dimTask = _monitorDimmingService.DimMonitorAsync(monitorInfo.HardwareId, 0);
-
-                    await Task.WhenAll(showOverlayTask, dimTask);
-                }
-                else
-                {
-                    await showOverlayTask;
+                    if (StillIdle()) await _monitorDimmingService.DimMonitorAsync(monitorInfo.HardwareId, 0);
                 }
             }
             catch (Exception ex)
             {
+                command.IsIgnored = true;
                 Log.Error(ex, "Failed to apply blackout for monitor {HardwareId}.", command.HardwareId);
             }
         }

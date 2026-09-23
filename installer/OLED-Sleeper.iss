@@ -1,4 +1,4 @@
-﻿; Inno Setup installer script for OLED Sleeper
+﻿; Inno Setup installer script for ScreenKeeper
 ; Builds a single installer supporting both x64 and x86 deployments.
 
 #include "CodeDependencies.iss"
@@ -11,40 +11,37 @@
 
 [Setup]
 ; Unique application identifier used by Windows for installation tracking.
-AppId={{782DD1AF-DB60-48D7-8787-0838B581E16F}}
+AppId={{5628C27B-72F7-4523-9931-A132AC8E407D}}
 
 ; Application metadata shown in the installer and system UI.
-AppName=OLED Sleeper
-UninstallDisplayName=OLED Sleeper
+AppName=多屏管家 ScreenKeeper
+UninstallDisplayName=多屏管家 ScreenKeeper
 AppVersion={#AppVersion}
-AppPublisher=Quorthon13
-AppPublisherURL=https://github.com/Quorthon13/OLED-Sleeper
-AppSupportURL=https://github.com/Quorthon13/OLED-Sleeper/issues
 
 ; Installation runs without elevation.
 PrivilegesRequired=lowest
 
 ; The mutex ApplicationInstanceManager holds. Setup and uninstall both wait for the application to be closed,
 ; so its own shutdown restores monitor brightness before any file is replaced or removed.
-AppMutex=OLED-Sleeper-Mutex
+AppMutex=ScreenKeeper-Mutex
 
 ; Output installer configuration.
-OutputBaseFilename=OLED-Sleeper-{#AppVersion}-Setup
+OutputBaseFilename=ScreenKeeper-{#AppVersion}-Setup
 SourceDir=.
 OutputDir=..\artifacts
 
 ; Default installation directory.
-DefaultDirName={autopf}\OLED Sleeper
+DefaultDirName={autopf}\ScreenKeeper
 
 ; Enables 64-bit installation mode when running on x64 systems.
 ArchitecturesInstallIn64BitMode=x64compatible
 
 ; Installer and uninstall entry icons.
 SetupIconFile=..\OLED-Sleeper\Assets\icon.ico
-UninstallDisplayIcon={app}\OLED-Sleeper.exe
+UninstallDisplayIcon={app}\ScreenKeeper.exe
 
 ; General installer UI and compression settings.
-DefaultGroupName=OLED Sleeper
+DefaultGroupName=ScreenKeeper
 AllowNoIcons=yes
 Compression=lzma
 SolidCompression=yes
@@ -56,18 +53,10 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 ; Optional installation tasks presented to the user.
-Name: "startup"; Description: "Launch OLED Sleeper when Windows starts"; GroupDescription: "Additional options:";
+Name: "startup"; Description: "Launch ScreenKeeper when Windows starts"; GroupDescription: "Additional options:";
 Name: "desktopicon"; Description: "Create a desktop icon"; GroupDescription: "Additional shortcuts:";
 
-[InstallDelete]
-; Every install starts from default settings and no recorded brightness. Logs are deliberately kept, so a
-; report about a build still carries the history from before it was installed.
-Type: files; Name: "{userappdata}\OLED-Sleeper\settings.json"
-Type: files; Name: "{userappdata}\OLED-Sleeper\settings.json.bak"
-Type: files; Name: "{userappdata}\OLED-Sleeper\settings.json.tmp"
-Type: files; Name: "{userappdata}\OLED-Sleeper\brightness_state.json"
-Type: files; Name: "{userappdata}\OLED-Sleeper\brightness_state.json.bak"
-Type: files; Name: "{userappdata}\OLED-Sleeper\brightness_state.json.tmp"
+; Preserve settings and brightness recovery records on reinstall. Never touch upstream data.
 
 [Files]
 ; Install platform-specific binaries based on system architecture.
@@ -76,23 +65,23 @@ Source: "..\artifacts\publish\x86\*"; DestDir: "{app}"; Flags: ignoreversion rec
 
 [Icons]
 ; Start Menu and optional Desktop shortcuts.
-Name: "{group}\OLED Sleeper"; Filename: "{app}\OLED-Sleeper.exe"
-Name: "{autodesktop}\OLED Sleeper"; Filename: "{app}\OLED-Sleeper.exe"; Tasks: desktopicon
+Name: "{group}\多屏管家 ScreenKeeper"; Filename: "{app}\ScreenKeeper.exe"
+Name: "{autodesktop}\多屏管家 ScreenKeeper"; Filename: "{app}\ScreenKeeper.exe"; Tasks: desktopicon
 
 [Registry]
 ; Optional autostart entry created when the startup task is selected.
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "OLED Sleeper"; ValueData: """{app}\OLED-Sleeper.exe"" -h"; Flags: uninsdeletevalue; Tasks: startup
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "ScreenKeeper"; ValueData: """{app}\ScreenKeeper.exe"" -h"; Flags: uninsdeletevalue; Tasks: startup
 
 [Run]
 ; Optionally launch the application after installation completes.
-Filename: "{app}\OLED-Sleeper.exe"; Description: "{cm:LaunchProgram,OLED Sleeper}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\ScreenKeeper.exe"; Description: "{cm:LaunchProgram,ScreenKeeper}"; Flags: nowait postinstall skipifsilent
 
 [Code]
 
 // Reports whether the application's autostart registry entry exists.
 function StartupIsEnabled(): Boolean;
 begin
-  Result := RegValueExists(HKEY_CURRENT_USER, 'Software\Microsoft\Windows\CurrentVersion\Run', 'OLED Sleeper');
+  Result := RegValueExists(HKEY_CURRENT_USER, 'Software\Microsoft\Windows\CurrentVersion\Run', 'ScreenKeeper');
 end;
 
 // Ticks the startup task when autostart is already enabled, whether it was enabled here or from the
@@ -108,10 +97,10 @@ end;
 // Removes the application's autostart registry entry if present.
 procedure RemoveStartupKey();
 begin
-  if RegValueExists(HKEY_CURRENT_USER, 'Software\Microsoft\Windows\CurrentVersion\Run', 'OLED Sleeper') then
+  if RegValueExists(HKEY_CURRENT_USER, 'Software\Microsoft\Windows\CurrentVersion\Run', 'ScreenKeeper') then
   begin
     Log('Removing startup registry key.');
-    RegDeleteValue(HKEY_CURRENT_USER, 'Software\Microsoft\Windows\CurrentVersion\Run', 'OLED Sleeper');
+    RegDeleteValue(HKEY_CURRENT_USER, 'Software\Microsoft\Windows\CurrentVersion\Run', 'ScreenKeeper');
   end;
 end;
 

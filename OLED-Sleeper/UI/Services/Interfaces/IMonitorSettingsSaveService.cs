@@ -12,7 +12,8 @@ namespace OLED_Sleeper.UI.Services.Interfaces
         /// user and nothing is written. Saved monitors are marked as no longer holding unsaved changes.
         /// </summary>
         /// <param name="monitors">The monitors whose configuration should be saved.</param>
-        /// <returns>True when the settings were written; false when validation rejected them.</returns>
+        /// <returns>True when the settings were written; false on validation or persistence failure.</returns>
         bool TrySave(IReadOnlyList<MonitorLayoutViewModel> monitors);
+        bool TrySave(IReadOnlyList<MonitorLayoutViewModel> monitors, Features.UserSettings.Models.MonitorSettingsScope scope);
     }
 }

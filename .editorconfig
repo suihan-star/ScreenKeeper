@@ -1,4 +1,4 @@
-# EditorConfig for OLED Sleeper — https://editorconfig.org
+# EditorConfig for ScreenKeeper — https://editorconfig.org
 
 root = true
 
@@ -16,8 +16,7 @@ trim_trailing_whitespace = false
 [*.cs]
 indent_size = 4
 
-# Namespaces are block-scoped throughout (76 files to 1). Without this, the IDE
-# suggests converting every file to file-scoped.
+# Preserve the inherited namespace preference; do not mass-convert existing files.
 csharp_style_namespace_declarations = block_scoped:suggestion
 
 # Language features in active use.
@@ -42,8 +41,7 @@ dotnet_sort_system_directives_first = false
 # stay out of the build output.
 dotnet_diagnostic.IDE0055.severity = suggestion
 
-# Nullable diagnostics keep their compiler defaults. There are 12 outstanding;
-# see CLAUDE.md.
+# Nullable diagnostics keep their compiler defaults; current results come from the build.
 
 [*.xaml]
 indent_size = 4

@@ -25,6 +25,7 @@ namespace OLED_Sleeper.Features.UserSettings.Services.Interfaces
         /// save succeeded. Never throws: a failed write and a subscriber that throws are both caught and logged.
         /// </summary>
         /// <param name="settings">The list of monitor settings to save.</param>
-        void SaveSettings(List<MonitorSettings> settings);
+        /// <returns>True only when the write and settings notification complete successfully.</returns>
+        bool SaveSettings(List<MonitorSettings> settings);
     }
 }

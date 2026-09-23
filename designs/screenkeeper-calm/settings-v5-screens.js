@@ -1,0 +1,1005 @@
+'use strict';
+
+// Review-only model. These activities and deadlines never read or control the desktop.
+(() => {
+  const {
+    useState,
+    useEffect,
+    useRef
+  } = React;
+  const {
+    Icon,
+    Button,
+    Toggle,
+    Unit,
+    Setting,
+    Dialog,
+    Notice
+  } = window.SK4UI;
+  const copy = x => JSON.parse(JSON.stringify(x));
+  const seconds = (value, unit) => Number(value) * (unit === 'h' ? 3600 : unit === 'm' ? 60 : 1);
+  const valid = (value, unit, limit = 86400) => value !== '' && Number.isInteger(Number(value)) && Number(value) > 0 && seconds(value, unit) <= limit;
+  const defaults = () => ({
+    rest: {
+      enabled: true,
+      behavior: 'blackout',
+      value: 3,
+      unit: 'm',
+      brightness: 25,
+      wake: [true, true, false]
+    },
+    privacy: {
+      enabled: true,
+      mode: 'curtain',
+      value: 30,
+      unit: 's',
+      whileUsing: true,
+      quietConditions: [true, true, false],
+      pauseValue: 15,
+      pauseUnit: 'm',
+      background: 'builtin',
+      images: [],
+      fit: 'cover',
+      slide: 30,
+      app: '',
+      launch: false,
+      move: false
+    }
+  });
+  const conditions = [['鼠标停留在本屏', 'Pointer is on this display'], ['前台窗口在本屏', 'Foreground window is on this display'], ['电脑有键盘或鼠标输入', 'Keyboard or mouse activity on this computer']];
+  const activityFlags = activity => ({
+    active: [true, true, true],
+    reading: [false, true, true],
+    pointer: [true, false, false],
+    foreground: [false, true, false],
+    elsewhere: [false, false, true],
+    away: [false, false, false]
+  })[activity] || [false, false, false];
+  const privacyMatches = (p, r) => conditions.map((_, i) => i).filter(i => p.whileUsing && p.quietConditions[i] && activityFlags(r.activity)[i]);
+  function initial(scenario = 'normal') {
+    const screens = [{
+      id: 'q',
+      name: 'Q27P10',
+      primary: true,
+      brightness: true
+    }, {
+      id: 'd',
+      name: 'DELL SE2723DS',
+      brightness: true
+    }];
+    if (scenario === 'many') screens.push({
+      id: 'e',
+      name: 'Studio Display',
+      brightness: false
+    }, {
+      id: 'f',
+      name: 'Portrait Display',
+      brightness: false
+    });
+    if (scenario === 'empty' || scenario === 'loading') screens.length = 0;
+    const saved = Object.fromEntries(screens.map(s => [s.id, defaults()]));
+    if (saved.d) {
+      saved.d.privacy.enabled = false;
+      saved.d.rest.behavior = 'dim';
+    }
+    return {
+      screens,
+      saved,
+      draft: copy(saved),
+      selected: screens[0]?.id || '',
+      runtime: Object.fromEntries(screens.map(s => [s.id, {
+        activity: 'active',
+        since: performance.now(),
+        privacySince: performance.now(),
+        until: 0,
+        restUntil: 0,
+        protected: false
+      }])),
+      scenario,
+      tray: false
+    };
+  }
+  const changed = (m, module) => m.screens.filter(s => JSON.stringify(m.draft[s.id][module]) !== JSON.stringify(m.saved[s.id][module]));
+  function Workspace({
+    model: m,
+    setModel: setM,
+    module,
+    t,
+    onNavigate
+  }) {
+    const [modal, setModal] = useState(null),
+      [notice, setNotice] = useState(''),
+      [error, setError] = useState(''),
+      [now, setNow] = useState(performance.now());
+    const screen = m.screens.find(s => s.id === m.selected),
+      id = screen?.id,
+      c = id ? m.draft[id][module] : null,
+      saved = id ? m.saved[id][module] : null;
+    const runtime = id ? m.runtime[id] : null,
+      dirty = changed(m, module),
+      paused = runtime && deadline(runtime, module) > now;
+    const linked = r => r.until > now && r.until === r.restUntil;
+    function deadline(r, area) {
+      return area === 'rest' ? r.restUntil : r.until;
+    }
+    const cover = useRef(null);
+    const close = () => {
+      setModal(null);
+      setM(prev => ({
+        ...prev,
+        tray: false
+      }));
+    };
+    const patch = v => {
+      setM(prev => ({
+        ...prev,
+        draft: {
+          ...prev.draft,
+          [id]: {
+            ...prev.draft[id],
+            [module]: {
+              ...prev.draft[id][module],
+              ...v
+            }
+          }
+        }
+      }));
+      setError('');
+    };
+    const runtimePatch = (sid, v) => setM(prev => ({
+      ...prev,
+      runtime: {
+        ...prev.runtime,
+        [sid]: {
+          ...prev.runtime[sid],
+          ...v
+        }
+      }
+    }));
+    const choose = sid => {
+      setM(prev => ({
+        ...prev,
+        selected: sid
+      }));
+      setError('');
+      setNotice('');
+    };
+    useEffect(() => {
+      const timer = setInterval(() => setNow(performance.now()), 250);
+      return () => clearInterval(timer);
+    }, []);
+    useEffect(() => {
+      setError('');
+      setNotice('');
+      setModal(null);
+    }, [module, m.scenario]);
+    useEffect(() => {
+      if (!notice) return;
+      const timer = setTimeout(() => setNotice(''), 6000);
+      return () => clearTimeout(timer);
+    }, [notice]);
+    useEffect(() => {
+      if (modal?.type !== 'preview') return;
+      const prior = document.activeElement,
+        button = cover.current?.querySelector('button');
+      button?.focus();
+      const trap = e => {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          button?.focus();
+        }
+      };
+      document.addEventListener('keydown', trap);
+      return () => {
+        document.removeEventListener('keydown', trap);
+        prior?.focus();
+      };
+    }, [modal?.type]);
+    useEffect(() => {
+      setM(prev => {
+        let changed = false;
+        const runtime = Object.fromEntries(Object.entries(prev.runtime).map(([sid, old]) => {
+          let r = old;
+          const p = prev.saved[sid].privacy;
+          if (r.until > 0 && r.until <= now) r = {
+            ...r,
+            until: 0,
+            privacySince: now
+          };
+          if (r.restUntil > 0 && r.restUntil <= now) r = {
+            ...r,
+            restUntil: 0,
+            since: now
+          };
+          if (p.enabled && !r.protected && !r.until && prev.scenario !== 'input-error') {
+            const held = r.activity === 'active' || privacyMatches(p, r).length > 0;
+            if (held || r.held) r = {
+              ...r,
+              held,
+              privacySince: now
+            };else if (now - (r.privacySince ?? r.since) >= seconds(p.value, p.unit) * 1000) r = {
+              ...r,
+              protected: true
+            };
+          }
+          if (r !== old) changed = true;
+          return [sid, r];
+        }));
+        return changed ? {
+          ...prev,
+          runtime
+        } : prev;
+      });
+    }, [now]);
+    function remaining(until) {
+      const s = Math.max(0, Math.ceil((until - now) / 1000));
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+    function status(sid, area = module) {
+      const r = m.runtime[sid],
+        s = m.saved[sid][area],
+        p = m.saved[sid].privacy;
+      if (area === 'privacy' && r.protected) return {
+        key: 'protected',
+        title: t('已保护', 'Protected'),
+        detail: r.until > now ? t('后续保护已暂缓 ' + remaining(r.until) + '；当前保护仍需手动进入。', 'Future protection snoozed for ' + remaining(r.until) + '. Enter to dismiss the current protection.') : t('私人内容已隐藏，进入屏幕后重新计时。', 'Private content is hidden. Re-enter to restart the timer.')
+      };
+      if (deadline(r, area) > now) return {
+        key: 'paused',
+        title: t('已暂缓', 'Snoozed') + ' · ' + remaining(deadline(r, area)),
+        detail: linked(r) ? t('隐私保护与屏幕休息均已暂缓，到期一起恢复。', 'Privacy and screen rest are paused; both resume together.') : area === 'rest' ? t('仅暂缓屏幕休息；隐私保护保持当前状态。', 'Screen rest is paused; privacy keeps its current state.') : t('仅暂缓隐私保护；屏幕休息保持当前状态。', 'Privacy is paused; screen rest keeps its current state.')
+      };
+      if (!s.enabled) return {
+        key: 'off',
+        title: t('未开启', 'Off'),
+        detail: t('保存并开启后，本屏规则开始生效。', 'Enable and save to apply this display’s rules.')
+      };
+      if (m.scenario === 'input-error') return {
+        key: 'error',
+        title: t('无法确认本屏操作', 'Input status unavailable'),
+        detail: t('输入识别异常，需要检查。临时使用可先暂缓。', 'Input needs checking. Snooze temporarily if needed.')
+      };
+      if (r.activity === 'active') return {
+        key: 'using',
+        title: t('正在使用', 'In use'),
+        detail: t('本屏的移动、点击、滚动和打字都会重新计时。', 'Movement, clicks, scrolling and typing here restart the timer.')
+      };
+      const matching = privacyMatches(p, r);
+      if (area === 'privacy' && matching.length) return {
+        key: 'reading',
+        title: t('免打扰中 · 暂不保护', 'Quiet use · Protection deferred'),
+        detail: t('满足条件：', 'Matching: ') + matching.map(i => t(...conditions[i])).join(t('、', '; '))
+      };
+      if (area === 'rest' && s.wake.some((enabled, i) => enabled && activityFlags(r.activity)[i])) return {
+        key: 'using',
+        title: t('保持唤醒中', 'Keeping awake'),
+        detail: t('当前场景符合已保存的保持唤醒条件。', 'This scenario matches a saved keep-awake condition.')
+      };
+      const left = Math.max(0, Math.ceil(seconds(s.value, s.unit) - Math.max(0, now - (area === 'privacy' ? r.privacySince ?? r.since : r.since)) / 1000));
+      return left ? {
+        key: 'waiting',
+        title: t('等待' + (area === 'privacy' ? '保护' : '休息'), 'Waiting to ' + (area === 'privacy' ? 'protect' : 'rest')) + ' · ' + left + t(' 秒', 's'),
+        detail: t('从最后一次操作开始计算。回到本屏操作即重新计时。', 'Counted from the last activity; using this display restarts it.')
+      } : {
+        key: 'protected',
+        title: area === 'privacy' ? t('已保护', 'Protected') : t('已进入屏幕休息', 'Screen resting'),
+        detail: t('示例等待时间已到；真实屏幕未被改动。', 'The demo timer elapsed. Your real screen is unchanged.')
+      };
+    }
+    function openPause(sid = id, area = module) {
+      const settings = m.saved[sid].privacy;
+      setM(prev => ({
+        ...prev,
+        tray: false
+      }));
+      setModal({
+        type: 'pause',
+        id: sid,
+        area,
+        value: area === 'privacy' ? settings.pauseValue : 15,
+        unit: area === 'privacy' ? settings.pauseUnit : 'm',
+        both: false
+      });
+    }
+    function resume(sid = id, area = module) {
+      const r = m.runtime[sid],
+        time = performance.now(),
+        both = linked(r);
+      runtimePatch(sid, {
+        ...(area === 'privacy' || both ? {
+          until: 0,
+          privacySince: time
+        } : {}),
+        ...(area === 'rest' || both ? {
+          restUntil: 0,
+          since: time
+        } : {})
+      });
+      setNotice(both ? t('两项均已恢复自动规则，等待时间重新开始。', 'Both automatic rules resumed; their waits restart.') : area === 'rest' ? t('已恢复自动休息，隐私保护状态未改变。', 'Automatic rest resumed; privacy is unchanged.') : t('已恢复自动保护，屏幕休息状态未改变。', 'Automatic protection resumed; screen rest is unchanged.'));
+    }
+    function validate(config, s) {
+      if (!config.enabled) return '';
+      if (!valid(config.value, config.unit)) return t('等待时长需为正整数，且不超过 24 小时。', 'Enter a whole duration up to 24 hours.');
+      if (module === 'privacy') {
+        if (config.whileUsing && !config.quietConditions.some(Boolean)) return t('请至少选择一个免打扰条件，或关闭“使用时不打扰”。', 'Select at least one quiet-use condition, or turn off Do not interrupt while in use.');
+        if (!valid(config.pauseValue, config.pauseUnit) || config.pauseUnit === 's') return t('暂缓默认值需为有效的分钟或小时，最多 24 小时。', 'Choose a valid default in minutes or hours, up to 24 hours.');
+        if (config.mode === 'application' && !config.app) return t('请先选择指定应用。', 'Choose an application first.');
+        if (config.mode === 'curtain' && config.background === 'custom' && !config.images.length) return t('请先选择图片，或使用默认山林。', 'Choose an image or use the built-in forest.');
+        if (config.mode === 'curtain' && config.background === 'custom' && config.images.length > 1 && !valid(config.slide, 's', 3600)) return t('轮播间隔需为 1–3600 秒。', 'Slideshow interval must be 1–3600 seconds.');
+      } else if (config.behavior === 'dim' && !s.brightness) return t('此屏幕不支持亮度调节，请使用遮黑。', 'This display does not support dimming. Choose blackout.');else if (config.behavior === 'dim' && !valid(config.brightness, 's', 100)) return t('亮度需为 1–100 的整数。', 'Brightness must be a whole number from 1 to 100.');
+      return '';
+    }
+    function save() {
+      for (const s of dirty) {
+        const problem = validate(m.draft[s.id][module], s);
+        if (problem) {
+          setError(s.name + '：' + problem);
+          return;
+        }
+      }
+      if (m.scenario === 'save-fail') {
+        setError(t('未能保存，所有修改仍保留。请稍后重试。', 'Could not save. All edits are kept. Try again.'));
+        return;
+      }
+      setM(prev => ({
+        ...prev,
+        saved: Object.fromEntries(prev.screens.map(s => [s.id, {
+          ...prev.saved[s.id],
+          [module]: copy(prev.draft[s.id][module])
+        }])),
+        runtime: Object.fromEntries(Object.entries(prev.runtime).map(([sid, r]) => [sid, module === 'privacy' && !prev.draft[sid].privacy.enabled ? {
+          ...r,
+          protected: false
+        } : r]))
+      }));
+      setError('');
+      setNotice(t('本模块设置已保存（演示）。', 'Settings for this module saved (demo).'));
+    }
+    function discard() {
+      setM(prev => ({
+        ...prev,
+        draft: Object.fromEntries(prev.screens.map(s => [s.id, {
+          ...prev.draft[s.id],
+          [module]: copy(prev.saved[s.id][module])
+        }]))
+      }));
+      setError('');
+    }
+    function protectionPreview(live = false) {
+      setModal({
+        type: 'preview',
+        id,
+        live,
+        mode: live ? m.saved[id].privacy.mode : c.mode
+      });
+      if (live) runtimePatch(id, {
+        protected: true
+      });
+    }
+    function previewExit() {
+      if (modal.live) runtimePatch(modal.id, {
+        protected: false,
+        since: performance.now(),
+        privacySince: performance.now(),
+        activity: 'active'
+      });
+      close();
+    }
+    function picker() {
+      return /*#__PURE__*/React.createElement("div", {
+        className: 'pr-picker ' + (m.screens.length > 3 ? 'many' : '')
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "pr-screen-list",
+        role: "radiogroup",
+        "aria-label": t('当前屏幕', 'Current display')
+      }, m.screens.map((s, i) => /*#__PURE__*/React.createElement("button", {
+        className: 'pr-screen ' + (s.id === id ? 'selected' : ''),
+        type: "button",
+        role: "radio",
+        "aria-checked": s.id === id,
+        key: s.id,
+        onClick: () => choose(s.id)
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "pr-screen-number"
+      }, i + 1), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", null, s.name), /*#__PURE__*/React.createElement("small", null, s.primary ? t('主屏', 'Main display') : t('扩展屏', 'Extended display'), changed(m, module).some(x => x.id === s.id) && t(' · 待保存', ' · Unsaved'))), /*#__PURE__*/React.createElement("span", {
+        className: "pr-screen-tick",
+        "aria-hidden": "true"
+      }, s.id === id ? '✓' : '')))), /*#__PURE__*/React.createElement("select", {
+        className: "input pr-screen-select",
+        "aria-label": t('当前屏幕', 'Current display'),
+        value: id,
+        onChange: e => choose(e.target.value)
+      }, m.screens.map((s, i) => /*#__PURE__*/React.createElement("option", {
+        key: s.id,
+        value: s.id
+      }, i + 1, ". ", s.name, changed(m, module).some(x => x.id === s.id) ? t(' · 待保存', ' · Unsaved') : ''))));
+    }
+    function runtimeBar() {
+      const state = status(id);
+      return /*#__PURE__*/React.createElement("section", {
+        className: 'pr-runtime ' + state.key,
+        "aria-label": t('当前运行状态', 'Current status')
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "pr-runtime-copy"
+      }, /*#__PURE__*/React.createElement(Icon, {
+        name: state.key === 'paused' ? 'clock' : module === 'privacy' ? 'shield' : 'moon',
+        size: 19
+      }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, state.title), /*#__PURE__*/React.createElement("p", null, state.detail))), /*#__PURE__*/React.createElement("div", {
+        className: "pr-runtime-actions"
+      }, paused ? /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        onClick: () => resume()
+      }, linked(runtime) ? t('恢复两项', 'Resume both') : module === 'rest' ? t('恢复自动休息', 'Resume screen rest') : t('恢复自动保护', 'Resume protection')) : /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        disabled: !saved.enabled,
+        onClick: () => openPause()
+      }, module === 'rest' ? t('暂缓休息', 'Snooze screen rest') : t('暂缓保护', 'Snooze protection')), module === 'privacy' && /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        kind: "link",
+        disabled: !saved.enabled,
+        onClick: () => protectionPreview(true)
+      }, state.key === 'protected' ? t('查看保护画面', 'View protection') : t('立即保护', 'Protect now'))));
+    }
+    function privacyForm() {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("section", {
+        className: "pr-section"
+      }, /*#__PURE__*/React.createElement("h3", null, t('何时保护', 'When to protect')), /*#__PURE__*/React.createElement(Setting, {
+        label: t('本屏空闲多久后保护', 'Protect after this display is idle')
+      }, /*#__PURE__*/React.createElement(Unit, {
+        t: t,
+        value: c.value,
+        unit: c.unit,
+        units: ['s', 'm', 'h'],
+        onValue: v => patch({
+          value: v
+        }),
+        onUnit: v => patch({
+          unit: v
+        }),
+        label: t('保护等待时长', 'Protection delay'),
+        max: 86400
+      })), !valid(c.value, c.unit) && /*#__PURE__*/React.createElement("p", {
+        className: "pr-error"
+      }, t('请输入不超过 24 小时的有效时长。', 'Enter a valid duration up to 24 hours.')), /*#__PURE__*/React.createElement(Setting, {
+        label: t('使用时不打扰', 'Do not interrupt while in use'),
+        sub: t('由你选择哪些情况下，暂不触发保护。', 'Choose when automatic protection should wait.')
+      }, /*#__PURE__*/React.createElement(Toggle, {
+        checked: c.whileUsing,
+        onChange: v => patch({
+          whileUsing: v
+        }),
+        label: t('使用时不打扰', 'Do not interrupt while in use')
+      })), c.whileUsing && /*#__PURE__*/React.createElement("fieldset", {
+        className: "pr-quiet-conditions"
+      }, /*#__PURE__*/React.createElement("legend", null, t('满足以下任一条件时，暂不进入隐私保护。', 'Defer privacy protection while any selected condition is met.')), conditions.map(([zh, en], i) => /*#__PURE__*/React.createElement("label", {
+        className: "checkline pr-check",
+        key: i
+      }, /*#__PURE__*/React.createElement("input", {
+        type: "checkbox",
+        checked: c.quietConditions[i],
+        onChange: e => patch({
+          quietConditions: c.quietConditions.map((v, j) => j === i ? e.target.checked : v)
+        })
+      }), t(zh, en))), !c.quietConditions.some(Boolean) ? /*#__PURE__*/React.createElement("p", {
+        className: "pr-error"
+      }, t('请至少选择一项，或关闭“使用时不打扰”。', 'Select at least one condition, or turn off quiet use.')) : /*#__PURE__*/React.createElement("p", {
+        className: "hint"
+      }, t('所选条件持续满足时，保护会一直暂缓；全部不满足后重新等待。', 'Protection waits while a selected condition remains true. A new wait starts when none apply.'))), /*#__PURE__*/React.createElement("details", {
+        className: "pr-explanation"
+      }, /*#__PURE__*/React.createElement("summary", null, t('与日常操作、暂缓保护有什么区别？', 'How does this differ from activity and snooze?')), /*#__PURE__*/React.createElement("p", null, t('本屏的移动、点击、滚动或打字，始终会重新计时。免打扰条件只阻止新的自动保护，不会解除已经显示的保护画面。', 'Movement, clicks, scrolling or typing here always restart the timer. Quiet-use conditions defer new automatic protection; they do not dismiss an existing protection screen.')), /*#__PURE__*/React.createElement("p", null, t('只想临时停一会儿，可用顶部“暂缓保护”；这里的条件按屏幕保存，与屏幕休息的保持唤醒分别设置。', 'For a temporary pause, use Snooze protection above. These conditions are saved per display, separately from screen rest’s keep-awake rules.')))), /*#__PURE__*/React.createElement("section", {
+        className: "pr-section"
+      }, /*#__PURE__*/React.createElement("h3", null, t('如何保护', 'How to protect')), /*#__PURE__*/React.createElement("div", {
+        className: "pr-modes",
+        role: "radiogroup",
+        "aria-label": t('保护方式', 'Protection method')
+      }, [['curtain', '隐私幕', 'Privacy curtain', 'shield'], ['desktop', '回到桌面', 'Show desktop', 'desktop'], ['application', '指定应用', 'Chosen app', 'app']].map(([v, zh, en, icon]) => /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        role: "radio",
+        "aria-checked": c.mode === v,
+        className: c.mode === v ? 'active' : '',
+        key: v,
+        onClick: () => patch({
+          mode: v
+        })
+      }, /*#__PURE__*/React.createElement(Icon, {
+        name: icon,
+        size: 17
+      }), t(zh, en)))), c.mode === 'curtain' ? /*#__PURE__*/React.createElement("div", {
+        className: "pr-appearance"
+      }, /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        className: "pr-curtain-sample",
+        style: {
+          backgroundImage: c.background === 'solid' ? 'none' : `linear-gradient(#102a2330,#102a2330),url("${c.background === 'custom' ? c.images[0] || 'forest-mist.png' : 'forest-mist.png'}")`
+        },
+        onClick: () => protectionPreview(),
+        "aria-label": t('预览隐私幕', 'Preview privacy curtain')
+      }, /*#__PURE__*/React.createElement("span", null, t('进入此屏幕', 'Enter this screen'))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, t('隐私幕外观', 'Curtain appearance')), /*#__PURE__*/React.createElement("p", null, c.background === 'builtin' ? t('默认山林', 'Built-in forest') : c.background === 'solid' ? t('深绿纯色', 'Solid green') : t('自定义图片', 'Custom images') + ' · ' + c.images.length), /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        onClick: () => setModal({
+          type: 'appearance',
+          ...copy(c)
+        })
+      }, t('调整外观', 'Edit appearance')), /*#__PURE__*/React.createElement("p", null, t('唤亮后仍隐藏内容，点击按钮再进入。', 'Waking keeps content hidden until you enter.')))) : c.mode === 'desktop' ? /*#__PURE__*/React.createElement("div", {
+        className: "pr-mode-note"
+      }, /*#__PURE__*/React.createElement("p", null, t('先遮挡，再收起本屏窗口。唤亮后保持桌面，不自动还原。', 'Cover first, then minimize this display’s windows. Waking leaves the desktop visible.')), /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        kind: "link",
+        onClick: () => protectionPreview()
+      }, t('查看示意', 'View example'))) : /*#__PURE__*/React.createElement("div", {
+        className: "pr-mode-note"
+      }, /*#__PURE__*/React.createElement(Setting, {
+        label: c.app || t('还没有指定应用', 'No application chosen'),
+        sub: t('先安全隐藏私人窗口，再切换；失败时保留隐私幕。', 'Hide private windows first, then switch. Keep the curtain if this fails.')
+      }, /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        onClick: () => setModal({
+          type: 'application',
+          app: c.app,
+          launch: c.launch,
+          move: c.move
+        })
+      }, c.app ? t('更换应用', 'Change app') : t('选择应用', 'Choose app'))), !c.app && /*#__PURE__*/React.createElement("p", {
+        className: "pr-error"
+      }, t('保存前请选择应用。', 'Choose an app before saving.')))), /*#__PURE__*/React.createElement("details", {
+        className: "pr-more"
+      }, /*#__PURE__*/React.createElement("summary", null, t('更多设置', 'More settings')), /*#__PURE__*/React.createElement(Setting, {
+        label: t('默认暂缓时长', 'Default snooze duration'),
+        sub: t('只用于下次打开暂缓弹窗，不改变正在进行的暂缓。', 'Used next time you open Snooze; does not change an active pause.')
+      }, /*#__PURE__*/React.createElement(Unit, {
+        t: t,
+        value: c.pauseValue,
+        unit: c.pauseUnit,
+        units: ['m', 'h'],
+        onValue: v => patch({
+          pauseValue: v
+        }),
+        onUnit: v => patch({
+          pauseUnit: v
+        }),
+        label: t('默认暂缓时长', 'Default snooze duration')
+      }))));
+    }
+    function restForm() {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("section", {
+        className: "pr-section"
+      }, /*#__PURE__*/React.createElement("h3", null, t('空闲时的操作', 'When this display is idle')), /*#__PURE__*/React.createElement("div", {
+        className: "pr-modes",
+        role: "radiogroup",
+        "aria-label": t('休息方式', 'Rest method')
+      }, [['blackout', '遮黑', 'Blackout', 'moon'], ['dim', '调暗', 'Dim', 'sun']].map(([v, zh, en, icon]) => /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        role: "radio",
+        "aria-checked": c.behavior === v,
+        disabled: v === 'dim' && !screen.brightness,
+        className: c.behavior === v ? 'active' : '',
+        key: v,
+        onClick: () => patch({
+          behavior: v
+        })
+      }, /*#__PURE__*/React.createElement(Icon, {
+        name: icon,
+        size: 17
+      }), t(zh, en)))), /*#__PURE__*/React.createElement(Setting, {
+        label: t('空闲多久后休息', 'Rest after being idle')
+      }, /*#__PURE__*/React.createElement(Unit, {
+        t: t,
+        value: c.value,
+        unit: c.unit,
+        units: ['s', 'm', 'h'],
+        onValue: v => patch({
+          value: v
+        }),
+        onUnit: v => patch({
+          unit: v
+        }),
+        label: t('休息等待时长', 'Rest delay'),
+        max: 86400
+      })), c.behavior === 'dim' && /*#__PURE__*/React.createElement(Setting, {
+        label: t('休息时亮度', 'Rest brightness')
+      }, /*#__PURE__*/React.createElement("input", {
+        className: "input",
+        type: "number",
+        min: "1",
+        max: "100",
+        value: c.brightness,
+        "aria-label": t('亮度百分比', 'Brightness percent'),
+        onChange: e => patch({
+          brightness: e.target.value
+        })
+      }), /*#__PURE__*/React.createElement("span", null, "%"))), /*#__PURE__*/React.createElement("section", {
+        className: "pr-section"
+      }, /*#__PURE__*/React.createElement("h3", null, t('保持唤醒', 'Keep awake')), /*#__PURE__*/React.createElement("p", {
+        className: "hint"
+      }, t('满足以下任一条件时，暂不进入屏幕休息。', 'Keep this display awake while any selected condition is met.')), [[t('鼠标停留在本屏', 'Pointer is on this display')], [t('前台窗口在本屏', 'Foreground window is on this display')], [t('电脑有键盘或鼠标输入', 'Keyboard or mouse activity on this computer')]].map(([label], i) => /*#__PURE__*/React.createElement("label", {
+        className: "checkline pr-check",
+        key: i
+      }, /*#__PURE__*/React.createElement("input", {
+        type: "checkbox",
+        checked: c.wake[i],
+        onChange: e => patch({
+          wake: c.wake.map((v, j) => j === i ? e.target.checked : v)
+        })
+      }), label)), /*#__PURE__*/React.createElement("p", {
+        className: "hint"
+      }, t('这些条件只控制屏幕休息；隐私保护有自己的使用判断。', 'These conditions control screen rest. Privacy uses its own activity rules.'))));
+    }
+    function dialog() {
+      if (m.tray) return /*#__PURE__*/React.createElement(Dialog, {
+        title: t('托盘快捷操作', 'Tray shortcuts'),
+        subtitle: t('按屏幕操作，不必打开完整设置。此处为托盘示意。', 'Per-display actions without opening all settings. Tray demonstration.'),
+        onClose: close,
+        actions: /*#__PURE__*/React.createElement(Button, {
+          onClick: close
+        }, t('关闭', 'Close'))
+      }, m.screens.map(s => /*#__PURE__*/React.createElement("section", {
+        className: "pr-tray-row",
+        key: s.id
+      }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, s.name), /*#__PURE__*/React.createElement("p", null, status(s.id, 'privacy').title)), /*#__PURE__*/React.createElement("div", null, m.runtime[s.id].until > now ? /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        onClick: () => resume(s.id, 'privacy')
+      }, linked(m.runtime[s.id]) ? t('恢复两项', 'Resume both') : t('恢复自动保护', 'Resume protection')) : /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        disabled: !m.saved[s.id].privacy.enabled,
+        onClick: () => openPause(s.id, 'privacy')
+      }, t('暂缓保护', 'Snooze protection')), /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        kind: "link",
+        onClick: () => {
+          choose(s.id);
+          close();
+          onNavigate('privacy');
+        }
+      }, t('隐私设置', 'Privacy settings'))))));
+      if (!modal) return null;
+      if (modal.type === 'pause') {
+        const target = m.screens.find(s => s.id === modal.id),
+          isRest = modal.area === 'rest',
+          other = isRest ? 'privacy' : 'rest',
+          canLink = m.saved[modal.id][other].enabled;
+        return /*#__PURE__*/React.createElement(Dialog, {
+          title: isRest ? t('暂缓休息', 'Snooze screen rest') : t('暂缓保护', 'Snooze protection'),
+          subtitle: target.name,
+          onClose: close,
+          actions: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Button, {
+            onClick: close
+          }, t('取消', 'Cancel')), /*#__PURE__*/React.createElement(Button, {
+            kind: "primary",
+            disabled: !valid(modal.value, modal.unit) || modal.unit === 's',
+            onClick: () => {
+              const until = performance.now() + seconds(modal.value, modal.unit) * 1000,
+                both = modal.both && canLink;
+              runtimePatch(modal.id, {
+                ...(isRest || both ? {
+                  restUntil: until
+                } : {}),
+                ...(!isRest || both ? {
+                  until
+                } : {})
+              });
+              close();
+              setNotice(t('暂缓已生效，日常设置未改变。', 'Snooze is active. Your usual settings are unchanged.'));
+            }
+          }, t('开始暂缓', 'Start snooze')))
+        }, /*#__PURE__*/React.createElement("div", {
+          className: "pr-pause-presets"
+        }, [15, 30, 60].map(v => /*#__PURE__*/React.createElement(Button, {
+          key: v,
+          small: true,
+          kind: seconds(modal.value, modal.unit) === v * 60 ? 'primary' : '',
+          onClick: () => setModal(prev => ({
+            ...prev,
+            value: v === 60 ? 1 : v,
+            unit: v === 60 ? 'h' : 'm'
+          }))
+        }, v === 60 ? t('1 小时', '1 hour') : v + t(' 分钟', ' minutes')))), /*#__PURE__*/React.createElement(Setting, {
+          label: t('本次暂缓', 'Snooze for')
+        }, /*#__PURE__*/React.createElement(Unit, {
+          t: t,
+          value: modal.value,
+          unit: modal.unit,
+          units: ['m', 'h'],
+          onValue: v => setModal(prev => ({
+            ...prev,
+            value: v
+          })),
+          onUnit: v => setModal(prev => ({
+            ...prev,
+            unit: v
+          })),
+          label: t('本次暂缓时长', 'Snooze duration'),
+          max: 1440
+        })), !valid(modal.value, modal.unit) && /*#__PURE__*/React.createElement("p", {
+          className: "pr-error"
+        }, t('请输入正整数，最长 24 小时。', 'Enter a whole duration up to 24 hours.')), /*#__PURE__*/React.createElement("label", {
+          className: "checkline pr-check"
+        }, /*#__PURE__*/React.createElement("input", {
+          type: "checkbox",
+          disabled: !canLink,
+          checked: modal.both && canLink,
+          onChange: e => setModal(prev => ({
+            ...prev,
+            both: e.target.checked
+          }))
+        }), isRest ? t('同时暂缓隐私保护', 'Also pause privacy protection') : t('同时暂缓屏幕休息', 'Also pause screen rest')), !canLink && /*#__PURE__*/React.createElement("p", {
+          className: "hint"
+        }, isRest ? t('此屏幕尚未开启隐私保护。', 'Privacy protection is off for this display.') : t('此屏幕尚未开启自动休息。', 'Automatic rest is off for this display.')), /*#__PURE__*/React.createElement("div", {
+          className: "pr-pause-scope"
+        }, /*#__PURE__*/React.createElement("strong", null, modal.both && canLink ? t('本次：隐私保护 + 屏幕休息', 'This time: privacy + screen rest') : isRest ? t('本次：仅屏幕休息', 'This time: screen rest only') : t('本次：仅隐私保护', 'This time: privacy only')), /*#__PURE__*/React.createElement("p", null, modal.both && canLink ? t('两项使用同一时长，到期一起恢复。', 'Both use the same duration and resume together.') : isRest ? t('不改变隐私保护的规则或正在进行的暂缓。', 'Privacy rules and any active privacy snooze stay unchanged.') : t('不改变屏幕休息的规则或正在进行的暂缓。', 'Screen-rest rules and any active rest snooze stay unchanged.'))), /*#__PURE__*/React.createElement("p", {
+          className: "hint"
+        }, t('到期自动恢复并重新等待；不修改长期设置，也不会解除已经显示的隐私幕或主动唤醒休眠屏幕。', 'Resumes and starts a new wait when time expires. Does not change saved rules, uncover a curtain or wake a sleeping display.')));
+      }
+      if (modal.type === 'copy') return /*#__PURE__*/React.createElement(Dialog, {
+        title: t('应用到其他屏幕', 'Apply to other displays'),
+        subtitle: screen.name + ' · ' + (module === 'privacy' ? t('隐私保护', 'Privacy') : t('屏幕休息', 'Screen rest')),
+        onClose: close,
+        actions: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Button, {
+          onClick: close
+        }, t('取消', 'Cancel')), /*#__PURE__*/React.createElement(Button, {
+          kind: "primary",
+          disabled: !modal.targets.length,
+          onClick: () => {
+            setM(prev => ({
+              ...prev,
+              draft: Object.fromEntries(prev.screens.map(s => [s.id, modal.targets.includes(s.id) ? {
+                ...prev.draft[s.id],
+                [module]: {
+                  ...copy(c),
+                  enabled: prev.draft[s.id][module].enabled,
+                  ...(module === 'rest' && c.behavior === 'dim' && !s.brightness ? {
+                    behavior: 'blackout'
+                  } : {})
+                }
+              } : prev.draft[s.id]]))
+            }));
+            close();
+            setNotice(t('已应用到所选屏幕，保存本模块后生效。', 'Copied to selected displays. Save this module to apply.'));
+          }
+        }, t('应用为草稿', 'Apply as draft')))
+      }, /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        kind: "link",
+        onClick: () => setModal(prev => ({
+          ...prev,
+          targets: m.screens.filter(s => s.id !== id).map(s => s.id)
+        }))
+      }, t('选择全部其他屏幕', 'Select all other displays')), m.screens.filter(s => s.id !== id).map(s => /*#__PURE__*/React.createElement("label", {
+        className: "checkline pr-check",
+        key: s.id
+      }, /*#__PURE__*/React.createElement("input", {
+        type: "checkbox",
+        checked: modal.targets.includes(s.id),
+        onChange: e => setModal(prev => ({
+          ...prev,
+          targets: e.target.checked ? [...prev.targets, s.id] : prev.targets.filter(x => x !== s.id)
+        }))
+      }), s.name)), /*#__PURE__*/React.createElement("p", {
+        className: "hint"
+      }, t('只复制当前模块，保留目标开关；不复制暂缓状态。调暗不受支持时回退遮黑。', 'Copy only this module, keeping each target’s switch. Pauses are not copied. Unsupported dimming falls back to blackout.')));
+      if (modal.type === 'appearance') return /*#__PURE__*/React.createElement(Dialog, {
+        title: t('隐私幕外观', 'Curtain appearance'),
+        onClose: close,
+        actions: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Button, {
+          onClick: close
+        }, t('取消', 'Cancel')), /*#__PURE__*/React.createElement(Button, {
+          kind: "primary",
+          disabled: modal.background === 'custom' && !modal.images.length,
+          onClick: () => {
+            patch({
+              background: modal.background,
+              images: modal.images,
+              fit: modal.fit,
+              slide: modal.slide
+            });
+            close();
+          }
+        }, t('保留修改', 'Keep edits')))
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "pr-modes",
+        role: "radiogroup",
+        "aria-label": t('背景方式', 'Background type')
+      }, [['builtin', '默认山林', 'Forest'], ['solid', '纯色', 'Solid'], ['custom', '自定义图片', 'Custom images']].map(([v, zh, en]) => /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        role: "radio",
+        "aria-checked": modal.background === v,
+        className: modal.background === v ? 'active' : '',
+        key: v,
+        onClick: () => setModal(prev => ({
+          ...prev,
+          background: v
+        }))
+      }, t(zh, en)))), modal.background === 'custom' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+        className: "hint"
+      }, t('示例图片只用于本地设计预览。实际客户端保留一张／一组图片导入能力。', 'Sample images are for this prototype. The client keeps single/multiple-image import.')), /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        onClick: () => setModal(prev => ({
+          ...prev,
+          images: ['forest-mist.png']
+        }))
+      }, t('使用一张示例', 'Use one sample')), " ", /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        onClick: () => setModal(prev => ({
+          ...prev,
+          images: ['forest-mist.png', 'curtain-grove.svg']
+        }))
+      }, t('使用一组示例', 'Use sample set')), /*#__PURE__*/React.createElement("div", {
+        className: "pr-images"
+      }, modal.images.map((src, i) => /*#__PURE__*/React.createElement("div", {
+        key: i
+      }, /*#__PURE__*/React.createElement("img", {
+        src: src,
+        alt: t('示例图片', 'Sample image') + ' ' + (i + 1)
+      }), /*#__PURE__*/React.createElement(Button, {
+        small: true,
+        onClick: () => setModal(prev => ({
+          ...prev,
+          images: prev.images.filter((_, j) => j !== i)
+        }))
+      }, t('移除', 'Remove'))))), modal.images.length > 1 && /*#__PURE__*/React.createElement(Setting, {
+        label: t('轮播间隔（秒）', 'Slideshow interval (seconds)')
+      }, /*#__PURE__*/React.createElement("input", {
+        className: "input",
+        type: "number",
+        value: modal.slide,
+        min: "1",
+        max: "3600",
+        onChange: e => setModal(prev => ({
+          ...prev,
+          slide: e.target.value
+        }))
+      })), /*#__PURE__*/React.createElement(Setting, {
+        label: t('图片填充', 'Image fit')
+      }, /*#__PURE__*/React.createElement("select", {
+        className: "input",
+        value: modal.fit,
+        onChange: e => setModal(prev => ({
+          ...prev,
+          fit: e.target.value
+        }))
+      }, /*#__PURE__*/React.createElement("option", {
+        value: "cover"
+      }, t('铺满屏幕', 'Fill')), /*#__PURE__*/React.createElement("option", {
+        value: "contain"
+      }, t('完整显示', 'Fit'))))));
+      if (modal.type === 'application') return /*#__PURE__*/React.createElement(Dialog, {
+        title: t('选择指定应用', 'Choose an application'),
+        subtitle: t('以下均为虚构的应用示例。', 'These are fictional application examples.'),
+        onClose: close,
+        actions: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Button, {
+          onClick: close
+        }, t('取消', 'Cancel')), /*#__PURE__*/React.createElement(Button, {
+          kind: "primary",
+          disabled: !modal.app,
+          onClick: () => {
+            patch({
+              app: modal.app,
+              launch: modal.launch,
+              move: modal.move
+            });
+            close();
+          }
+        }, t('使用此应用', 'Use this app')))
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "choice-list"
+      }, ['Notepad', 'Calendar', 'Browser'].map(app => /*#__PURE__*/React.createElement("label", {
+        className: "checkline",
+        key: app
+      }, /*#__PURE__*/React.createElement("input", {
+        type: "radio",
+        name: "sampleApp",
+        checked: modal.app === app,
+        onChange: () => setModal(prev => ({
+          ...prev,
+          app
+        }))
+      }), app))), /*#__PURE__*/React.createElement("label", {
+        className: "checkline pr-check"
+      }, /*#__PURE__*/React.createElement("input", {
+        type: "checkbox",
+        checked: modal.launch,
+        onChange: e => setModal(prev => ({
+          ...prev,
+          launch: e.target.checked
+        }))
+      }), t('应用未运行时允许启动', 'Allow launching if not running')), /*#__PURE__*/React.createElement("label", {
+        className: "checkline pr-check"
+      }, /*#__PURE__*/React.createElement("input", {
+        type: "checkbox",
+        checked: modal.move,
+        onChange: e => setModal(prev => ({
+          ...prev,
+          move: e.target.checked
+        }))
+      }), t('允许将应用移到本屏', 'Allow moving the app to this display')));
+      if (modal.type === 'preview') {
+        const p = modal.live ? m.saved[modal.id].privacy : m.draft[modal.id].privacy;
+        return /*#__PURE__*/React.createElement("div", {
+          ref: cover,
+          className: "pr-protection-cover",
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": t('保护效果示意', 'Protection preview'),
+          style: {
+            backgroundImage: modal.mode === 'curtain' && p.background !== 'solid' ? `linear-gradient(#102a2338,#102a2338),url("${p.background === 'custom' ? p.images[0] || 'forest-mist.png' : 'forest-mist.png'}")` : 'none',
+            backgroundSize: p.fit === 'contain' ? 'contain' : 'cover',
+            backgroundRepeat: 'no-repeat'
+          }
+        }, modal.mode !== 'curtain' && /*#__PURE__*/React.createElement("div", {
+          className: "pr-preview-description"
+        }, /*#__PURE__*/React.createElement(Icon, {
+          name: modal.mode === 'desktop' ? 'desktop' : 'app',
+          size: 40
+        }), /*#__PURE__*/React.createElement("h3", null, modal.mode === 'desktop' ? t('本屏已回到桌面', 'This display is on the desktop') : p.app), /*#__PURE__*/React.createElement("p", null, t('仅为示意，真实窗口未改动。', 'Illustration only. Real windows are unchanged.'))), /*#__PURE__*/React.createElement(Button, {
+          kind: "primary",
+          onClick: previewExit
+        }, t('进入此屏幕', 'Enter this screen')));
+      }
+      return null;
+    }
+    return /*#__PURE__*/React.createElement("div", {
+      className: "pr-root",
+      "data-screen-label": module === 'privacy' ? 'Privacy protection v5' : 'Screen rest v5'
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "pr-workspace",
+      inert: modal || m.tray ? '' : undefined
+    }, /*#__PURE__*/React.createElement("header", {
+      className: "page-head"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", null, module === 'privacy' ? t('隐私保护', 'Privacy protection') : t('屏幕休息', 'Screen rest')), /*#__PURE__*/React.createElement("p", null, module === 'privacy' ? t('在你需要时守护，在你使用时让开。', 'Protect when needed. Give you room while in use.') : t('每块屏幕，都有自己的休息节奏。', 'A rest rhythm for each display.'))), /*#__PURE__*/React.createElement("span", {
+      className: "scope"
+    }, t('按屏幕设置', 'PER DISPLAY'))), screen && picker(), screen && runtimeBar(), /*#__PURE__*/React.createElement("div", {
+      className: "pr-scroll",
+      key: module
+    }, screen ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "pr-enable"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", null, module === 'privacy' ? t('开启此屏幕隐私保护', 'Enable privacy for this display') : t('开启此屏幕自动休息', 'Enable screen rest for this display')), /*#__PURE__*/React.createElement("p", null, JSON.stringify(c) !== JSON.stringify(saved) ? t('本屏有未保存修改', 'This display has unsaved edits') : t('按已保存设置运行', 'Using saved settings'))), /*#__PURE__*/React.createElement(Toggle, {
+      checked: c.enabled,
+      label: module === 'privacy' ? t('开启此屏幕隐私保护', 'Enable privacy for this display') : t('开启此屏幕自动休息', 'Enable screen rest for this display'),
+      onChange: v => patch({
+        enabled: v
+      })
+    })), c.enabled ? module === 'privacy' ? privacyForm() : restForm() : /*#__PURE__*/React.createElement("div", {
+      className: "pr-off"
+    }, /*#__PURE__*/React.createElement(Icon, {
+      name: module === 'privacy' ? 'shield' : 'moon',
+      size: 32
+    }), /*#__PURE__*/React.createElement("h3", null, module === 'privacy' ? t('需要时，再开启隐私保护', 'Enable privacy when you need it') : t('此屏幕不自动休息', 'This display stays awake')), /*#__PURE__*/React.createElement("p", null, saved.enabled ? t('关闭尚未保存，原规则仍在运行。', 'The off state is unsaved; previous rules still apply.') : t('之前的参数会保留，不影响另一个模块。', 'Your parameters are kept. The other module is unaffected.'))), /*#__PURE__*/React.createElement("div", {
+      className: "pr-copy"
+    }, /*#__PURE__*/React.createElement(Button, {
+      small: true,
+      kind: "link",
+      disabled: m.screens.length < 2,
+      onClick: () => setModal({
+        type: 'copy',
+        targets: []
+      })
+    }, t('应用到其他屏幕', 'Apply to other displays'), " ", /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "\u2197")))) : /*#__PURE__*/React.createElement("div", {
+      className: "empty"
+    }, /*#__PURE__*/React.createElement(Icon, {
+      name: "screen",
+      size: 32
+    }), /*#__PURE__*/React.createElement("h3", null, m.scenario === 'loading' ? t('正在查找屏幕…', 'Finding displays…') : t('还没有发现屏幕', 'No displays found')), /*#__PURE__*/React.createElement("p", null, m.scenario === 'loading' ? t('连接完成后会显示可设置的屏幕。', 'Connected displays will appear here.') : t('连接屏幕后，便可分别设置休息与隐私规则。', 'Connect a display to set its rest and privacy rules.')))), notice && /*#__PURE__*/React.createElement("div", {
+      className: "pr-notice",
+      role: "status"
+    }, notice), error && /*#__PURE__*/React.createElement("div", {
+      className: "save-error",
+      role: "alert"
+    }, error), /*#__PURE__*/React.createElement("footer", {
+      className: "pr-save"
+    }, /*#__PURE__*/React.createElement("div", null, dirty.length ? t(dirty.length + ' 块屏幕有未保存修改', dirty.length + ' display(s) with unsaved edits') : t('设置已保存', 'Settings saved'), /*#__PURE__*/React.createElement("small", null, module === 'privacy' ? t('仅保存隐私保护，不改屏幕休息', 'Saves privacy only, leaving screen rest unchanged') : t('仅保存屏幕休息，不改隐私保护', 'Saves screen rest only, leaving privacy unchanged'))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Button, {
+      kind: "quiet",
+      disabled: !dirty.length,
+      onClick: discard
+    }, t('放弃更改', 'Discard changes')), /*#__PURE__*/React.createElement(Button, {
+      kind: "primary",
+      disabled: !dirty.length,
+      onClick: save
+    }, module === 'privacy' ? t('保存隐私设置', 'Save privacy') : t('保存休息设置', 'Save screen rest'))))), dialog());
+  }
+  window.SKPrivacy = {
+    Workspace,
+    initial,
+    changed
+  };
+})();

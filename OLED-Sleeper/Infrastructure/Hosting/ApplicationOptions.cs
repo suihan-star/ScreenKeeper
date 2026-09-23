@@ -13,7 +13,7 @@ namespace OLED_Sleeper.Infrastructure.Hosting
         /// of opening the main window. Intended primarily for launches performed
         /// during system startup.
         /// </summary>
-        [Option('h', "hide", Required = false, HelpText = "Start the application hidden in the system tray.")]
+        [Option('h', "hide", Required = false, HelpText = "启动后隐藏到系统托盘。")]
         public bool StartHidden { get; set; }
     }
 }
