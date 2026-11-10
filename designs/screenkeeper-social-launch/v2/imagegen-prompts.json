@@ -1,0 +1,22 @@
+[
+  {
+    "key": "v2-x-poster",
+    "source": "x-poster.png",
+    "prompt": "Use case: text-localization. Edit this ScreenKeeper marketing poster, preserving the landscape aspect ratio, enormous headline \"工作有人催 / 休息有人提醒\", brand \"屏幕良伴 ScreenKeeper\", calm forest green / warm cream palette, office scene, person, cat and high-end editorial styling. The product works for SINGLE monitors as well as multiple monitors; do not imply multiple monitors are a prerequisite. Replace the long subheading below the huge headline with this EXACT line, prominently: \"单屏多屏，皆由你心定\". Replace the feature row with exactly \"屏幕休息 · 隐私保护 · 健康提醒 · 色温调节\". Keep \"Windows 便携版｜完整解压即可使用\" and \"场景示意\". Add the short small line \"给每天坐在电脑前的你，一个体贴的桌面搭子\" if space allows above the footer, without shrinking the main text. No new logos or invented UI. Do not change any other visual elements. Ensure accurate Simplified Chinese."
+  },
+  {
+    "key": "v2-xhs-01-cover",
+    "source": "xhs-01-cover.png",
+    "prompt": "Use case: text-localization and precise-object-edit. Edit this existing vertical 3:4 ScreenKeeper poster. Preserve headline EXACT \"你照顾工作 / 谁照顾你？\", brand \"屏幕良伴 ScreenKeeper\", warm cream / forest green look, daylight, oak desk, green chair, plants, huge crisp Chinese typography and general composition. Change top eyebrow to EXACT \"给每天坐在电脑前的你\". Replace \"给自己找个体贴的桌面搭子\" with prominently readable EXACT \"单屏多屏，皆由你心定\". Replace bottom feature row with \"屏幕休息 · 隐私保护 · 健康提醒 · 色温调节\"; fit it clearly on two balanced lines if necessary. MOST IMPORTANT scene change: replace the TWO adjacent displays with ONE centered widescreen monitor on one stand, showing the tranquil misty forest image. Adjust the desk naturally; no second display, no laptop, no tablet. This makes it visually clear the software also works on a single monitor. Keep \"场景示意\" small in footer. No other text changes, no logos, no fake claims."
+  },
+  {
+    "key": "v2-xhs-02-privacy",
+    "source": "xhs-02-privacy.png",
+    "prompt": "Use case: text-localization. Edit this existing vertical 3:4 ScreenKeeper privacy marketing poster. Preserve brand, photographic two-monitor desk, scene, opaque forest on the right screen with its exact button \"进入此屏幕\", warm cream / forest green palette, and text layout. Replace the huge headline \"副屏上的内容 / 别一直晾着\" with EXACT \"想遮的内容 / 替你遮好\", keeping enormous bold Chinese type. Replace the label \"主屏继续工作\" with \"使用中的屏幕\"; replace \"副屏按规则遮挡\" with \"按规则遮挡内容\". Replace bottom primary supporting text with EXACT \"单屏多屏，皆由你心定\", at prominent size. Replace the small supporting text \"每块屏幕，单独设置\" with \"单屏也能保护内容，多屏还可独立设置\". Keep footer EXACT \"场景示意｜隐私幕不替代系统锁屏\". Single-screen users must understand the feature applies to them too. No extra logos or claims, preserve everything else."
+  },
+  {
+    "key": "v2-xhs-03-break",
+    "source": "xhs-03-break.png",
+    "prompt": "Use case: text-localization and precise-object-edit. Edit this existing vertical 3:4 ScreenKeeper break-reminder marketing poster. Preserve main headline \"休息这件事 / 别总等忙完\", brand \"屏幕良伴 ScreenKeeper\", body \"到点轻轻提醒，休息由你决定\", choices \"开始休息 · 稍后 · 跳过本次\", person stretching with identical anatomy and pose, green chair, daylight, plants, room, layout, all photographic styling. Replace big bottom slogan \"照顾屏幕，也照顾自己\" with EXACT \"单屏多屏，皆由你心定\". Keep footer \"Windows 便携版｜完整解压即可使用\" and small \"场景示意\". Change the two small desktop monitors to ONE widescreen monitor centered in the same desk area with one stand, displaying the tranquil forest; this is important to visually include single-monitor users. No other changes. Chinese text must be accurate, maintain the vertical 3:4 aspect ratio."
+  }
+]

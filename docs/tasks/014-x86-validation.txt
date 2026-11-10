@@ -1,0 +1,93 @@
+屏幕良伴 · ScreenKeeper 1.0.1-preview.1
+x86 预览版人工验证 / x86 preview validation
+
+==================== 中文 ====================
+
+这是供功能观察的预览包，不覆盖原 1.0.0 成品。
+可以在当前 Windows 10／11 64 位电脑上运行 x86 版，无需另买电脑。
+本次开发环境为 Windows 11 x64；WOW64 检查不等于 Windows 10 32 位实机验收。
+程序未签名。完整使用说明和问题排查见同目录 README／FAQ 文本。
+
+开始前
+1. 从托盘正常退出当前 ScreenKeeper，等待亮度／原色恢复完成。
+2. 把预览 ZIP 完整解压到一个新的可写文件夹，保留全部 DLL。
+3. 不复制原版的 Data、色温资格或恢复记录到预览目录。
+4. 双击新文件夹里的 ScreenKeeper.exe。新配置的管理功能默认关闭。
+   两个版本共用单实例身份：原版没有退出时，会打开原版窗口。
+
+建议按以下顺序逐项开启、保存并观察，每项完成后再继续。
+
+一、启动与保存
+- 设置窗口正常打开，能识别两块显示器；切换语言／主题、最小化到托盘、
+  从托盘重新打开都正常。
+- 修改一项设置并保存，正常退出、重新启动，确认该项仍保留。
+
+二、隐私保护
+- 先在一块屏幕启用隐私幕，观察空闲触发和“进入此屏幕”按钮。
+- 开启“使用时不打扰”，按自己勾选的鼠标／窗口／输入条件检查延后效果。
+- 用无私密内容的测试窗口检查“回到桌面”。
+- “指定应用”能列出并选择平时使用的应用，包括 64 位应用；保存后观察
+  是否能按规则切换。目标在另一屏时，先明确开启跨屏许可。
+- 不要用包含私密内容的窗口来测试指定应用；失败提示时保留幕布与提示。
+
+三、健康提醒与屏幕休息
+- 用“预览当前外观”检查画面与居中卡片，检查关闭预览及三个按钮的结果。
+- 在一块屏幕测试短时空闲遮黑、按已选条件唤醒；另一屏应保持正常。
+- 如需测试调暗，观察唤醒及正常退出后是否恢复亮度。异常时停止后续测试，
+  保留提示和记录，不连续强制结束进程。
+
+四、色温
+- 预览目录使用新配置，不会自动继承原版色温资格。
+- 确认其他调色软件已退出、当前无自定义校色，再在客户端为目标屏开始
+  15 秒验证；亲自观察本屏变暖、另一屏不变、随后恢复，再确认结果。
+- 验证通过后用工作／休息试调检查滑杆、15 秒恢复及原色对比。
+- 保存启用后观察所选时段效果；测试结束关闭并保存，确认原色恢复。
+- 未解决的恢复提示按 FAQ 处理，不删除恢复文件来继续。
+
+反馈与返回原版
+记录：测试项、结果、发生时间、完整提示，必要时提供去除隐私的截图。
+日志：预览程序旁 Data\ScreenKeeper\Logs，只分享必要片段。
+正常退出预览版并确认恢复后，即可重新运行原来的 1.0.0；无需覆盖其文件。
+
+==================== ENGLISH ====================
+
+This is a functional preview, separate from the existing 1.0.0 package.
+The x86 build can run on your current 64-bit Windows 10/11 computer.
+Development checks use Windows 11 x64; WOW64 is not native Windows 10
+32-bit acceptance. The program is unsigned. See the README/FAQ texts for
+general instructions and recovery help.
+
+Before starting
+1. Exit your existing ScreenKeeper from the tray and wait for brightness
+   and original colors to be restored.
+2. Extract the whole preview ZIP into a new writable folder. Keep all DLLs.
+3. Do not copy your old Data, verification or recovery records into it.
+4. Run ScreenKeeper.exe in the new folder. Management starts disabled.
+   Both versions share a single-instance identity; a running old version
+   will be reopened instead of starting the preview.
+
+Test one feature at a time, saving the relevant settings:
+- Startup/settings: Detect both displays; switch language/theme; hide to
+  the tray and reopen. Save an edit, exit normally and check it persists.
+- Privacy: Try the curtain and Enter this screen. Check your chosen
+  Do not disturb while in use conditions. Use non-private test windows
+  for Show desktop and Specific app. Confirm 64-bit apps are selectable.
+  Allow cross-screen movement explicitly when needed. Keep any fallback
+  curtain and error message if an action fails.
+- Reminders/rest: Preview the appearance and centered card, close the
+  preview and check the three actions. Try idle blackout and wake on one
+  display, leaving the other unchanged. For dimming, check restoration
+  after wake and normal exit. Stop if a problem occurs; do not repeatedly
+  force-end the app.
+- Color: The new folder has no inherited verification. Exit other color
+  tools and avoid custom calibration before starting the selected
+  display's 15-second test. Confirm only after observing warming on that
+  display alone and restoration afterwards. Then test the work/rest
+  sliders, 15-second return and original-color comparison. When finished,
+  disable and save adjustment, and confirm restoration. Follow the FAQ
+  for unresolved recovery messages; never delete records to continue.
+
+Report the item, result, time and exact message; remove private content
+from screenshots. Logs are in Data\ScreenKeeper\Logs beside this preview.
+Share only relevant excerpts. Exit the preview normally and confirm
+restoration before returning to your original 1.0.0. Keep its files intact.

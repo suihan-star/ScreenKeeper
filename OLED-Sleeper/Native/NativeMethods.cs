@@ -90,8 +90,17 @@ namespace OLED_Sleeper.Native
         /// <param name="nIndex">The zero-based offset to the value to be retrieved (use <see cref="GWL_EXSTYLE"/>).</param>
         /// <returns>The value of the requested offset.</returns>
         /// <seealso href="https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowlongptra"/>
-        [DllImport("user32.dll")]
-        public static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
+        // Win32 headers map the Ptr API to GetWindowLong on x86; P/Invoke must do that explicitly.
+        // Use process bitness: a 32-bit client can run on a 64-bit Windows desktop.
+        public static IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex) => IntPtr.Size == 8
+            ? GetWindowLongPtr64(hWnd, nIndex)
+            : new IntPtr(GetWindowLong32(hWnd, nIndex));
+
+        [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW", ExactSpelling = true, SetLastError = true)]
+        private static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", EntryPoint = "GetWindowLongW", ExactSpelling = true, SetLastError = true)]
+        private static extern int GetWindowLong32(IntPtr hWnd, int nIndex);
 
         /// <summary>
         /// Changes an attribute of the specified window. Use to set extended window styles.
@@ -101,8 +110,15 @@ namespace OLED_Sleeper.Native
         /// <param name="dwNewLong">The replacement value.</param>
         /// <returns>The previous value of the specified offset.</returns>
         /// <seealso href="https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowlongptra"/>
-        [DllImport("user32.dll")]
-        public static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+        public static IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong) => IntPtr.Size == 8
+            ? SetWindowLongPtr64(hWnd, nIndex, dwNewLong)
+            : new IntPtr(SetWindowLong32(hWnd, nIndex, dwNewLong.ToInt32()));
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW", ExactSpelling = true, SetLastError = true)]
+        private static extern IntPtr SetWindowLongPtr64(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongW", ExactSpelling = true, SetLastError = true)]
+        private static extern int SetWindowLong32(IntPtr hWnd, int nIndex, int dwNewLong);
 
         /// <summary>
         /// Retrieves the name of the class to which the specified window belongs.
@@ -334,8 +350,8 @@ namespace OLED_Sleeper.Native
         public const byte VCP_CODE_BRIGHTNESS = 0x10;
 
         /// <summary>
-        /// Represents a handle to a physical monitor. The description is a wide string, so the struct is
-        /// 264 bytes; marshalling it as ANSI hands dxva2 a 136-byte buffer to write 264 bytes into.
+        /// Represents a handle plus 128 UTF-16 characters: 260 bytes on x86, 264 on x64.
+        /// ANSI marshalling would allocate too little space for the description written by dxva2.
         /// </summary>
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct PHYSICAL_MONITOR

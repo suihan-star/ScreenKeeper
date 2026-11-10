@@ -1,0 +1,256 @@
+{
+  "product": "ScreenKeeper",
+  "revision": 2,
+  "locale": "en",
+  "positioning": "One screen or many. Your way.",
+  "note": "Single-screen feature illustrations, not software recordings. Not published.",
+  "media": {
+    "clips": [
+      "01-screen-rest",
+      "02-privacy",
+      "03-health",
+      "04-color"
+    ],
+    "durationSeconds": 18,
+    "mp4": {
+      "width": 900,
+      "height": 1200,
+      "fps": 24,
+      "frames": 432
+    },
+    "gif": {
+      "width": 540,
+      "height": 720,
+      "frames": 216,
+      "loop": "infinite"
+    },
+    "posters": {
+      "x": [
+        1672,
+        941
+      ],
+      "xiaohongshu": [
+        1086,
+        1448
+      ]
+    }
+  },
+  "verifiedLocalHtmlReferences": 54,
+  "files": [
+    {
+      "path": "_d_meta.json",
+      "bytes": 1666,
+      "sha256": "59d1e14eaaa4efd3778394078296f80a6a6a59da2a97424f28f4e884b1babb2a"
+    },
+    {
+      "path": "assets/forest-mist.png",
+      "bytes": 2115810,
+      "sha256": "f63b615b8860f85967b5e47f54c7b0c59b39f04eb3d60ec2475b50d2609087ec"
+    },
+    {
+      "path": "assets/logo.svg",
+      "bytes": 383,
+      "sha256": "a53ea15e77ff85169cf1773a03a4cd40df3ec7b908dc7fbe4bd3c3bf4c934d97"
+    },
+    {
+      "path": "build.cjs",
+      "bytes": 642,
+      "sha256": "819becc84866c1992a49b56e3db9ebf93864ed73f22453eb95f0fe55f9431f80"
+    },
+    {
+      "path": "exports/01-screen-rest.gif",
+      "bytes": 1379746,
+      "sha256": "15a8e19a69cac4e89a550cf0031df9897cf677f39f3d8ea21fa92a8ada215c7d"
+    },
+    {
+      "path": "exports/01-screen-rest.mp4",
+      "bytes": 328752,
+      "sha256": "3b06088e1920a61089c257f6fa5cde8cd6ccbe33c4ac24d06ba4bacabf43d6db"
+    },
+    {
+      "path": "exports/02-privacy.gif",
+      "bytes": 2395001,
+      "sha256": "4680732b5cd76d8c489c4100df2ae2b519ee246012275425e5d80e838de8d075"
+    },
+    {
+      "path": "exports/02-privacy.mp4",
+      "bytes": 595403,
+      "sha256": "7afec621b42472b4454bc5d3d805074905325ec38c0fa34c1eb147696adc1546"
+    },
+    {
+      "path": "exports/03-health.gif",
+      "bytes": 2622031,
+      "sha256": "75fedf4a7d1b754fb1c993480d28bc500e6fe4dd576e6169206b3222bafb8a2e"
+    },
+    {
+      "path": "exports/03-health.mp4",
+      "bytes": 614619,
+      "sha256": "89ad758e9753453464e2b0680aa088f36be2e4aeaef4bdc66f7c74318af25bad"
+    },
+    {
+      "path": "exports/04-color.gif",
+      "bytes": 3004996,
+      "sha256": "0e81d1e0fc353dd81ed491e5e9455bf89ad9193c8f6491d5927005516a79767e"
+    },
+    {
+      "path": "exports/04-color.mp4",
+      "bytes": 1139691,
+      "sha256": "f7ed68aee05246b8c9811e253da5424737ab7086082bab660f8380ea9f62fd19"
+    },
+    {
+      "path": "imagegen-prompts.json",
+      "bytes": 6552,
+      "sha256": "3e75f15aa581c51c0b3e11157a9f881906fd604446d2ccc834756186c3b99472"
+    },
+    {
+      "path": "index.html",
+      "bytes": 6556,
+      "sha256": "b42716f56fd3fa5ddb685d98def25a902622feb9d57444871628fd5c8243fd2f"
+    },
+    {
+      "path": "motion/01-screen-rest.html",
+      "bytes": 1128,
+      "sha256": "90c1431f391ec7edce3b9c239b5389b620abf03d4b2eb593baa90a42745d2742"
+    },
+    {
+      "path": "motion/02-privacy.html",
+      "bytes": 1134,
+      "sha256": "1d9bc63c420c3c37fa56f2cb9551008c74eb9d702030d3d4def73f50d81961bb"
+    },
+    {
+      "path": "motion/03-health.html",
+      "bytes": 1132,
+      "sha256": "6ee27ff18003ea5896ba4a2b492da92b9e23831723b21c812089b5d90fd87dc4"
+    },
+    {
+      "path": "motion/04-color.html",
+      "bytes": 1130,
+      "sha256": "d9ef0c46b86ce5b57cf7d2fd8cbfc859603d614f2f89d54df5d58620670fdd2c"
+    },
+    {
+      "path": "motion.css",
+      "bytes": 8905,
+      "sha256": "265533d4d4fa0ef0102ab0badda495d700a4bd3106cc0d6d92a62eb35677d2a4"
+    },
+    {
+      "path": "motion.js",
+      "bytes": 16940,
+      "sha256": "ab60fccc84982428fddd4121403a1d1e5961021d47ec526c71c8d3879aa05d17"
+    },
+    {
+      "path": "motion.jsx",
+      "bytes": 11858,
+      "sha256": "787e94b783d4bc1a9d35389a226660139f8008b29da2ac95132a1d903097483c"
+    },
+    {
+      "path": "package.py",
+      "bytes": 3333,
+      "sha256": "39082427417aef30918d20b74defb0896737c6ac8d44711f32b488ea071479bc"
+    },
+    {
+      "path": "posters/x-poster.png",
+      "bytes": 2101988,
+      "sha256": "80b3909baaf86663d83a1c77e0234574011f85798b901e5e8c1015febd1cfb64"
+    },
+    {
+      "path": "posters/xhs-01-cover.png",
+      "bytes": 2099458,
+      "sha256": "2d427db987c1a6df909a148bc409f745e97c6251e0edc6235c5ccfd9acd79031"
+    },
+    {
+      "path": "posters/xhs-02-privacy.png",
+      "bytes": 1861511,
+      "sha256": "0a2bd37a0bead93b26f485c2e057acc986326a07246e73e540261eecff7fe512"
+    },
+    {
+      "path": "posters/xhs-03-break.png",
+      "bytes": 2080828,
+      "sha256": "3cff4d1119fae930299b4ed66ac97b7f82e955127d3c1a7937c35fa328f5dbeb"
+    },
+    {
+      "path": "qa/01-screen-rest-03.png",
+      "bytes": 83021,
+      "sha256": "e307746b7c4e16526c3aebd23512dd61b3d8b2b432df984e94a4b41181dd4929"
+    },
+    {
+      "path": "qa/02-privacy-05.png",
+      "bytes": 543571,
+      "sha256": "e62b27b47ec18be2db0c4fdb31111423cc9586b831b62925b24b6b798216997f"
+    },
+    {
+      "path": "qa/03-health-05.png",
+      "bytes": 401073,
+      "sha256": "2e437ca300ef8502342b4d47da5f6959a8e99f650421ad55ceb17e5c5e8ff042"
+    },
+    {
+      "path": "qa/04-color-05.png",
+      "bytes": 519612,
+      "sha256": "a1814eef60270080a1fa36344b098c989bbcc147ff046d9499b847a913107529"
+    },
+    {
+      "path": "qa/export-verification.json",
+      "bytes": 5588,
+      "sha256": "ce6dbd72ac4e291f2ae9bee71ee1cbbafa61700b93f47fefad93e589197342b0"
+    },
+    {
+      "path": "qa/media-verification.json",
+      "bytes": 1921,
+      "sha256": "cd7fac995fd810cf44cfe8d55e7e0890fa2ef1ab49ac5d1ed36b48721297044b"
+    },
+    {
+      "path": "qa/verification.json",
+      "bytes": 10190,
+      "sha256": "6dbda906512ca61431f20f4071c466c28fd214b18ecc7711d345afb340c98812"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2158,
+      "sha256": "c979883bf73a085cbbba940adb981ac61d5aa3f43e1786dd500cf6b224f87db3"
+    },
+    {
+      "path": "render.cjs",
+      "bytes": 7312,
+      "sha256": "fbfa6403a86d429965698e935c153c7399743989cc1b2593af49b833b4a52352"
+    },
+    {
+      "path": "vendor/animations-v3.js",
+      "bytes": 28235,
+      "sha256": "888c8ebfe49499fe56f5b8b71092eb5388897f97145056f0a3be099bf53498bb"
+    },
+    {
+      "path": "vendor/animations-v3.jsx",
+      "bytes": 43509,
+      "sha256": "8ed10b2cac760f1185fc06ef081424fd29047fccadbca0f424d43350bbe52b39"
+    },
+    {
+      "path": "vendor/LICENSE-react.txt",
+      "bytes": 1086,
+      "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85"
+    },
+    {
+      "path": "vendor/react-dom.min.js",
+      "bytes": 131835,
+      "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
+    },
+    {
+      "path": "vendor/react.min.js",
+      "bytes": 10751,
+      "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
+    },
+    {
+      "path": "vendor/tweaks-panel.js",
+      "bytes": 29066,
+      "sha256": "32912f050bf6f2044ed32b8b68d235e7dde89b6a67955db485c5f8af57ed14d3"
+    },
+    {
+      "path": "vendor/tweaks-panel.jsx",
+      "bytes": 35494,
+      "sha256": "afbe46094689ab82e4bc3d865908886f0ef85b909d58adf853078f962424876e"
+    },
+    {
+      "path": "verify-media.py",
+      "bytes": 1566,
+      "sha256": "357d631c59596c17da1c3d1e5f8398af1354ba3f0dcc6641cdea4e10e83f476e"
+    }
+  ]
+}

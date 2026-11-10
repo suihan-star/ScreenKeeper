@@ -1,6 +1,9 @@
+using OLED_Sleeper.Infrastructure;
 using OLED_Sleeper.UI.Localization;
 using OLED_Sleeper.UI.ViewModels;
 using OLED_Sleeper.UI.Views;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Automation;
 
@@ -34,6 +37,19 @@ public partial class MainWindow : Window
         else SystemCommands.MaximizeWindow(this);
     }
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
+    private void OfficialWebsite_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(ProductIdentity.WebsiteUrl) { UseShellExecute = true })?.Dispose();
+        }
+        catch (Exception error) when (error is Win32Exception or InvalidOperationException)
+        {
+            new AppDialog(UiText.Get("无法打开默认浏览器，请手动访问：") + "\n" + ProductIdentity.WebsiteUrl,
+                UiText.Get("打开官网"), false)
+            { Owner = this }.ShowDialog();
+        }
+    }
     private void MonitorList_Activate(object sender, System.Windows.Input.MouseButtonEventArgs e) { if (DataContext is MainViewModel vm && vm.SelectedMonitor != null) vm.CurrentModule = "Displays"; }
     private void General_Click(object sender, RoutedEventArgs e) { if (DataContext is MainViewModel vm) SettingsDialogs.General(this, vm); }
 }

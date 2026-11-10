@@ -25,8 +25,8 @@ public sealed partial class ColorSettingsViewModel
         set
         {
             if (ReferenceEquals(value, _previewScreen)) return;
-            _ = EndPreviewAsync();
             _previewScreen = value;
+            _ = EndPreviewAsync();
             Notify();
         }
     }

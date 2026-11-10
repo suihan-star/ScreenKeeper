@@ -7,6 +7,7 @@ namespace OLED_Sleeper.Infrastructure
     public static class ProductIdentity
     {
         public const string Name = "ScreenKeeper";
+        public const string WebsiteUrl = "https://screenkeeper.skyrrats.com/";
         public const string DisplayName = "多屏管家 ScreenKeeper";
         public const string SettingsTitle = DisplayName + " · 设置";
         public const string MutexName = "ScreenKeeper-Mutex";

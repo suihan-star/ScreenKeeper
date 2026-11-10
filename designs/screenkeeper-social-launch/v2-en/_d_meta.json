@@ -1,0 +1,74 @@
+{
+  "type": "design",
+  "designSystems": [],
+  "primaryDesignSystem": null,
+  "assets": {
+    "ScreenKeeper English campaign": {
+      "versions": [
+        {
+          "path": "index.html",
+          "createdAt": "2026-09-24T14:35:59.215Z",
+          "status": "needs-review",
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          }
+        }
+      ]
+    },
+    "01-screen-rest": {
+      "versions": [
+        {
+          "path": "motion/01-screen-rest.html",
+          "createdAt": "2026-09-24T14:35:59.319Z",
+          "status": "needs-review",
+          "viewport": {
+            "width": 900,
+            "height": 1244
+          }
+        }
+      ]
+    },
+    "02-privacy": {
+      "versions": [
+        {
+          "path": "motion/02-privacy.html",
+          "createdAt": "2026-09-24T14:35:59.425Z",
+          "status": "needs-review",
+          "viewport": {
+            "width": 900,
+            "height": 1244
+          }
+        }
+      ]
+    },
+    "03-health": {
+      "versions": [
+        {
+          "path": "motion/03-health.html",
+          "createdAt": "2026-09-24T14:35:59.531Z",
+          "status": "needs-review",
+          "viewport": {
+            "width": 900,
+            "height": 1244
+          }
+        }
+      ]
+    },
+    "04-color": {
+      "versions": [
+        {
+          "path": "motion/04-color.html",
+          "createdAt": "2026-09-24T14:35:59.632Z",
+          "status": "needs-review",
+          "viewport": {
+            "width": 900,
+            "height": 1244
+          }
+        }
+      ]
+    }
+  },
+  "createdAt": "2026-09-24T14:35:59.216Z",
+  "updatedAt": "2026-09-24T14:35:59.633Z"
+}

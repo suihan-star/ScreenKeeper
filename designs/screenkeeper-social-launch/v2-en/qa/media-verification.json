@@ -1,0 +1,74 @@
+[
+  {
+    "file": "01-screen-rest.gif",
+    "width": 540,
+    "height": 720,
+    "frames": 216,
+    "durationMs": 18000,
+    "loop": 0,
+    "sampledDistinctFrames": 17,
+    "bytes": 1379746,
+    "sha256": "15a8e19a69cac4e89a550cf0031df9897cf677f39f3d8ea21fa92a8ada215c7d"
+  },
+  {
+    "file": "02-privacy.gif",
+    "width": 540,
+    "height": 720,
+    "frames": 216,
+    "durationMs": 18000,
+    "loop": 0,
+    "sampledDistinctFrames": 18,
+    "bytes": 2395001,
+    "sha256": "4680732b5cd76d8c489c4100df2ae2b519ee246012275425e5d80e838de8d075"
+  },
+  {
+    "file": "03-health.gif",
+    "width": 540,
+    "height": 720,
+    "frames": 216,
+    "durationMs": 18000,
+    "loop": 0,
+    "sampledDistinctFrames": 17,
+    "bytes": 2622031,
+    "sha256": "75fedf4a7d1b754fb1c993480d28bc500e6fe4dd576e6169206b3222bafb8a2e"
+  },
+  {
+    "file": "04-color.gif",
+    "width": 540,
+    "height": 720,
+    "frames": 216,
+    "durationMs": 18000,
+    "loop": 0,
+    "sampledDistinctFrames": 17,
+    "bytes": 3004996,
+    "sha256": "0e81d1e0fc353dd81ed491e5e9455bf89ad9193c8f6491d5927005516a79767e"
+  },
+  {
+    "file": "posters/x-poster.png",
+    "width": 1672,
+    "height": 941,
+    "bytes": 2101988,
+    "sha256": "80b3909baaf86663d83a1c77e0234574011f85798b901e5e8c1015febd1cfb64"
+  },
+  {
+    "file": "posters/xhs-01-cover.png",
+    "width": 1086,
+    "height": 1448,
+    "bytes": 2099458,
+    "sha256": "2d427db987c1a6df909a148bc409f745e97c6251e0edc6235c5ccfd9acd79031"
+  },
+  {
+    "file": "posters/xhs-02-privacy.png",
+    "width": 1086,
+    "height": 1448,
+    "bytes": 1861511,
+    "sha256": "0a2bd37a0bead93b26f485c2e057acc986326a07246e73e540261eecff7fe512"
+  },
+  {
+    "file": "posters/xhs-03-break.png",
+    "width": 1086,
+    "height": 1448,
+    "bytes": 2080828,
+    "sha256": "3cff4d1119fae930299b4ed66ac97b7f82e955127d3c1a7937c35fa328f5dbeb"
+  }
+]

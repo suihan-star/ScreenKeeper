@@ -1,4 +1,8 @@
 {
+  "官网 ↗": "Website ↗",
+  "打开官网": "Open website",
+  "在默认浏览器中打开官网": "Open the website in your default browser",
+  "无法打开默认浏览器，请手动访问：": "Could not open your default browser. Please visit:",
   "使用默认背景": "Use default background",
   "内置山林背景": "Built-in forest background",
   "自定义图片": "Custom pictures",
@@ -697,5 +701,6 @@
   "连接或显示模式已变化，已按当前模式完成只读检查。请确认以下屏幕画面正常，再重新建立原色。": "The connection or display mode has changed. A read-only check of the current mode is complete. Confirm that the displays below look normal before establishing a new original-color baseline.",
   "有屏幕的原色记录尚未处理。请先处理恢复记录，再开始验证。": "Some original-color records still need attention. Resolve the recovery records before starting verification.",
   "处理恢复记录": "Resolve recovery records",
-  "待处理屏幕：": "Displays needing attention:"
+  "待处理屏幕：": "Displays needing attention:",
+  "正在等待屏幕连接和原色读数稳定。": "Waiting for the display connection and original-color readings to stabilize."
 }

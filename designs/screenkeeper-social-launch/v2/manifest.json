@@ -1,0 +1,265 @@
+{
+  "product": "屏幕良伴 ScreenKeeper",
+  "revision": 2,
+  "positioning": "单屏多屏，皆由你心定",
+  "note": "四段均为单屏功能示意，非软件实录。素材未发布。",
+  "media": {
+    "clips": [
+      "01-screen-rest",
+      "02-privacy",
+      "03-health",
+      "04-color"
+    ],
+    "durationSeconds": 18,
+    "mp4": {
+      "width": 900,
+      "height": 1200,
+      "fps": 24,
+      "frames": 432
+    },
+    "gif": {
+      "width": 540,
+      "height": 720,
+      "frames": 216,
+      "loop": "infinite"
+    },
+    "posters": {
+      "x": [
+        1672,
+        941
+      ],
+      "xiaohongshu": [
+        1086,
+        1448
+      ]
+    }
+  },
+  "verifiedLocalHtmlReferences": 56,
+  "files": [
+    {
+      "path": "_d_meta.json",
+      "bytes": 1673,
+      "sha256": "13538e1588df08c0a7ccaa93ea2c4439d6b11c1de2efbfd518ac78a852b155bb"
+    },
+    {
+      "path": "assets/forest-mist.png",
+      "bytes": 2115810,
+      "sha256": "f63b615b8860f85967b5e47f54c7b0c59b39f04eb3d60ec2475b50d2609087ec"
+    },
+    {
+      "path": "assets/logo.svg",
+      "bytes": 383,
+      "sha256": "a53ea15e77ff85169cf1773a03a4cd40df3ec7b908dc7fbe4bd3c3bf4c934d97"
+    },
+    {
+      "path": "build.cjs",
+      "bytes": 642,
+      "sha256": "819becc84866c1992a49b56e3db9ebf93864ed73f22453eb95f0fe55f9431f80"
+    },
+    {
+      "path": "copy-x.txt",
+      "bytes": 386,
+      "sha256": "a42689e5c5bf363e73bbd05957dc9d27c051c0dfe3698e58a7a70213ec083a42"
+    },
+    {
+      "path": "copy-xiaohongshu.txt",
+      "bytes": 1795,
+      "sha256": "d64e88755c1c0527569f766b2f01c2c054eccf6ebac6e99d70312423dbc8d537"
+    },
+    {
+      "path": "exports/01-screen-rest.gif",
+      "bytes": 1344467,
+      "sha256": "7e0b83787cbe58459b4c98c62e2d55b1871c61c2687a9145820f6b8645823a56"
+    },
+    {
+      "path": "exports/01-screen-rest.mp4",
+      "bytes": 313611,
+      "sha256": "a815bd14367d10e6b84b742171043e0e0cf9944857c40dccbfe6671491da3f5d"
+    },
+    {
+      "path": "exports/02-privacy.gif",
+      "bytes": 2426298,
+      "sha256": "8c6cbba2780ff4771bcb3cbe9a7272fd3e8cf4219fa289be97433c6add9f0009"
+    },
+    {
+      "path": "exports/02-privacy.mp4",
+      "bytes": 581430,
+      "sha256": "73cbecf513ed8874c0d5b4f2b4550a9e4591263c6494812eee93fb0db3531416"
+    },
+    {
+      "path": "exports/03-health.gif",
+      "bytes": 2584460,
+      "sha256": "122aca81f229b8fdd2b8bdca40b9825f8fa5a014b117c5db5c8d813df865dce7"
+    },
+    {
+      "path": "exports/03-health.mp4",
+      "bytes": 617162,
+      "sha256": "d65369304bbbd6ad58c65279d9ad10dddeaa7ad2d45b6a74e3b92ca1db3200c1"
+    },
+    {
+      "path": "exports/04-color.gif",
+      "bytes": 2993527,
+      "sha256": "005a3059e003765b04f90a5017e3cf4f353daf49f252df7e4da531a475d388f6"
+    },
+    {
+      "path": "exports/04-color.mp4",
+      "bytes": 1131310,
+      "sha256": "17e14472f2ee90deb81867de0a90432b61bfcf0f3a7b525a661ad4d673a45bf8"
+    },
+    {
+      "path": "imagegen-prompts.json",
+      "bytes": 4327,
+      "sha256": "9a510551eff01e3642f18e0af8c6322fb9230764b9642ebd3ab5ac5634fede2b"
+    },
+    {
+      "path": "index.html",
+      "bytes": 6548,
+      "sha256": "18fe781db4a6067156d4b5d37d7ca8a0875bfe60d40e89b71765624cd186b03a"
+    },
+    {
+      "path": "motion/01-screen-rest.html",
+      "bytes": 1136,
+      "sha256": "7f9e83506072612093db689ca15ec7d028f1aa5469149709a56c181d22bf175a"
+    },
+    {
+      "path": "motion/02-privacy.html",
+      "bytes": 1142,
+      "sha256": "24af85abb97c67ad7614ed82a6fdeb5253a520751f3785be119ccc77d648c46b"
+    },
+    {
+      "path": "motion/03-health.html",
+      "bytes": 1140,
+      "sha256": "9d66f9a8e464ab15b83ec3ed4c549410c4992dd5be735e72c6aa8fb478e35143"
+    },
+    {
+      "path": "motion/04-color.html",
+      "bytes": 1138,
+      "sha256": "bd32f1b711af991396efb9ccf9a9e5624a33edc5b0eb4802f379d9c0e2ed99b3"
+    },
+    {
+      "path": "motion.css",
+      "bytes": 8475,
+      "sha256": "e6c82e46c95f0a7beaac0e7757ff9cb236477ce2e2857aed48a9bdeb1f803052"
+    },
+    {
+      "path": "motion.js",
+      "bytes": 17334,
+      "sha256": "c432eca995432aa081afbfe79ba25cb8c1a2f2c2c9595377ad029f428f9d5714"
+    },
+    {
+      "path": "motion.jsx",
+      "bytes": 11655,
+      "sha256": "752f6097561e7540f5c6f8bd9a424d7f90993bcf24b29852985270e2e390dbc2"
+    },
+    {
+      "path": "package.py",
+      "bytes": 3248,
+      "sha256": "fbbc62ca03ad95db13309403a7f32e89b7398a7cc12e88c66bae272478e294cf"
+    },
+    {
+      "path": "posters/x-poster.png",
+      "bytes": 2073444,
+      "sha256": "a905f29354ba486be0fa0ca60dd614f97f32db5a33d95dab57560f6812ca3e63"
+    },
+    {
+      "path": "posters/xhs-01-cover.png",
+      "bytes": 2108813,
+      "sha256": "720ff94e0079e42b69e51461217fae081d673cf8941dc55f1fb9b7e0e0936c8c"
+    },
+    {
+      "path": "posters/xhs-02-privacy.png",
+      "bytes": 1910994,
+      "sha256": "50e70e72dd17edb79d98d49c3f81b16ffdd8bd39b71ab73423a1aaf50cf82ea4"
+    },
+    {
+      "path": "posters/xhs-03-break.png",
+      "bytes": 2098646,
+      "sha256": "ec9483528558fb22b851d55df79ef1fab91d7d90b5cb2cd46a5392246780354d"
+    },
+    {
+      "path": "qa/01-screen-rest-03.png",
+      "bytes": 90392,
+      "sha256": "c58160e922802de9f94a827c3940791d7126cd8ee1beb81be29dd2cc5098b65d"
+    },
+    {
+      "path": "qa/02-privacy-05.png",
+      "bytes": 549544,
+      "sha256": "d8bc75cd68ce67c50c5bb06bcc0cfbcc6fb78a229b36c2a3be896226e630eff3"
+    },
+    {
+      "path": "qa/03-health-05.png",
+      "bytes": 406003,
+      "sha256": "1bb0d8fb14280c97e6eb07c97a0ced45174d5c2dbecc8809c73006d8a7ecc125"
+    },
+    {
+      "path": "qa/04-color-05.png",
+      "bytes": 527600,
+      "sha256": "55ea5658b47f552fd953ea46dd89229b20f0ee40213a24cfc9b3d260ce097277"
+    },
+    {
+      "path": "qa/export-verification.json",
+      "bytes": 5639,
+      "sha256": "0dec643b7a471621ae85da046e4b6f95d1f18780a25cf152d3e5825068b15bc1"
+    },
+    {
+      "path": "qa/media-verification.json",
+      "bytes": 1921,
+      "sha256": "46e95addeec4b377737603bf00ac9bd7171b65d3740848174d188ebf0eaccd42"
+    },
+    {
+      "path": "qa/verification.json",
+      "bytes": 9884,
+      "sha256": "9a4a47737216edac2c7957918aa59376baa10859e1c8c8ebf5bd1ffea9036a16"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2443,
+      "sha256": "86dce83f700146d363a7018c8faed66fe2da0abeab25fec6ed2662e2769bfb8e"
+    },
+    {
+      "path": "render.cjs",
+      "bytes": 7257,
+      "sha256": "c789da343819486d9650fde38feb8b67731b105c6b5788016753d52f6116def0"
+    },
+    {
+      "path": "vendor/animations-v3.js",
+      "bytes": 28235,
+      "sha256": "888c8ebfe49499fe56f5b8b71092eb5388897f97145056f0a3be099bf53498bb"
+    },
+    {
+      "path": "vendor/animations-v3.jsx",
+      "bytes": 43509,
+      "sha256": "8ed10b2cac760f1185fc06ef081424fd29047fccadbca0f424d43350bbe52b39"
+    },
+    {
+      "path": "vendor/LICENSE-react.txt",
+      "bytes": 1086,
+      "sha256": "52412d7bc7ce4157ea628bbaacb8829e0a9cb3c58f57f99176126bc8cf2bfc85"
+    },
+    {
+      "path": "vendor/react-dom.min.js",
+      "bytes": 131835,
+      "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
+    },
+    {
+      "path": "vendor/react.min.js",
+      "bytes": 10751,
+      "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
+    },
+    {
+      "path": "vendor/tweaks-panel.js",
+      "bytes": 29066,
+      "sha256": "32912f050bf6f2044ed32b8b68d235e7dde89b6a67955db485c5f8af57ed14d3"
+    },
+    {
+      "path": "vendor/tweaks-panel.jsx",
+      "bytes": 35494,
+      "sha256": "afbe46094689ab82e4bc3d865908886f0ef85b909d58adf853078f962424876e"
+    },
+    {
+      "path": "verify-media.py",
+      "bytes": 1409,
+      "sha256": "7b30b2994c725efa4e96034b57dff6320ce9b932cca87463f4a152ff8b55f77b"
+    }
+  ]
+}

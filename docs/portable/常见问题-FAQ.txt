@@ -1,0 +1,339 @@
+屏幕良伴 · ScreenKeeper
+常见问题 / Frequently Asked Questions
+中文问答在前，English answers follow. 两种语言的问题编号相同。
+
+中文目录
+Q01 需要安装 .NET 吗？哪些电脑能用？
+Q02 双击没反应、缺文件或出现安全提示怎么办？
+Q03 关了窗口为什么还在运行？怎样重新打开或退出？
+Q04 设置在哪里？保存失败或换文件夹后设置不见了怎么办？
+Q05 到时间为什么没有进入屏幕休息？
+Q06 正在阅读或使用屏幕时，隐私保护总出现怎么办？
+Q07 选了回到桌面／指定应用，为什么仍然只有隐私幕？
+Q08 隐私幕能代替锁屏吗？为什么鼠标经过不解除？
+Q09 健康提醒不出现怎么办？三个按钮有什么区别？
+Q10 色温为什么要验证？为什么无法开始验证？
+Q11 原色检查一直失败，或提示旧记录备份失败怎么办？
+Q12 色温保存后没有变化？为什么滑杆不立即改色？
+Q13 屏幕黑了、点不亮或退出卡住怎么办？
+Q14 问题仍然存在，反馈时需要提供什么？
+
+==================== 中文 · 常见问题 ====================
+
+Q01 需要安装 .NET 吗？哪些电脑能用？
+A：便携包分为 x64 和 x86，均包含所需的 .NET 运行时，不需要安装
+   .NET SDK、Inno Setup 或另一个运行库。64 位 Windows 10／11 选 x64；
+   32 位 Windows 10 选 x86，不能运行 x64 包。x86 包也能在 64 位 Windows
+   上测试；Windows 11 没有 32 位系统版。已验证范围见包内发布或验证说明。
+   当前目标不包括 Windows 7／8／8.1、macOS、Linux 或 ARM 设备。
+   请完整解压，保留整个 ScreenKeeper 文件夹及其中的文件。
+
+Q02 双击没反应、缺文件或出现安全提示怎么办？
+A：先依次检查：
+   1. 是否完整解压 ZIP，EXE 旁的 DLL 是否仍在。不要在压缩软件里直接运行。
+   2. 右下角托盘或隐藏图标区是否已经有 ScreenKeeper。已有实例时先打开
+      它的设置；需要换版本时从托盘退出原实例，等待恢复完成后再启动。
+   3. 是否放在可写入的位置。便携版需要在程序旁创建 Data 文件夹。
+   4. 若提示缺少文件，从可信来源重新取得完整 ZIP，不单独下载来历不明的 DLL。
+   当前提供的便携包未做代码签名。若系统或安全软件拦截，先核对下载来源、
+   校验值和具体提示；不要直接关闭安全防护来处理。
+
+Q03 关了窗口为什么还在运行？怎样重新打开或退出？
+A：关闭按钮会把设置窗口收起到托盘，已保存的规则继续运行。
+   在托盘中打开 ScreenKeeper 菜单，选择“打开设置”可返回窗口，
+   选择“退出”才会完全退出。退出时如有未保存设置或恢复问题，请按提示处理。
+   不要在正在恢复亮度或原色时用结束进程代替正常退出。
+
+Q04 设置在哪里？保存失败或换文件夹后设置不见了怎么办？
+A：便携版使用“程序文件夹\Data\ScreenKeeper”，安装版／普通构建使用
+   %APPDATA%\ScreenKeeper；二者不会自动共用。只复制 EXE、换到一个全新的
+   文件夹或从另一份解压目录启动，可能读不到原来的便携配置。
+   保存失败时，先检查当前文件夹是否可写、磁盘空间是否足够，以及界面是否
+   有输入错误。屏幕休息、隐私保护、健康提醒和色温分别保存；切换页面不会
+   自动保存其他模块的草稿，看到预览也不代表保存成功。
+   移动／升级前先正常退出并完成恢复，备份且保留整个 Data 文件夹。
+   不要为消除错误而删除恢复记录，也不要把恢复记录复制到另一台电脑。
+
+Q05 到时间为什么没有进入屏幕休息？
+A：检查是否选对屏幕、开启本屏休息并保存，以及是否仍在暂缓。
+   “保持唤醒的条件”满足任一勾选项就会延后休息。例如勾选整机输入后，
+   在另一块屏幕操作也可能让本屏保持唤醒。
+   隐私保护的“使用时不打扰”命中时，也会延后与其联动的屏幕休息。
+   先查看当前运行状态，再按实际需要调整条件；不要只把等待时间改得更短。
+
+Q06 正在阅读或使用屏幕时，隐私保护总出现怎么办？
+A：阅读可能没有实际输入，这与“持续操作”不同。
+   临时阅读、演示或工作时，可用本屏“暂缓保护”设置分钟／小时；同时需要
+   保持屏幕亮着时，再按需要勾选一起暂缓休息（两项均须已保存开启）。
+   长期偏好可开启“使用时不打扰”，自行选择鼠标停留、前台窗口在本屏、
+   或电脑有键盘／鼠标输入。任一选中条件满足就延后自动保护。
+   暂缓不会解除已经显示的隐私幕，请先点击“进入此屏幕”。
+   若持续在本屏操作仍反复触发，查看状态提示并按 Q14 反馈，不必反复改时长。
+
+Q07 选了回到桌面／指定应用，为什么仍然只有隐私幕？
+A：隐私幕是操作无法安全完成时的遮挡。
+   “回到桌面”遇到跨屏或不能安全最小化的窗口时，会保留幕布。先将相关
+   窗口完整放在本屏；它不会关闭应用，也不会自动恢复已最小化的窗口。
+   “指定应用”请确认：
+   - 选择了可以公开展示的具体窗口；原有内容不会被清空。
+   - 目标在另一屏时，明确允许“允许从其他屏幕移到本屏”并保存。
+   - 目标未运行时，只有允许“未运行时允许启动”才会尝试启动。
+   - 原窗口已关闭、多个窗口无法明确匹配、其他窗口无法隐藏或覆盖检查失败，
+     都可能保留幕布。重新打开选择器选定当前窗口，并查看运行状态说明。
+   这两项许可位于指定应用区域、“更多设置”上方，修改后要保存隐私设置。
+
+Q08 隐私幕能代替锁屏吗？为什么鼠标经过不解除？
+A：不能。幕布用于减少内容意外暴露，不要求密码，也不是访问控制。
+   普通鼠标／键盘输入可以唤亮休息屏幕，但不会自动揭开隐私内容；
+   请点击“进入此屏幕”明确解除幕布。
+   系统通知、任务切换、置顶程序或本软件退出等仍可能让内容露出。
+   离开电脑且需要阻止别人访问时，请用 Win+L 锁定 Windows。
+
+Q09 健康提醒不出现怎么办？三个按钮有什么区别？
+A：确认健康提醒已开启并保存，工作计时没有暂停，目标屏幕未锁定、休息或
+   处于隐私保护中。启用了全屏免打扰或无输入暂停时，自动提醒也可能延后。
+   “预览当前外观”不推进真实工作周期，可在全屏时使用；但已锁定或被保护
+   的屏幕仍不能预览，预览也不会唤醒屏幕或解除隐私幕。
+   “开始休息”开始本次休息倒计时；“稍后”延后一次；
+   “跳过本次”跳过这次提醒，开始新的工作周期。
+   健康提醒的工作／休息周期与色温作息分开，不会彼此切换时段。
+
+Q10 色温为什么要验证？为什么无法开始验证？
+A：验证是让你实际确认这块屏幕会单独变暖，并能恢复原色。
+   在“屏幕与验证”选屏并“开始验证”，观察约 5000K 的 15 秒试验：
+   本屏变暖、其他屏幕不变，随后恢复。只有实际看到这些结果才确认通过；
+   效果异常时取消，不要确认通过。通过验证不会自动开启调色。
+   无法开始时，请先看屏幕卡片／弹窗给出的具体原因：
+   - 关闭 Windows 夜间模式和其他调色工具；使用自定义校色时不要验证。
+   - HDR、复制显示或远程环境未获支持资格时，不进行调色接管。
+   - 已保存的色温策略仍开启时，按提示关闭并保存，等待恢复后再验证。
+   - 任何屏幕仍有未解决的原色恢复记录时，先处理这些记录，见 Q11。
+   连接或显示模式改变后可能需要重验。此验证不等于专业校色认证。
+
+Q11 原色检查一直失败，或提示旧记录备份失败怎么办？
+A：“重新检查原色”只读当前颜色；颜色与记录不符时，不会强行覆盖屏幕。
+   先退出其他调色工具、关闭并保存本软件的色温策略，按界面指引恢复颜色。
+   如果画面已正常，但旧基线来自另一调色工具或旧显示模式，可进入
+   “处理恢复记录”／“重新建立原色”，等待稳定性检查通过，再亲自确认
+   列出的每块屏幕画面正常。完成后需要逐屏重新验证，不会自动启用调色。
+   若提示旧记录备份失败，请检查配置目录写入权限、可用磁盘空间，保留
+   完整错误信息并按 Q14 反馈。备份成功前程序会保留恢复保护。
+   不要删除恢复文件、手动改恢复文件中的颜色数值或复用别人的验证文件来绕过提示。
+
+Q12 色温保存后没有变化？为什么滑杆不立即改色？
+A：确认该屏已验证，打开“开启此屏幕色温调节”并保存，再检查是否处于
+   暂停、恢复冲突或显示模式变化状态。工作和休息各有自己的目标；
+   当前时段选了“保持原色”时，不会因为另一时段设置了暖色而立即变暖。
+   自定义色温有过渡时间，变化可能渐进发生。原色不等于固定 6500K。
+   要实时试调，展开“在此屏幕试调”，先启动工作／休息试调，再拖滑杆。
+   停止调整 15 秒后会恢复该屏已保存策略；试调本身不会保存数值。
+   保存、离开页面或切换屏幕等也会结束试调。请同时查看当前运行状态，
+   不把“保存成功”当作已经完成了实际调色。
+
+Q13 屏幕黑了、点不亮或退出卡住怎么办？
+A：先区分软件遮黑、隐私幕和显示器没有收到信号：
+   1. 若有“进入此屏幕”按钮，这是隐私幕，点击按钮解除。
+   2. 若是屏幕休息，尝试满足该屏已保存的唤醒条件，例如在本屏移动鼠标。
+   3. 在能正常显示的屏幕上，从托盘退出 ScreenKeeper，等待恢复；若有提示，
+      查看并保留，不删除恢复文件或反复强制结束进程。
+   4. 退出后仍黑屏／提示无信号时，检查显示器电源、输入源、连接线，以及
+      系统或显卡显示设置是否仍启用了该屏、是否为预期的扩展显示模式。
+   若其他屏幕仍可操作，先用它保存工作并收集提示，再做线缆或显示设置排查。
+   单凭黑屏不能判断是软件、连接还是驱动原因；请记录时间和触发经过。
+
+Q14 问题仍然存在，反馈时需要提供什么？
+A：向软件维护者提供以下信息通常更容易定位：
+   - 软件版本、Windows 版本，便携版还是安装版。
+   - 显示器型号、HDMI／DP 连接方式，是否 HDR／复制显示。
+   - 发生的大致时间、当时启用的模块、操作步骤和完整错误文字。
+   - 托盘正常退出后是否仍发生，以及问题能否重复出现。
+   便携版日志在 Data\ScreenKeeper\Logs，安装版日志在
+   %APPDATA%\ScreenKeeper\Logs。只提供相关时段的必要片段，先检查并去掉
+   个人路径、窗口内容或其他敏感信息。不要直接发送整个 Data 文件夹；
+   它可能包含你导入的私人图片、应用选择和恢复记录。
+
+==================== ENGLISH · FAQ ====================
+
+Q01 Do I need .NET? Which computers can use this package?
+A: Both x64 and x86 portable packages include the .NET runtime. You do not
+   need the .NET SDK, Inno Setup or a separate runtime installer.
+   Choose x64 for 64-bit Windows 10/11. Choose x86 for 32-bit Windows 10,
+   which cannot run the x64 package. The x86 build can also be tested on
+   64-bit Windows. Windows 11 has no 32-bit OS edition. For validation scope,
+   see the included validation notes for the tested scope.
+   Windows 7/8/8.1, macOS, Linux and ARM devices are outside this target.
+   Extract and keep the entire ScreenKeeper folder.
+
+Q02 Nothing opens, files are missing, or Windows shows a security warning.
+A: Check these items in order:
+   1) Extract the entire ZIP and keep the DLLs next to the EXE. Do not run
+      it from inside a ZIP viewer.
+   2) Check the system tray and its hidden-icons area for an existing copy.
+      Open its settings, or choose Exit and wait for restoration to finish
+      before starting another version.
+   3) Use a writable folder. The portable app creates Data beside itself.
+   4) If files are missing, obtain the complete ZIP again from a trusted
+      source. Do not download individual DLLs from unknown sources.
+   The current portable packages are not code-signed. If Windows or security
+   software blocks it, check the source, checksum and exact message first.
+   Do not disable security protection as a workaround.
+
+Q03 Why is it still running after I close the window?
+A: Closing the window hides settings to the tray. Saved rules keep running.
+   Use Open settings in the ScreenKeeper tray menu to reopen the window.
+   Choose Exit to stop the app, and follow any unsaved-edit or recovery
+   prompts. Do not replace normal shutdown with ending the process while
+   brightness or original colors are being restored.
+
+Q04 Where are settings? Why did saving fail or settings disappear?
+A: Portable settings are in Data\ScreenKeeper inside the program folder.
+   Installed/regular builds use %APPDATA%\ScreenKeeper instead; they do
+   not automatically share settings. Copying only the EXE or starting a
+   freshly extracted copy may leave your previous portable settings behind.
+   For a save error, check folder write access, free disk space and invalid
+   input reported by the UI. Each module saves separately. Navigation does
+   not save other modules' drafts, and a preview is not proof of saving.
+   Before moving or updating, exit normally, finish restoration, and back
+   up and keep the entire Data folder. Do not delete recovery records to
+   clear an error or copy recovery records to another computer.
+
+Q05 Why does the display not rest when the delay has elapsed?
+A: Confirm the selected display, its saved Screen rest switch, and whether
+   a snooze is still active. Any selected "Keep awake when" condition can
+   defer rest. A condition based on input anywhere can keep this display
+   awake while you work on a different one.
+   Matching privacy "Do not disturb while in use" conditions also defer
+   linked screen rest. Check the current status before changing conditions;
+   simply shortening the delay may not address the cause.
+
+Q06 Privacy protection keeps appearing while I read or work.
+A: Reading may produce no input, which differs from continuous interaction.
+   For a temporary reading session or presentation, use Snooze privacy
+   with a duration in minutes or hours. If the display must stay awake too,
+   select the option to snooze rest as well; both features must be saved
+   and enabled for a combined snooze.
+   For a lasting preference, enable "Do not disturb while in use" and
+   choose pointer presence, a foreground window on this display, or input
+   anywhere. Any selected condition defers automatic protection.
+   Snoozing does not dismiss an existing curtain. Click Enter this screen.
+   If protection repeats during active input on that display, check its
+   status and report the issue using Q14 instead of repeatedly changing
+   the delay.
+
+Q07 I selected Show desktop or Specific app. Why is there only a curtain?
+A: The curtain remains when the action cannot be completed safely.
+   Show desktop may retain it for windows spanning displays or windows
+   that cannot be safely minimized. Keep relevant windows wholly on the
+   target display. This action neither closes apps nor automatically
+   restores minimized windows.
+   For Specific app:
+   - Select a particular window whose contents are safe to show publicly.
+     Its existing contents are not cleared.
+   - If it is on another display, enable Allow moving from another screen
+     and save.
+   - If it is not running, Launch if not running must be allowed before
+     the app will attempt to start it.
+   - A closed window, ambiguous multiple windows, other windows that
+     cannot be hidden, or a failed coverage check can retain the curtain.
+     Reselect the current window and check the displayed status.
+   The launch/move permissions are in the Specific app area above the
+   additional settings. Save privacy settings after changing them.
+
+Q08 Does the privacy curtain replace Windows locking?
+A: No. It reduces accidental exposure but does not require a password or
+   provide access control. Ordinary mouse/keyboard activity may wake a
+   resting display without revealing private content. Click Enter this
+   screen to dismiss the curtain deliberately.
+   Notifications, task switching, topmost apps or ScreenKeeper exiting may
+   still expose content. Use Win+L to lock Windows when you need to prevent
+   access while away.
+
+Q09 Why is there no break reminder? What do the three buttons do?
+A: Confirm Break reminders is enabled and saved, its work timer is not
+   paused, and the target display is not locked, resting or privacy-covered.
+   Full-screen deferral and inactivity pause settings can delay reminders.
+   Preview this appearance does not advance the real work cycle and can
+   be used during full screen. It still cannot use a locked or protected
+   display, wake a display, or remove a privacy curtain.
+   Start break begins this break's countdown. Snooze postpones it once.
+   Skip this time skips the reminder and starts a new work cycle.
+   Reminder cycles and color schedules are separate; neither switches
+   the other's work/rest period.
+
+Q10 Why is color verification needed? Why can I not start it?
+A: You need to observe that the selected display warms independently and
+   returns to its original colors. Under Displays & setup, select a display
+   and choose Start verification. Observe the approximately 5000 K,
+   15-second test: this display warms, others stay unchanged, then it
+   restores. Confirm success only if you actually see all these results.
+   Cancel if the result is unexpected. Passing does not enable adjustment.
+   If you cannot start, read the specific reason on the card or dialog:
+   - Turn off Windows Night light and other color tools first. Do not
+     verify while using custom calibration.
+   - HDR, duplicate-display or remote environments without supported
+     verification eligibility cannot be taken over for color adjustment.
+   - Follow the prompt to disable and save existing color policies,
+     then wait for restoration before verifying.
+   - Resolve outstanding original-color recovery records on any display
+     first; see Q11.
+   A connection or display-mode change may require verification again.
+   This check is not professional color-calibration certification.
+
+Q11 Rechecking original colors or backing up old records keeps failing.
+A: Recheck original colors reads the current colors. It does not force
+   them to match an old record. Exit other color tools, disable and save
+   ScreenKeeper's color policies, and follow the recovery guidance.
+   If the picture is already normal but the old baseline came from another
+   tool or display mode, use Resolve recovery records / Re-establish
+   original colors. Wait for the stability check, then personally confirm
+   that every listed display looks normal. Afterwards, verify each display
+   again. Adjustment is not enabled automatically.
+   If backing up the old record fails, check write access to the data
+   folder and free disk space. Keep the exact error and report it using
+   Q14. Recovery protection remains until the backup succeeds.
+   Do not delete recovery files, manually edit color values in recovery
+   files or reuse someone else's verification files to bypass the message.
+
+Q12 Saving a color value has no visible effect. Why is the slider not live?
+A: Check that the display is verified, Enable color temperature for this
+   display is on and saved, and there is no pause, recovery conflict or
+   display-mode change. Work and rest have separate targets. If the current
+   period keeps original colors, a warm target for the other period will
+   not apply immediately.
+   Custom colors can transition gradually. Original colors are the saved
+   baseline, not a fixed 6500 K.
+   For a live trial, expand Try on this display and start a work/rest trial
+   before moving the slider. After 15 seconds without adjustment, that
+   display returns to its saved policy. A trial does not save the values.
+   Saving, leaving the page or switching displays also ends a trial.
+   Check the current status: a successful save alone does not prove that
+   a hardware color change has taken effect.
+
+Q13 A display stays black, will not wake, or shutdown seems stuck.
+A: First distinguish a privacy curtain, screen rest and a missing signal:
+   1) If Enter this screen is visible, click it to dismiss the curtain.
+   2) For screen rest, try meeting a saved wake condition for that display,
+      such as moving the pointer on it.
+   3) On a working display, exit ScreenKeeper from the tray and wait for
+      recovery. Keep any error messages. Do not delete recovery files or
+      repeatedly force-end the process.
+   4) If it stays black or reports no signal after exit, check display
+      power, input selection and cables, then whether Windows or GPU
+      display settings still enable it in the intended extended layout.
+   If another display works, use it to save your work and capture the
+   message before investigating cables or display settings.
+   Blackness alone does not establish whether the app, connection or
+   driver caused the problem. Record the time and what triggered it.
+
+Q14 What should I include when reporting an unresolved problem?
+A: Send the maintainer:
+   - App and Windows versions, and whether this is portable or installed.
+   - Display models, HDMI/DP connections, and HDR/duplicate-display status.
+   - Approximate time, enabled modules, steps and the full error text.
+   - Whether it happens after normal tray exit and whether it repeats.
+   Portable logs are in Data\ScreenKeeper\Logs. Installed-build logs are in
+   %APPDATA%\ScreenKeeper\Logs.
+   Share only the relevant excerpts after removing private paths, window
+   content or other sensitive information. Do not send your entire Data
+   folder: it may contain personal images, app selections and recovery
+   records.

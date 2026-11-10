@@ -4,7 +4,12 @@
 
 - [项目入口](../README.md)：产品介绍、快速构建和仓库结构。
 - [使用指南](user-guide.md)：各模块设置、配置目录、验证与恢复。
+- [便携版快速说明](portable/使用说明-README.txt)与[常见问题 FAQ](portable/常见问题-FAQ.txt)：随 ZIP 分发的中英双语离线帮助。
 - [开发说明](development.md)：构建、检查、版本、Git 和硬件调试边界。
+- [1.0.0 构建 20261014 双语发布说明](releases/1.0.0-20261014.md)：当前正式便携包、修复范围、从旧版／测试版升级及兼容边界。
+- [1.0.0 双语发布说明](releases/1.0.0.md)：历史正式便携包与版本身份。
+- [2026-10-09 x64 修复测试说明](releases/20261009-x64-test.md)：自动退出修复的历史测试版，后续修复已纳入 20261014 正式构建。
+- [2026-10-09 x64 SDR 识别修复测试说明](releases/20261009-x64-sdr-test.md)：构建 20261009.3，在上一测试版上修正新版 Windows 将实际 SDR 误判为高级颜色的兼容问题。
 - [首版变更记录](../CHANGELOG.md)：已完成的主要功能与当前交付范围。
 - [设计原型说明](../designs/screenkeeper-calm/README.md)：已确认设计及保留的历史对照。
 - [产品素材](../OLED-Sleeper/Assets/README.md)：图标、默认背景与来源。
@@ -29,5 +34,17 @@
 | 011 | 遮黑与退出恢复 | [设计](tasks/011-blackout-recovery-design.md) | [计划](tasks/011-blackout-recovery-plan.md) |
 | 012 | 设置分区与原色重建 | [设计](tasks/012-settings-recovery-design.md) | [计划](tasks/012-settings-recovery-plan.md) |
 | 013 | 首版整理与 Codeup | [设计](tasks/013-first-version-design.md) | [计划](tasks/013-first-version-plan.md) |
+| 014 | Windows x86 兼容与便携包 | [设计](tasks/014-x86-compatibility-design.md) | [计划](tasks/014-x86-compatibility-plan.md) |
+| 015 | 正式便携版整理（1.0.0 不同构建） | [设计](tasks/015-stable-portable-design.md) | [计划](tasks/015-stable-portable-plan.md) |
+| 016 | 客户端官网入口 | [设计](tasks/016-official-website-design.md) | [计划](tasks/016-official-website-plan.md) |
+| 018 | 异常退出与色温失效排查 | [设计](tasks/018-crash-color-investigation-design.md) | [计划与证据](tasks/018-crash-color-investigation-plan.md) |
+| 019 | macOS Apple Silicon 版（源码开发预览） | [设计](tasks/019-macos-apple-silicon-design.md) | [计划](tasks/019-macos-apple-silicon-plan.md) |
+| 020 | GitHub 完整仓库托管与 Mac 构建 | [设计](tasks/020-github-hosting-design.md) | [计划](tasks/020-github-hosting-plan.md) |
 
 专题记录：[健康与色温研究](tasks/007-wellbeing-research.md)、[显示输出异常排查](tasks/011-aoc-display-diagnosis-2026-09-23.md)。这些记录包含未复现或未定论事项，不应当作已完成修复。
+
+后续排查：[2026-10-13 关屏过夜后软件未运行与 AOC 输出未启用](tasks/018-overnight-display-diagnosis-20261013.md)，已区分主动重启后未自启动与尚未确定根因的副屏连接恢复问题。
+
+色温专项：[2026-10-26 锁屏关屏后反复出现原色处理提示](tasks/018-overnight-color-diagnosis-20261026.md)，区分当前测试版与正式目录、原色重置冲突与连接作用域变化；后续已按用户确认修复源码，稳定观察和精确原色续接见 [018 修复计划](tasks/018-crash-color-investigation-plan.md#2026-10-26--解锁原色恢复修复计划)。正在运行的客户端及历史发行包尚未替换，真实过夜效果待验收。
+
+最新测试包：[20261028.1 x64 会话恢复测试说明](releases/20261028-x64-resume-test.md)。已提供独立便携 ZIP，包含原色恢复修复、完整运行环境和双语帮助；仍待实机验收，正式版入口保持不变。

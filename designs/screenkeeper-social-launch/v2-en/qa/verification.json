@@ -1,0 +1,366 @@
+[
+  {
+    "clip": "01-screen-rest",
+    "errors": [],
+    "loopMatches": true,
+    "entries": [
+      {
+        "file": "01-screen-rest-00.png",
+        "t": 0.3,
+        "state": "Screen in use",
+        "blackout": "0",
+        "caption": "Stay focused while your screen is in use."
+      },
+      {
+        "file": "01-screen-rest-01.png",
+        "t": 2.85,
+        "state": "Screen in use",
+        "blackout": "0",
+        "caption": "Stay focused while your screen is in use."
+      },
+      {
+        "file": "01-screen-rest-02.png",
+        "t": 3.15,
+        "state": "Waiting while idle",
+        "blackout": "0",
+        "caption": "When idle, it rests on your terms."
+      },
+      {
+        "file": "01-screen-rest-03.png",
+        "t": 5.85,
+        "state": "Waiting while idle",
+        "blackout": "0",
+        "caption": "When idle, it rests on your terms."
+      },
+      {
+        "file": "01-screen-rest-04.png",
+        "t": 6.15,
+        "state": "Screen resting",
+        "blackout": "0.108",
+        "caption": "Nothing to show? Let the screen take a breather."
+      },
+      {
+        "file": "01-screen-rest-05.png",
+        "t": 9.2,
+        "state": "Screen resting",
+        "blackout": "1",
+        "caption": "Nothing to show? Let the screen take a breather."
+      },
+      {
+        "file": "01-screen-rest-06.png",
+        "t": 11.85,
+        "state": "Screen resting",
+        "blackout": "1",
+        "caption": "Nothing to show? Let the screen take a breather."
+      },
+      {
+        "file": "01-screen-rest-07.png",
+        "t": 12.15,
+        "state": "Screen resting",
+        "blackout": "1",
+        "caption": "Your chosen activity brings the display back."
+      },
+      {
+        "file": "01-screen-rest-08.png",
+        "t": 14.5,
+        "state": "Activity detected · Restored",
+        "blackout": "0",
+        "caption": "Your chosen activity brings the display back."
+      },
+      {
+        "file": "01-screen-rest-09.png",
+        "t": 15.85,
+        "state": "Activity detected · Restored",
+        "blackout": "0",
+        "caption": "Your chosen activity brings the display back."
+      },
+      {
+        "file": "01-screen-rest-10.png",
+        "t": 16.15,
+        "state": "Screen in use",
+        "blackout": "0",
+        "caption": "Stay focused while your screen is in use."
+      },
+      {
+        "file": "01-screen-rest-11.png",
+        "t": 17.95,
+        "state": "Screen in use",
+        "blackout": "0",
+        "caption": "Stay focused while your screen is in use."
+      }
+    ]
+  },
+  {
+    "clip": "02-privacy",
+    "errors": [],
+    "loopMatches": true,
+    "entries": [
+      {
+        "file": "02-privacy-00.png",
+        "t": 0.3,
+        "state": "Your content, on screen",
+        "curtain": "0",
+        "caption": "Your chats and documents need not stay on display."
+      },
+      {
+        "file": "02-privacy-01.png",
+        "t": 2.85,
+        "state": "Your content, on screen",
+        "curtain": "0",
+        "caption": "Your chats and documents need not stay on display."
+      },
+      {
+        "file": "02-privacy-02.png",
+        "t": 3.15,
+        "state": "Waiting to protect",
+        "curtain": "0",
+        "caption": "Set your rules. Let protection follow."
+      },
+      {
+        "file": "02-privacy-03.png",
+        "t": 5.85,
+        "state": "Waiting to protect",
+        "curtain": "0",
+        "caption": "Set your rules. Let protection follow."
+      },
+      {
+        "file": "02-privacy-04.png",
+        "t": 6.15,
+        "state": "Privacy curtain active",
+        "curtain": "1",
+        "caption": "Content is covered first. The forest fades in next."
+      },
+      {
+        "file": "02-privacy-05.png",
+        "t": 9.2,
+        "state": "Privacy curtain active",
+        "curtain": "1",
+        "caption": "Moving the pointer does not reveal your content."
+      },
+      {
+        "file": "02-privacy-06.png",
+        "t": 11.85,
+        "state": "Privacy curtain active",
+        "curtain": "1",
+        "caption": "Moving the pointer does not reveal your content."
+      },
+      {
+        "file": "02-privacy-07.png",
+        "t": 12.15,
+        "state": "Privacy curtain active",
+        "curtain": "1",
+        "caption": "Choose “Enter this screen” to reveal your content."
+      },
+      {
+        "file": "02-privacy-08.png",
+        "t": 14.5,
+        "state": "Revealed by you",
+        "curtain": "0",
+        "caption": "Choose “Enter this screen” to reveal your content."
+      },
+      {
+        "file": "02-privacy-09.png",
+        "t": 15.85,
+        "state": "Revealed by you",
+        "curtain": "0",
+        "caption": "Choose “Enter this screen” to reveal your content."
+      },
+      {
+        "file": "02-privacy-10.png",
+        "t": 16.15,
+        "state": "Your content, on screen",
+        "curtain": "0",
+        "caption": "Your chats and documents need not stay on display."
+      },
+      {
+        "file": "02-privacy-11.png",
+        "t": 17.95,
+        "state": "Your content, on screen",
+        "curtain": "0",
+        "caption": "Your chats and documents need not stay on display."
+      }
+    ]
+  },
+  {
+    "clip": "03-health",
+    "errors": [],
+    "loopMatches": true,
+    "entries": [
+      {
+        "file": "03-health-00.png",
+        "t": 0.3,
+        "state": "Time to focus",
+        "health": "reminder",
+        "caption": "A rhythm for work. A little room for rest."
+      },
+      {
+        "file": "03-health-01.png",
+        "t": 2.85,
+        "state": "Time to focus",
+        "health": "reminder",
+        "caption": "A rhythm for work. A little room for rest."
+      },
+      {
+        "file": "03-health-02.png",
+        "t": 3.15,
+        "state": "Break reminder",
+        "health": "reminder",
+        "caption": "A gentle reminder. The choice stays yours."
+      },
+      {
+        "file": "03-health-03.png",
+        "t": 5.85,
+        "state": "Break reminder",
+        "health": "reminder",
+        "caption": "A gentle reminder. The choice stays yours."
+      },
+      {
+        "file": "03-health-04.png",
+        "t": 6.15,
+        "state": "Break reminder",
+        "health": "reminder",
+        "caption": "The countdown starts when you choose Start break."
+      },
+      {
+        "file": "03-health-05.png",
+        "t": 9.2,
+        "state": "Break countdown",
+        "health": "resting",
+        "caption": "The countdown starts when you choose Start break."
+      },
+      {
+        "file": "03-health-06.png",
+        "t": 11.85,
+        "state": "Break countdown",
+        "health": "resting",
+        "caption": "The countdown starts when you choose Start break."
+      },
+      {
+        "file": "03-health-07.png",
+        "t": 12.15,
+        "state": "Break countdown",
+        "health": "resting",
+        "caption": "Ready to return? You can end the break early."
+      },
+      {
+        "file": "03-health-08.png",
+        "t": 14.5,
+        "state": "Back to work",
+        "health": "ended",
+        "caption": "Ready to return? You can end the break early."
+      },
+      {
+        "file": "03-health-09.png",
+        "t": 15.85,
+        "state": "Back to work",
+        "health": "ended",
+        "caption": "Ready to return? You can end the break early."
+      },
+      {
+        "file": "03-health-10.png",
+        "t": 16.15,
+        "state": "Time to focus",
+        "health": "ended",
+        "caption": "A rhythm for work. A little room for rest."
+      },
+      {
+        "file": "03-health-11.png",
+        "t": 17.95,
+        "state": "Time to focus",
+        "health": "ended",
+        "caption": "A rhythm for work. A little room for rest."
+      }
+    ]
+  },
+  {
+    "clip": "04-color",
+    "errors": [],
+    "loopMatches": true,
+    "entries": [
+      {
+        "file": "04-color-00.png",
+        "t": 0.3,
+        "state": "Original colors",
+        "warm": "0",
+        "caption": "Keep original colors during your work hours."
+      },
+      {
+        "file": "04-color-01.png",
+        "t": 2.85,
+        "state": "Original colors",
+        "warm": "0",
+        "caption": "Keep original colors during your work hours."
+      },
+      {
+        "file": "04-color-02.png",
+        "t": 3.15,
+        "state": "Original colors",
+        "warm": "0.000122344",
+        "caption": "Ease into warmer colors at your chosen time."
+      },
+      {
+        "file": "04-color-03.png",
+        "t": 5.85,
+        "state": "Gradual transition",
+        "warm": "0.524868",
+        "caption": "Ease into warmer colors at your chosen time."
+      },
+      {
+        "file": "04-color-04.png",
+        "t": 6.15,
+        "state": "Custom warm colors",
+        "warm": "0.557738",
+        "caption": "Set a separate schedule for each display."
+      },
+      {
+        "file": "04-color-05.png",
+        "t": 9.2,
+        "state": "Custom warm colors",
+        "warm": "0.58",
+        "caption": "Set a separate schedule for each display."
+      },
+      {
+        "file": "04-color-06.png",
+        "t": 11.85,
+        "state": "Custom warm colors",
+        "warm": "0.58",
+        "caption": "Set a separate schedule for each display."
+      },
+      {
+        "file": "04-color-07.png",
+        "t": 12.15,
+        "state": "Custom warm colors",
+        "warm": "0.58",
+        "caption": "Compare with original colors whenever you need to."
+      },
+      {
+        "file": "04-color-08.png",
+        "t": 14.5,
+        "state": "Original colors",
+        "warm": "0",
+        "caption": "Compare with original colors whenever you need to."
+      },
+      {
+        "file": "04-color-09.png",
+        "t": 15.85,
+        "state": "Original colors",
+        "warm": "0",
+        "caption": "Compare with original colors whenever you need to."
+      },
+      {
+        "file": "04-color-10.png",
+        "t": 16.15,
+        "state": "Original colors",
+        "warm": "0",
+        "caption": "Keep original colors during your work hours."
+      },
+      {
+        "file": "04-color-11.png",
+        "t": 17.95,
+        "state": "Original colors",
+        "warm": "0",
+        "caption": "Keep original colors during your work hours."
+      }
+    ]
+  }
+]

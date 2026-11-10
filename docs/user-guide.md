@@ -2,6 +2,8 @@
 
 适用于当前首版功能。快速入口见 [项目 README](../README.md)，开发与目录约定见 [开发说明](development.md)。
 
+便携版用户可先阅读中英双语[快速说明](portable/使用说明-README.txt)；遇到启动、隐私、色温或黑屏问题时，查看[常见问题 FAQ](portable/常见问题-FAQ.txt)。两份文本也随便携 ZIP 提供，支持离线查阅。
+
 ## 本地开发与试用
 
 构建需要 Windows 和 .NET 8 SDK；解决方案及源码目录仍沿用 `OLED-Sleeper` 名称，应用输出为 `ScreenKeeper.exe`。

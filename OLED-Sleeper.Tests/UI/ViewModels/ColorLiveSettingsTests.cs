@@ -17,6 +17,103 @@ namespace OLED_Sleeper.Tests.UI.ViewModels;
 public sealed class ColorLiveSettingsTests
 {
     [WpfFact]
+    public void ResumeObservationKeepsVerifiedScreenAndDraftWhileExplainingUnavailablePreview()
+    {
+        var language = UiText.Current.Language;
+        try
+        {
+            var fixture = new Fixture(); var model = fixture.Model;
+            model.Enabled = true; model.DayUsesOriginal = false; model.DayKelvin = "5100";
+            const string waiting = "正在等待屏幕连接和原色读数稳定。";
+            foreach (var lang in new[] { "zh-CN", "en" })
+            {
+                UiText.Current.SetLanguage(lang);
+                model.UpdateCapabilities([new(Fixture.Scope("one"), ColorCapabilityState.Supported, "fixture")],
+                    [new("one", ColorControlState.Detecting, waiting)], "");
+                var screen = Assert.Single(model.VerifiedScreens);
+                Assert.Same(screen, model.SelectedScreen);
+                Assert.False(screen.NeedsRecovery);
+                Assert.False(screen.NeedsValidation);
+                Assert.False(screen.CanPreview);
+                Assert.False(model.CanLivePreview);
+                Assert.Equal(lang == "en" ? "Waiting for the display connection and original-color readings to stabilize." : waiting,
+                    screen.Status);
+                Assert.Equal(screen.Status, screen.PreviewUnavailableReason);
+                Assert.Equal("5100", model.DayKelvin);
+                Assert.True(model.IsDirty);
+            }
+            model.UpdateCapabilities([new(Fixture.Scope("one"), ColorCapabilityState.Supported, "fixture")],
+                [new("one", ColorControlState.Warm, "已写入经过验证的色温策略。")], "");
+            Assert.True(model.CanLivePreview);
+            Assert.Empty(fixture.Calls);
+            Assert.Empty(fixture.Applied);
+        }
+        finally { UiText.Current.SetLanguage(language); }
+    }
+
+    [WpfTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ConflictSelectionSettlesBeforeSynchronousPreviewCancellationRefresh(bool hasAlternative)
+    {
+        ColorSettingsViewModel? model = null;
+        ColorCapability[] capabilities = [new(Fixture.Scope("one"), ColorCapabilityState.Supported, "fixture"),
+            new(Fixture.Scope("two"), hasAlternative ? ColorCapabilityState.Supported : ColorCapabilityState.Unverified, "fixture")];
+        ColorScreenState[] states = [new("one", ColorControlState.Conflict, "external change")];
+        var observations = new List<(string? Selected, string? Preview)>();
+        bool replayConflict = false;
+        var fixture = new Fixture(cancelPreview: () =>
+        {
+            if (model != null && replayConflict)
+            {
+                observations.Add((model.SelectedScreen?.HardwareId, model.PreviewScreen?.HardwareId));
+                // Bound the old recursive path so this regression fails without crashing the test host.
+                if (observations.Count < 8) model.UpdateCapabilities(capabilities, states, "conflict");
+            }
+            return Task.CompletedTask;
+        });
+        model = fixture.Model;
+        model.DayUsesOriginal = false; model.DayKelvin = "5300";
+        replayConflict = true;
+        model.UpdateCapabilities(capabilities, states, "conflict");
+
+        string? expected = hasAlternative ? "two" : null;
+        Assert.Equal((expected, expected), Assert.Single(observations));
+        Assert.Equal(expected, model.SelectedScreen?.HardwareId);
+        Assert.Equal(expected, model.PreviewScreen?.HardwareId);
+        Assert.True(model.Screens[0].NeedsRecovery);
+        Assert.True(model.IsDirty);
+        Assert.Empty(fixture.Calls);
+        Assert.Empty(fixture.Applied);
+        replayConflict = false;
+        model.UpdateCapabilities([new(Fixture.Scope("one"), ColorCapabilityState.Supported, "fixture"),
+            new(Fixture.Scope("two"), ColorCapabilityState.Supported, "fixture")], [], "");
+        model.SelectedScreen = model.Screens[0];
+        Assert.Equal("5300", model.DayKelvin);
+    }
+
+    [WpfTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TargetChangeIsVisibleBeforeCancellationCallback(bool changeScheduleScreen)
+    {
+        ColorSettingsViewModel? model = null;
+        var observations = new List<(string? Selected, string? Preview)>();
+        var fixture = new Fixture(cancelPreview: () =>
+        {
+            if (model != null) observations.Add((model.SelectedScreen?.HardwareId, model.PreviewScreen?.HardwareId));
+            return Task.CompletedTask;
+        });
+        model = fixture.Model;
+        if (changeScheduleScreen) model.SelectedScreen = model.Screens[1];
+        else model.PreviewScreen = model.Screens[1];
+
+        Assert.Equal((changeScheduleScreen ? "two" : "one", "two"), Assert.Single(observations));
+        Assert.Empty(fixture.Calls);
+        model.LeavePage();
+    }
+
+    [WpfFact]
     public void DuplicateModelNamesUseAllConnectedScreensAndPreserveDraftIdentity()
     {
         var f = new Fixture(); var vm = f.Model;
@@ -583,11 +680,12 @@ public sealed class ColorLiveSettingsTests
         public List<ColorTemperatureSettings> Applied { get; } = [];
         public int ValidationCalls, RecheckCalls, ResetCalls;
         public static ColorDisplayScope Scope(string id) => new(id, id, id, "Example " + id, "topology", "mode");
-        public Fixture(Func<string, int?, CancellationToken, Task<bool>>? preview = null, ColorTemperatureSettings? saved = null, Func<ColorTemperatureSettings, Task>? applyAndWait = null)
+        public Fixture(Func<string, int?, CancellationToken, Task<bool>>? preview = null, ColorTemperatureSettings? saved = null, Func<ColorTemperatureSettings, Task>? applyAndWait = null,
+            Func<Task>? cancelPreview = null)
         {
             var root = new StorageRoot(Fs, false); var files = new AppDataFileStore(Fs, root);
             Store = new(files, Fs, root, "color-temperature.json", () => new(), s => s.Validate(), maxSchema: 2);
-            Model = new(Store, saved ?? Store.Load(), settings => Applied.Add(settings.Copy()), () => Task.CompletedTask, _ => Task.CompletedTask, _ => Task.CompletedTask, (_, _) => Task.CompletedTask,
+            Model = new(Store, saved ?? Store.Load(), settings => Applied.Add(settings.Copy()), cancelPreview ?? (() => Task.CompletedTask), _ => Task.CompletedTask, _ => Task.CompletedTask, (_, _) => Task.CompletedTask,
                 validate: _ => { ValidationCalls++; return Task.CompletedTask; },
                 livePreview: async (id, kelvin, token) => { Calls.Add((id, kelvin)); return preview == null || await preview(id, kelvin, token); },
                 recheckOriginal: _ => { RecheckCalls++; return Task.CompletedTask; }, resetBaseline: () => { ResetCalls++; return Task.CompletedTask; }, applyAndWait: applyAndWait);

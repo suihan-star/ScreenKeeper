@@ -1,0 +1,74 @@
+{
+  "type": "design",
+  "designSystems": [],
+  "primaryDesignSystem": null,
+  "assets": {
+    "屏幕良伴单屏多屏功能演示": {
+      "versions": [
+        {
+          "path": "index.html",
+          "createdAt": "2026-09-24T14:11:10.964Z",
+          "status": "needs-review",
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          }
+        }
+      ]
+    },
+    "01-screen-rest": {
+      "versions": [
+        {
+          "path": "motion/01-screen-rest.html",
+          "createdAt": "2026-09-24T14:17:03.498Z",
+          "status": "needs-review",
+          "viewport": {
+            "width": 900,
+            "height": 1244
+          }
+        }
+      ]
+    },
+    "02-privacy": {
+      "versions": [
+        {
+          "path": "motion/02-privacy.html",
+          "createdAt": "2026-09-24T14:17:03.600Z",
+          "status": "needs-review",
+          "viewport": {
+            "width": 900,
+            "height": 1244
+          }
+        }
+      ]
+    },
+    "03-health": {
+      "versions": [
+        {
+          "path": "motion/03-health.html",
+          "createdAt": "2026-09-24T14:17:03.711Z",
+          "status": "needs-review",
+          "viewport": {
+            "width": 900,
+            "height": 1244
+          }
+        }
+      ]
+    },
+    "04-color": {
+      "versions": [
+        {
+          "path": "motion/04-color.html",
+          "createdAt": "2026-09-24T14:17:03.820Z",
+          "status": "needs-review",
+          "viewport": {
+            "width": 900,
+            "height": 1244
+          }
+        }
+      ]
+    }
+  },
+  "createdAt": "2026-09-24T14:11:10.966Z",
+  "updatedAt": "2026-09-24T14:17:03.822Z"
+}

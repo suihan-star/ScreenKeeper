@@ -65,15 +65,19 @@ namespace OLED_Sleeper.Features.ColorTemperature
                 var source = new NativeMethods.DISPLAYCONFIG_SOURCE_DEVICE_NAME { header = Header(path.sourceInfo.adapterId, path.sourceInfo.id, 1, Marshal.SizeOf<NativeMethods.DISPLAYCONFIG_SOURCE_DEVICE_NAME>()) };
                 var target = new NativeMethods.DISPLAYCONFIG_TARGET_DEVICE_NAME { header = Header(path.targetInfo.adapterId, path.targetInfo.id, 2, Marshal.SizeOf<NativeMethods.DISPLAYCONFIG_TARGET_DEVICE_NAME>()) };
                 var advanced = new ColorNative.AdvancedColorInfo { Header = Header(path.targetInfo.adapterId, path.targetInfo.id, 9, Marshal.SizeOf<ColorNative.AdvancedColorInfo>()) };
+                var advanced2 = new ColorNative.AdvancedColorInfo2 { Header = Header(path.targetInfo.adapterId, path.targetInfo.id, 15, Marshal.SizeOf<ColorNative.AdvancedColorInfo2>()) };
                 bool namesRead = NativeMethods.DisplayConfigGetDeviceInfo(ref source) == 0 && NativeMethods.DisplayConfigGetDeviceInfo(ref target) == 0;
-                bool advancedRead = ColorNative.GetAdvancedColorInfo(ref advanced) == 0;
-                bool? isAdvanced = advancedRead ? (advanced.Flags & 6) != 0 : null;
+                int advancedResult = ColorNative.GetAdvancedColorInfo(ref advanced);
+                int advanced2Result = ColorNative.GetAdvancedColorInfo2(ref advanced2);
+                bool advancedRead = advancedResult == 0;
+                bool? isAdvanced = EvaluateAdvancedColor(advancedResult, advanced.Flags, advanced2Result, advanced2.Flags, advanced2.ActiveColorMode);
                 string device = namesRead ? source.viewGdiDeviceName : "";
                 string hardwareId = namesRead ? HardwareId(device, target.monitorDevicePath ?? "") : "";
                 string mode = Hash(string.Join("|", SourceKey(path), path.targetInfo.rotation, path.targetInfo.scaling,
                     path.targetInfo.outputTechnology, path.targetInfo.refreshRate.Numerator, path.targetInfo.refreshRate.Denominator,
                     advancedRead, advanced.Flags, advanced.ColorEncoding, advanced.BitsPerColorChannel,
-                    ModeBytes(modes, path.sourceInfo.modeInfoIdx), ModeBytes(modes, path.targetInfo.modeInfoIdx)));
+                    ModeBytes(modes, path.sourceInfo.modeInfoIdx), ModeBytes(modes, path.targetInfo.modeInfoIdx)) +
+                    AdvancedColorModeSuffix(advanced2Result, advanced2.Flags, advanced2.ActiveColorMode, isAdvanced));
                 var scope = new ColorDisplayScope(hardwareId, namesRead ? target.monitorDevicePath ?? "" : $"unknown-{i}", device,
                     namesRead ? target.monitorFriendlyDeviceName ?? "" : "", "", mode);
                 bool cloned = sourceKeys[SourceKey(path)] > 1;
@@ -134,6 +138,32 @@ namespace OLED_Sleeper.Features.ColorTemperature
         }
 
         public ColorValue CreateTarget(ColorValue baseline, int kelvin, double warmth) => GammaTarget.Create(baseline, kelvin, warmth);
+
+        internal static bool? EvaluateAdvancedColor(int legacyResult, uint legacyFlags, int detailedResult, uint detailedFlags, uint activeMode)
+        {
+            if (detailedResult == 0)
+            {
+                // INFO_2 reports the actual SDR/WCG/HDR mode. Its bit 2 is reserved; on newer
+                // Windows the legacy wideColorEnforced bit can be set even while plain SDR is active.
+                if (activeMode > 2) return null;
+                if (activeMode != 0 || (detailedFlags & 2) != 0) return true;
+                if (legacyResult != 0) return null;
+                // Fail closed if the two consecutive reads disagree about active advanced color.
+                return (legacyFlags & 2) != 0;
+            }
+
+            // Older Windows may not implement request 15. Other errors are not proof of SDR.
+            if (detailedResult is not (1 or 50 or 87 or 120) || legacyResult != 0) return null;
+            return (legacyFlags & 6) != 0;
+        }
+
+        internal static string AdvancedColorModeSuffix(int detailedResult, uint detailedFlags, uint activeMode, bool? isAdvanced)
+        {
+            // Keep existing SDR qualifications/recovery scopes stable. A newly detected non-SDR
+            // or uncertain state must also invalidate read-only recovery/validation scope matching.
+            if (isAdvanced == false) return "";
+            return FormattableString.Invariant($"|advanced2:{detailedResult}:{detailedFlags}:{activeMode}");
+        }
 
         public static bool SameScope(ColorDisplayScope a, ColorDisplayScope b) =>
             string.Equals(a.HardwareId, b.HardwareId, StringComparison.OrdinalIgnoreCase) &&

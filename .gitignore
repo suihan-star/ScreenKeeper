@@ -114,3 +114,9 @@ original-brightness.json
 *.p12
 id_rsa
 id_ed25519
+
+# Regenerable promotion archives and duplicated packaging directory
+designs/screenkeeper-social-launch/*.zip
+designs/screenkeeper-social-launch/v2/*.zip
+designs/screenkeeper-social-launch/v2-en/*.zip
+designs/screenkeeper-social-launch/v2/screenkeeper-social-v2/

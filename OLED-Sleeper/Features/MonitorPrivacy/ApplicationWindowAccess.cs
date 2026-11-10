@@ -20,8 +20,7 @@ public sealed class ApplicationWindowAccess : IApplicationWindowAccess
                 PrivacyNative.GetWindowThreadProcessId(handle, out var id);
                 if (id == Environment.ProcessId) return true;
                 using var process = Process.GetProcessById((int)id);
-                var path = process.MainModule?.FileName;
-                if (!PrivacyOptions.IsLocalExecutable(path)) return true;
+                if (!ProcessImagePath.TryGet(id, out var path) || !PrivacyOptions.IsLocalExecutable(path)) return true;
                 if (PrivacyNative.GetCloaked(handle, 14, out var cloaked, 4) != 0 || cloaked != 0) return true;
                 var cls = new StringBuilder(256);
                 NativeMethods.GetClassName(handle, cls, cls.Capacity);
@@ -56,7 +55,11 @@ public sealed class ApplicationWindowAccess : IApplicationWindowAccess
         {
             using (process)
             {
-                try { if (string.Equals(process.MainModule?.FileName, path, StringComparison.OrdinalIgnoreCase)) return true; }
+                try
+                {
+                    if (!ProcessImagePath.TryGet((uint)process.Id, out var imagePath)) return true;
+                    if (string.Equals(imagePath, path, StringComparison.OrdinalIgnoreCase)) return true;
+                }
                 catch { return true; } // Do not duplicate a matching process we cannot inspect.
             }
         }

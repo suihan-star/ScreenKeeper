@@ -1,0 +1,50 @@
+[
+  {
+    "clip": "01-screen-rest",
+    "duration": 18,
+    "fps": 24,
+    "frames": 432,
+    "mp4Bytes": 328752,
+    "gifBytes": 1379746,
+    "mp4Sha256": "3b06088e1920a61089c257f6fa5cde8cd6ccbe33c4ac24d06ba4bacabf43d6db",
+    "gifSha256": "15a8e19a69cac4e89a550cf0031df9897cf677f39f3d8ea21fa92a8ada215c7d",
+    "decodePassed": true,
+    "decodeLog": "rogressive), 900x1200, 143 kb/s, 24 fps, 24 tbr, 12288 tbn (default)\r\n      Metadata:\r\n        handler_name    : VideoHandler\r\n        vendor_id       : [0][0][0][0]\r\n        encoder         : Lavc61.19.100 libx264\r\nStream mapping:\r\n  Stream #0:0 -> #0:0 (h264 (native) -> wrapped_avframe (native))\r\nPress [q] to stop, [?] for help\r\nOutput #0, null, to 'pipe:':\r\n  Metadata:\r\n    major_brand     : isom\r\n    minor_version   : 512\r\n    compatible_brands: isomiso2avc1mp41\r\n    encoder         : Lavf61.7.100\r\n  Stream #0:0(und): Video: wrapped_avframe, yuv420p(progressive), 900x1200, q=2-31, 200 kb/s, 24 fps, 24 tbn (default)\r\n      Metadata:\r\n        handler_name    : VideoHandler\r\n        vendor_id       : [0][0][0][0]\r\n        encoder         : Lavc61.19.100 wrapped_avframe\r\n[out#0/null @ 000001e7ddf203c0] video:186KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown\r\nframe=  432 fps=0.0 q=-0.0 Lsize=N/A time=00:00:18.00 bitrate=N/A speed= 172x    \r\n"
+  },
+  {
+    "clip": "02-privacy",
+    "duration": 18,
+    "fps": 24,
+    "frames": 432,
+    "mp4Bytes": 595403,
+    "gifBytes": 2395001,
+    "mp4Sha256": "7afec621b42472b4454bc5d3d805074905325ec38c0fa34c1eb147696adc1546",
+    "gifSha256": "4680732b5cd76d8c489c4100df2ae2b519ee246012275425e5d80e838de8d075",
+    "decodePassed": true,
+    "decodeLog": "rogressive), 900x1200, 262 kb/s, 24 fps, 24 tbr, 12288 tbn (default)\r\n      Metadata:\r\n        handler_name    : VideoHandler\r\n        vendor_id       : [0][0][0][0]\r\n        encoder         : Lavc61.19.100 libx264\r\nStream mapping:\r\n  Stream #0:0 -> #0:0 (h264 (native) -> wrapped_avframe (native))\r\nPress [q] to stop, [?] for help\r\nOutput #0, null, to 'pipe:':\r\n  Metadata:\r\n    major_brand     : isom\r\n    minor_version   : 512\r\n    compatible_brands: isomiso2avc1mp41\r\n    encoder         : Lavf61.7.100\r\n  Stream #0:0(und): Video: wrapped_avframe, yuv420p(progressive), 900x1200, q=2-31, 200 kb/s, 24 fps, 24 tbn (default)\r\n      Metadata:\r\n        handler_name    : VideoHandler\r\n        vendor_id       : [0][0][0][0]\r\n        encoder         : Lavc61.19.100 wrapped_avframe\r\n[out#0/null @ 00000211f63e9300] video:186KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown\r\nframe=  432 fps=0.0 q=-0.0 Lsize=N/A time=00:00:18.00 bitrate=N/A speed= 159x    \r\n"
+  },
+  {
+    "clip": "03-health",
+    "duration": 18,
+    "fps": 24,
+    "frames": 432,
+    "mp4Bytes": 614619,
+    "gifBytes": 2622031,
+    "mp4Sha256": "89ad758e9753453464e2b0680aa088f36be2e4aeaef4bdc66f7c74318af25bad",
+    "gifSha256": "75fedf4a7d1b754fb1c993480d28bc500e6fe4dd576e6169206b3222bafb8a2e",
+    "decodePassed": true,
+    "decodeLog": "rogressive), 900x1200, 270 kb/s, 24 fps, 24 tbr, 12288 tbn (default)\r\n      Metadata:\r\n        handler_name    : VideoHandler\r\n        vendor_id       : [0][0][0][0]\r\n        encoder         : Lavc61.19.100 libx264\r\nStream mapping:\r\n  Stream #0:0 -> #0:0 (h264 (native) -> wrapped_avframe (native))\r\nPress [q] to stop, [?] for help\r\nOutput #0, null, to 'pipe:':\r\n  Metadata:\r\n    major_brand     : isom\r\n    minor_version   : 512\r\n    compatible_brands: isomiso2avc1mp41\r\n    encoder         : Lavf61.7.100\r\n  Stream #0:0(und): Video: wrapped_avframe, yuv420p(progressive), 900x1200, q=2-31, 200 kb/s, 24 fps, 24 tbn (default)\r\n      Metadata:\r\n        handler_name    : VideoHandler\r\n        vendor_id       : [0][0][0][0]\r\n        encoder         : Lavc61.19.100 wrapped_avframe\r\n[out#0/null @ 000001f33aa578c0] video:186KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown\r\nframe=  432 fps=0.0 q=-0.0 Lsize=N/A time=00:00:18.00 bitrate=N/A speed= 165x    \r\n"
+  },
+  {
+    "clip": "04-color",
+    "duration": 18,
+    "fps": 24,
+    "frames": 432,
+    "mp4Bytes": 1139691,
+    "gifBytes": 3004996,
+    "mp4Sha256": "f7ed68aee05246b8c9811e253da5424737ab7086082bab660f8380ea9f62fd19",
+    "gifSha256": "0e81d1e0fc353dd81ed491e5e9455bf89ad9193c8f6491d5927005516a79767e",
+    "decodePassed": true,
+    "decodeLog": "rogressive), 900x1200, 503 kb/s, 24 fps, 24 tbr, 12288 tbn (default)\r\n      Metadata:\r\n        handler_name    : VideoHandler\r\n        vendor_id       : [0][0][0][0]\r\n        encoder         : Lavc61.19.100 libx264\r\nStream mapping:\r\n  Stream #0:0 -> #0:0 (h264 (native) -> wrapped_avframe (native))\r\nPress [q] to stop, [?] for help\r\nOutput #0, null, to 'pipe:':\r\n  Metadata:\r\n    major_brand     : isom\r\n    minor_version   : 512\r\n    compatible_brands: isomiso2avc1mp41\r\n    encoder         : Lavf61.7.100\r\n  Stream #0:0(und): Video: wrapped_avframe, yuv420p(progressive), 900x1200, q=2-31, 200 kb/s, 24 fps, 24 tbn (default)\r\n      Metadata:\r\n        handler_name    : VideoHandler\r\n        vendor_id       : [0][0][0][0]\r\n        encoder         : Lavc61.19.100 wrapped_avframe\r\n[out#0/null @ 000001f9afe603c0] video:186KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown\r\nframe=  432 fps=0.0 q=-0.0 Lsize=N/A time=00:00:18.00 bitrate=N/A speed= 146x    \r\n"
+  }
+]

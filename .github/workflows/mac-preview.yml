@@ -1,0 +1,50 @@
+name: Build Mac preview (manual)
+
+# Builds the Mac module from an exact commit of the private product repository.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: screenkeeper-mac-preview
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - name: Verify private repository and Apple Silicon runner
+        env:
+          REPOSITORY_PRIVATE: ${{ github.event.repository.private }}
+        run: |
+          test "$REPOSITORY_PRIVATE" = true
+          test "$(uname -m)" = arm64
+      - name: Check out the selected commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify checked out commit
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - name: Test packaging helpers
+        run: python3 macos/scripts/test_build_helpers.py
+      - name: Test, build and check application
+        env:
+          SCREENKEEPER_BUILD_ID: ci-${{ github.run_number }}-${{ github.run_attempt }}
+          CI: 'true'
+        run: /bin/bash macos/scripts/build-macos.sh
+      - name: Upload application archives and evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: ScreenKeeper-Mac-arm64-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            macos/dist/*/*.zip
+            macos/dist/*/*.dmg
+            macos/dist/*/*.txt
+            macos/dist/*/*.json
+          if-no-files-found: warn
+          retention-days: 3

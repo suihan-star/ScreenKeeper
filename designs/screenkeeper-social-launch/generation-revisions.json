@@ -1,0 +1,8 @@
+[
+  {
+    "asset": "x-poster",
+    "edit": 1,
+    "reason": "移除模型自创的树形标志，避免与现有产品图标混淆；清除无关手写便笺。",
+    "prompt": "Edit this existing finished ScreenKeeper advertising poster. Make ONLY these two changes: (1) remove the invented little pine-tree/mountain emblem to the LEFT of the top brand text '屏幕良伴 ScreenKeeper', reconstruct the warm cream background there, and align the remaining brand text with the left edge of the big headline. Keep the brand wordmark text exactly correct. This product does not use a pine-tree logo. (2) remove the small handwritten sticky note on the wall above the lamp, reconstructing the surrounding wall and light. Preserve everything else: the exact landscape aspect ratio, enormous two-line headline '工作有人催' and '休息有人提醒', all supporting Chinese text and footer, desktop, monitors, worker, hands, cat, lighting, textures, forest motif, every other text position and overall composition. No new logos, no extra text, no watermarks."
+  }
+]

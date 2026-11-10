@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    Builds the ScreenKeeper release artifacts: the dual-architecture installer and the portable x64 zip.
+    Builds the ScreenKeeper release artifacts: the dual-architecture installer and portable x64/x86 zips.
 
 .DESCRIPTION
     Publishes the two framework-dependent payloads the installer packs, publishes the self-contained
@@ -168,15 +168,24 @@ $setupPath = Join-Path $OutputDirectory "ScreenKeeper-$version-Setup.exe"
 if (-not (Test-Path -LiteralPath $setupPath)) { throw "The installer was not produced at $setupPath." }
 
 if (-not $SkipPortable) {
-    Write-Step 'Publishing the portable build'
-    $portableX64 = Join-Path $stagingDirectory 'portable\ScreenKeeper'
-    Publish-Payload -Runtime 'win-x64' -Destination $portableX64 -Portable
+    $portableHelpFiles = @(Get-ChildItem -LiteralPath (Join-Path $repositoryRoot 'docs\portable') -Filter '*.txt' -File)
+    if ($portableHelpFiles.Count -eq 0) { throw 'Portable help files are missing from docs/portable.' }
+    foreach ($architecture in @('x64', 'x86')) {
+        Write-Step "Publishing the portable $architecture build"
+        $portablePayload = Join-Path $stagingDirectory "portable\$architecture\ScreenKeeper"
+        Publish-Payload -Runtime "win-$architecture" -Destination $portablePayload -Portable
 
-    Write-Step 'Zipping the portable build'
-    $zipPath = Join-Path $OutputDirectory "ScreenKeeper-$version-Portable-x64.zip"
-    if (Test-Path -LiteralPath $zipPath) { Remove-Item -LiteralPath $zipPath -Force }
-    # The zip carries its own ScreenKeeper folder, so extracting it never scatters files loose.
-    Compress-Archive -Path $portableX64 -DestinationPath $zipPath
+        Write-Step 'Including bilingual portable help'
+        foreach ($helpFile in $portableHelpFiles) {
+            Copy-Item -LiteralPath $helpFile.FullName -Destination (Join-Path $portablePayload $helpFile.Name)
+        }
+
+        Write-Step "Zipping the portable $architecture build"
+        $zipPath = Join-Path $OutputDirectory "ScreenKeeper-$version-Portable-$architecture.zip"
+        if (Test-Path -LiteralPath $zipPath) { Remove-Item -LiteralPath $zipPath -Force }
+        # Each archive has its own ScreenKeeper folder and architecture-matched runtime DLLs.
+        Compress-Archive -Path $portablePayload -DestinationPath $zipPath
+    }
 }
 
 Write-Step 'Writing checksums'

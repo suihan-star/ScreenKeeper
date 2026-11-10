@@ -13,8 +13,21 @@ namespace OLED_Sleeper.Native
             public uint BitsPerColorChannel;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct AdvancedColorInfo2
+        {
+            public NativeMethods.DISPLAYCONFIG_DEVICE_INFO_HEADER Header;
+            public uint Flags;
+            public uint ColorEncoding;
+            public uint BitsPerColorChannel;
+            public uint ActiveColorMode;
+        }
+
         [DllImport("user32.dll", EntryPoint = "DisplayConfigGetDeviceInfo")]
         internal static extern int GetAdvancedColorInfo(ref AdvancedColorInfo request);
+
+        [DllImport("user32.dll", EntryPoint = "DisplayConfigGetDeviceInfo")]
+        internal static extern int GetAdvancedColorInfo2(ref AdvancedColorInfo2 request);
 
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode, EntryPoint = "CreateDCW")]
         internal static extern nint CreateDisplayDc(string driver, string device, nint output, nint initData);

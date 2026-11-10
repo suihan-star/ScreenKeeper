@@ -3,6 +3,7 @@
 ## 产品与来源
 
 - 本仓库是多屏管家（ScreenKeeper）的独立产品仓库。
+- 产品适用于 Windows 单屏与多屏用户；产品摘要、推广文案和示意图不得将多屏作为使用前提。对外可使用“单屏多屏，皆由你心定”，四个模块均可介绍单屏使用场景；屏幕休息、隐私与色温的多屏独立设置作为扩展能力呈现，健康提醒仍为独立全局工作周期。
 - 初始基线：OLED Sleeper v2.2.0，提交 27f1c777a9a1dca6002692b66fe0ec6cf4d71724。
 - 保留上游 Git 历史及 MIT 版权许可声明。upstream 指向 Quorthon13/OLED-Sleeper。
 - 产品主分支为 main；功能分支默认使用 codex/ 前缀。
@@ -11,10 +12,13 @@
 
 ## 代码与构建事实
 
-- 当前应用是 net8.0-windows 的 C# WPF 项目，构建需要 Windows 和 .NET 8 SDK（与现有 CI 一致）。
+- Windows 应用是 net8.0-windows 的 C# WPF 项目，构建需要 Windows 和 .NET 8 SDK（与现有 CI 一致）。
+- macos/ 为独立 SwiftUI／AppKit 开发预览源码，最低部署目标 macOS 13、仅发布 arm64；核心逻辑隔离在 ScreenKeeperCore，具体规则见 macos/AGENTS.md。Mac 模块不改变 Windows 构建、数据与发布；界面和设备行为须在 Mac 实测，其他平台的语法检查不能代替编译或硬件验收。硬件色温／亮度和第三方窗口控制尚未开放，不因只读能力成功自动放行。
+- 目标系统为 Windows 10 x86／x64 和 Windows 11 x64；Windows 11 无 x86 系统版，不扩展到旧 Windows 或 ARM。Get/SetWindowLongPtr 按当前进程位数分派至明确的 W 入口；跨位数应用路径查询使用 QueryFullProcessImageNameW 和最小查询权限，不使用 Process.MainModule，读取失败继续保守回退。双架构回归须确认测试进程实际位数，WOW64 检查不能替代原生 x86 系统与硬件验收。
 - 解决方案仍为 OLED-Sleeper.sln，应用和测试目录仍分别为 OLED-Sleeper/ 与 OLED-Sleeper.Tests/。
 - 输出程序集/可执行文件为 ScreenKeeper；命名空间继续使用 OLED_Sleeper。运行时产品标识集中于 Infrastructure/ProductIdentity.cs，修改时同步检查 installer/OLED-Sleeper.iss 和 build.ps1。
 - 安装版数据位于 %APPDATA%\ScreenKeeper；便携版位于程序旁 Data\ScreenKeeper；日志在各自根目录的 Logs 下。不得读取、迁移或清理 OLED Sleeper 数据；重装应保留本产品配置和亮度恢复记录。
+- 官网地址集中在 ProductIdentity.WebsiteUrl，当前为 https://screenkeeper.skyrrats.com/；主窗口顶部入口随中英文切换，只在用户点击时通过系统默认浏览器打开。启动失败显示本地化提示与网址，不自动联网或发送配置数据。
 - 本产品启动项为 ScreenKeeper，互斥量为 ScreenKeeper-Mutex，唤起事件为 ScreenKeeper-ShowWindow；安装 AppId 为 5628C27B-72F7-4523-9931-A132AC8E407D，必须保持升级稳定。
 - 客户端默认静绿深色，可选雾白绿。公共控件模板集中在 UI/Themes/Calm.xaml，Forest.xaml／Fog.xaml 提供语义色板，UiTheme 通过动态资源即时切换。最小窗口为 700×500，内容区滚动，顶部主题／语言及当前模块保存条固定可见。
 - 主题入口位于标题栏语言旁，通用设置保留同步预览卡。主题仅影响设置窗口；隐私幕和健康提醒窗口使用本地深色色板，不随设置主题改变。两套主题共用布局与业务状态，切换不得保存或放弃业务草稿。
@@ -47,21 +51,25 @@
 - 健康提醒外观保存在 health-reminder.json 的可选 Appearance 中，深复制并参与草稿/保存/放弃；HealthImages 使用不可变图片副本；静景／图片模式缺图回退共用山林背景，内置资源不可用再回退矢量静景。新设置默认静景提醒、图片休息画面，已保存的显式样式保持不变。HealthSceneWindow 与操作卡分离：轻提醒场景输入穿透、不激活；主动休息场景阻挡对隐藏应用的鼠标点击，并聚焦操作卡防止误输入。宿主失效/隐私/锁屏立即关闭两窗口；只在明确开始后全屏。手动外观预览绕过全屏免打扰及手动暂停，但仍检查会话与屏幕保护，示例倒计时不改真实周期。
 - ReminderDisplayGate 只决定健康卡片是否可显示，不能唤醒显示器；隐私动作开始前通知收起。后台通知不能同步等待 UI dispatcher；恢复遮黑／亮度后清除休息标记，仍有原亮度恢复记录时禁止提醒。卡片宿主失效后不立即迁移到其他屏。
 - Features/ColorTemperature 隔离日程、设备能力、串行控制和原色恢复。Gamma 后端生产资格默认关闭；只读成功或单次读回不能自动获得资格。ColorValidationRegistry 将用户观察确认后的资格独立保存于 color-temperature-validation.json，绑定物理目标及拓扑／模式；未验证 HDR／复制／远程／校色环境不可接管。恢复基线与亮度独立，发现外部改色不覆盖。
+- Windows Gamma 的 SDR 资格优先读取 DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO_2 的实际模式及 active 位，区分支持与正在启用；新 Windows 的旧 wideColorEnforced 标志不能单独证明当前非 SDR。仅新请求明确不受支持时回退旧保守判断，查询错误／未知／矛盾状态继续拦截。确认 SDR（含旧系统保守回退确认的 SDR）保留既有作用域指纹；非 SDR 或不确定状态加入指纹后缀，确保只读复核恢复也拒绝旧作用域。更改此规则需覆盖真实 flags 组合、HDR／WCG、失败回退、结构布局与指纹兼容回归，不以只读检查替代人工验证。
 - 色温首次验证由用户在客户端明确选择目标并开始；串行服务先写耐久恢复日志，短期试验许可仅放行所选 SDR 扩展屏的 5000K/15 秒测试。必须复核原色及其他屏幕，并取得用户对实际变化、独立性和恢复的确认后才能保存资格；不自动启用或勾选参与。取消、锁屏、退出撤销试验；恢复匹配日志中的基线使用独立恢复入口，不依赖尚未取得的生产资格，仍验证作用域和所有权。资格不等于专业校色认证。
 - 色温设置保持作息与色温／屏幕与验证两个长期页签，不采用强制首用向导。作息页只列已验证可用屏幕，使用「开启此屏幕色温调节」独立开关，关闭隐藏参数但保留值；工作和休息均用「保持原色／自定义色温」显式双选项，新设置默认工作原色、休息自定义 4500 K。原色切换结束试调，保留自定义候选值；隐藏的无效输入不阻止原色保存，保存成功后回到最近有效候选值，手动模式仍校验其可见自定义目标。
 - color-temperature.json 升级为 schema 2，ScreenProfiles 按 HardwareId 保存独立开关、模式、时间、两组色温和过渡。兼容读取 schema 1，共享参数逐屏保留，开启状态取旧总开关与参与标记的交集；首次成功保存才升级，新屏幕默认关闭。色温普通设置存储显式接受 1／2，其余模块版本不变；旧客户端必须拒绝 schema 2，不能降级覆盖。
 - 色温固定作息独立于健康提醒。ColorTemperatureProfile 管理每屏参数，服务按每屏已保存策略求目标；DayUsesOriginal 与可选 NightUsesOriginal 使用接管前基线，不能等同于 6500K。NightUsesOriginal 缺失默认 false，schema 2 不变；过渡支持任一时段为原色，两时段原色不接管 Gamma，手动模式仍用自定义目标。临时原色至下次工作使用该屏保存的 MorningStart，暂停截止不因编辑草稿变化。旧版不理解新增字段，降级前须关闭功能、确认恢复并使用对应旧配置备份。
 - 色温编辑器按 HardwareId 保留原始字符串草稿，切屏、语言／主题及能力刷新不覆盖；保存与放弃覆盖本模块全部屏幕，保存失败保留草稿。开关下工作／休息色块读取保存基线，草稿或试调不改变摘要，关闭／冲突／暂停单独提示。作息图按真实边界区分工作／休息，即使目标相同也必须能辨认；不以保存成功证明已实际调色。试调入口左对齐，置于时段参数上方，不额外显示“固定作息”标签。
 - 色温试调直接使用当前已验证屏幕，必须先点击工作／休息试调按钮才联动滑杆；合并快速输入并取消过期请求，只写目标屏幕。显示倒计时只读取服务中的单调截止；停止编辑 15 秒后恢复该屏已保存策略。切屏、页签、模式／原色选项、导航、保存、放弃及窗口隐藏取消试调。按住原色对比保留所有权检查，外部改色不得接纳为新基线或强制覆盖。
+- 色温选屏与试调目标须在调用取消预览或发布通知前同步更新；服务取消操作可能同步触发 Changed／能力刷新。回归须覆盖冲突移除当前屏幕后的有替代屏／无替代屏，以及同步回调重入，不能只使用无回调的取消模拟。
 - 屏幕与验证列出全部屏幕及阻塞原因，未验证／恢复冲突仍可查看处理入口，实际门禁不变；不可用屏幕可关闭已保存或草稿中的开关。验证前任一已保存策略开启时，列明受影响屏幕并提供明确关闭保存动作，只修改这些开关，保留其他草稿，等待恢复再继续；失败提示且不能绕过服务门禁，验证后不自动重启调节。
 - 重新检查原色只读设备，须关闭并保存所有策略、精确作用域匹配且当前颜色等于记录基线，耐久更新成功后才解除冲突；不得删除记录或接纳未知颜色以绕过保护。
 - 外部调色期间采集的旧基线可通过独立“重新建立原色”流程处理：关闭并保存策略后，只读复核所有待处理屏幕的身份／模式与稳定颜色，由用户明确确认列出的屏幕当前画面正常。连接或模式已变时，准备阶段只允许 HardwareId 和物理 ScopeId 均唯一匹配的同屏按当前精确作用域重新观察；稳定复核和最终确认必须仍匹配当前作用域与颜色，实际调色、恢复及普通重新检查原色的精确作用域门禁不变。检查通过后才展示观察确认项，失败显示原因与重试入口；验证弹窗列出待处理屏幕并提供处理入口，其他屏幕尚有恢复记录时不开始新试验。先耐久写入唯一 color-temperature-archive-*.json，再撤销这些屏幕旧资格，最后耐久更新活动日志；不写显示器、不自动启用、不删除归档。恢复日志 schema 1 可选 ValidationRequiredScreens 强制重新验证，即使旧资格备份恢复也不能接管；仅新的受控试验和人工确认成功、标记耐久移除后才能恢复资格。归档永不用于自动恢复。
 - 健康使用独立 schema 1 文件 health-reminder.json，色温使用 schema 2 文件 color-temperature.json（兼容读取 schema 1），临时截止及恢复分别在 health-reminder-runtime.json／color-temperature-recovery.json。IndependentSettingsStore 拒绝覆盖未知 schema 或不可读文件；合法备份可恢复普通设置。色温日志的旧备份不能证明没有接管，无法确认日志时停止写入。首次写硬件前必须 TryWriteDurable 成功：临时文件 Flush(true) 后原子替换。
 - 原色重建归档的旧记录与新观察按 HardwareId／物理 ScopeId 唯一配对，分别保留各自完整作用域和颜色；归档校验不得要求新旧拓扑、模式或临时设备地址一致。该规则只用于留存证据，不放宽实际写设备与恢复门禁。重建回归必须覆盖生产 ColorRecoveryFileStore／AppDataFileStore 的确认及实际临时磁盘持久化链路，不能仅依赖总是允许归档的模拟存储。
 - WellbeingCoordinator 管理两模块生命周期：健康窗口在 UI 停止；色温设备恢复在后台退出流程等待；会话锁定和系统休眠分别保持暂停状态。导航采用当前模块保存，其他模块草稿保留；关闭或最小化撤销预览，关闭到托盘保留草稿，退出列出未保存模块，不宣称跨文件原子保存。
+- 色温会话恢复仅观察本进程暂停前无冲突、无待写及无失败的接管记录。精确作用域和已验证 SDR 资格不变时，以既有轮询取得至少间隔 2 秒的相同有效读数；保持 LastApplied 可继续，精确回到 Baseline 须先耐久更新 LastApplied、保留基线，再独立读取并平滑续接保存策略。等待状态不要求重建原色，期间不能试调；离线、资格变化及观察或独立重读失败重新计时，未知颜色仍冲突，旧冲突不自动清除。锁屏请求立即阻挡在途写入，快速锁／解锁不能丢失观察，过期解锁不能清除新锁屏；保存或取消使采样失效。不得删除记录后抓取新基线来处理此恢复路径，模拟回归不等于真实关屏过夜验收。
 - tools/ColorProbe 是独立只读能力与受控观察工具。真实改色测试必须明确目标、用户观察时段和恢复看护，不能把 fixture 测试或截图当硬件兼容证明，不自动修改已安装产品配置。
-- MinVer 只读取 screenkeeper-v* 产品标签派生版本，保留的上游 v* 标签不参与本产品版本计算；未打正式产品标签的构建保留预发布标识，不能将源码推送等同于创建发行版。
-- build.ps1 生成安装包和便携包，安装包构建还需要 Inno Setup。
+- MinVer 只读取 screenkeeper-v* 产品标签派生版本，保留的上游 v* 标签不参与本产品版本计算；常规未打正式产品标签的构建保留预发布标识，不能将源码推送等同于创建发行版。用户明确指定版本的归档构建可传入 MinVerVersionOverride，但须冻结精确源码、保存逐文件校验清单并用 snapshot.<清单 SHA256> 标识 SourceRevisionId；记录基线提交与未提交改动，不移动旧标签或冒充旧标签产物。同版本不同构建须保留独立构建标识和历史校验值。
+- build.ps1 生成双架构安装包和独立的 x64／x86 自包含便携 ZIP，分别使用 publish/portable/x64/ScreenKeeper 与 publish/portable/x86/ScreenKeeper；安装包构建还需要 Inno Setup，不混用两种架构的运行时 DLL。
+- 便携版中英双语快速说明与 FAQ 原稿位于 docs/portable/*.txt，build.ps1 在压缩 ZIP 前复制到程序文件夹；手动重打包也须同步这两份帮助并更新校验值。用户帮助应覆盖实际按钮与恢复流程，不指导删除恢复记录或绕过验证／安全保护来消除错误。
 - 现有 CI 命令：dotnet restore OLED-Sleeper.sln；dotnet build OLED-Sleeper.sln -c Release --no-restore；dotnet test OLED-Sleeper.sln -c Release --no-build；dotnet format OLED-Sleeper.sln --verify-no-changes。
 - .github/workflows/ci.yml 面向可选 GitHub 镜像的 main PR 和手动检查，release.yml 仅手动构建并上传产物，不自动创建 Release；Codeup 不执行 GitHub Actions，Windows 流水线需另行配置。旧上游发布脚本归档在 docs/upstream/github-release.yml。
 - 根 README 为首版产品与快速入口；docs/user-guide.md、docs/development.md、docs/README.md 分别维护使用、开发和任务索引，上游 README 留档在 docs/upstream。运行配置、恢复记录、日志、构建目录及私钥／签名材料不得提交；历史设计与任务记录保留，不因整理删改其原始验证结论。

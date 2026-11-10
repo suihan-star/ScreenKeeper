@@ -1,0 +1,33 @@
+屏幕良伴 Mac 开发测试版 / ScreenKeeper Mac development preview
+
+给测试者 / For testers
+
+无需安装 Xcode 或编译源码。将 ScreenKeeper.app 拖入“应用程序”，双击打开。
+No Xcode or source compilation is required. Drag ScreenKeeper.app to Applications and open it.
+
+本包使用临时开发签名，未经 Developer ID 签名和 Apple 公证。首次打开可能提示无法验证开发者。
+只在确认本包来自可信来源、校验值一致后，按 macOS 对单个应用提供的“隐私与安全性 → 仍要打开”流程确认。
+不要关闭 Gatekeeper、SIP 或系统安全保护。若系统报告恶意软件或损坏，停止运行并反馈原始提示，不绕过。
+This preview uses an ad-hoc signature and is not Developer ID signed or notarized. macOS may ask for confirmation.
+For a verified, trusted copy only, use Apple's per-app Privacy & Security > Open Anyway process.
+Do not disable Gatekeeper, SIP, or system security. If macOS reports malware or a damaged app, stop and report the message.
+
+首次启动所有管理功能关闭。先在没有私人内容的桌面测试隐私幕、软件遮黑和健康提醒。
+需要判断前台窗口所在屏幕时，在通用设置中明确授予辅助功能权限；不要求屏幕录制权限。
+Features start disabled. Test curtains, software blackout, and wellbeing reminders on a non-sensitive desktop first.
+Grant Accessibility explicitly in General settings if active-window location is needed. Screen recording is not requested.
+
+此版本尚未开放实际色温、硬件亮度／断电、桌面／指定应用控制。软件遮黑不是显示器断电。
+Cloud build checks cannot replace testing on real displays. Color control, hardware brightness/power, and desktop/selected-app
+actions are not enabled. Software blackout does not power off your display.
+
+关闭设置窗口后软件留在菜单栏；完全退出请使用菜单栏“退出屏幕良伴”。
+若画面无法操作，可用 macOS 自带强制退出结束程序；本预览不改硬件颜色或连接模式。
+Closing settings keeps the app in the menu bar. Choose Quit ScreenKeeper there to exit.
+If interaction is blocked, use macOS Force Quit; this preview does not change hardware colors or display topology.
+
+反馈时请提供系统版本、显示器连接方式、操作步骤及提示。不要发送私人桌面内容或完整配置目录。
+Please report OS version, display connections, steps and messages. Do not share private desktop content or full settings folders.
+
+Apple 打开应用说明 / Apple's app-opening guidance:
+https://support.apple.com/en-us/102445

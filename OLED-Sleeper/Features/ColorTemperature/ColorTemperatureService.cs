@@ -66,6 +66,7 @@ namespace OLED_Sleeper.Features.ColorTemperature
             {
                 if (_stopped || revision != _revision) return;
                 Settings = copy;
+                ResetResumeSamples();
                 _smoothAll = true;
                 SetPreview(null);
                 await RefreshCoreAsync(cancellationToken).ConfigureAwait(false);
@@ -92,6 +93,7 @@ namespace OLED_Sleeper.Features.ColorTemperature
                 if (hardwareId != null) next.PausedUntil[hardwareId] = until;
                 else foreach (var id in Settings.ScreenIds.Where(id => Settings.ForScreen(id).Enabled)) next.PausedUntil[id] = until;
                 if (!Persist(next)) return false;
+                ResetResumeSamples();
                 SetPreview(null);
                 if (hardwareId == null) _transitions.Clear(); else _transitions.Remove(hardwareId);
                 await RefreshCoreAsync(cancellationToken).ConfigureAwait(false);
@@ -110,6 +112,7 @@ namespace OLED_Sleeper.Features.ColorTemperature
                 var next = _journal.Copy();
                 if (hardwareId == null) next.PausedUntil.Clear(); else next.PausedUntil.Remove(hardwareId);
                 if (!Persist(next)) return false;
+                ResetResumeSamples();
                 await RefreshCoreAsync(cancellationToken).ConfigureAwait(false);
                 return true;
             }
@@ -134,7 +137,8 @@ namespace OLED_Sleeper.Features.ColorTemperature
                 if (_stopped || _suspended || Volatile.Read(ref _suspendRequested) != 0 || !_journalSafe || request != _previewRevision || expires <= _monotonic()) return false;
                 if (!await DiscoverAsync(cancellationToken).ConfigureAwait(false)) return false;
                 var capability = Capabilities.FirstOrDefault(c => c.Scope.HardwareId.Equals(hardwareId, StringComparison.OrdinalIgnoreCase) && c.State == ColorCapabilityState.Supported);
-                if (capability == null || request != _previewRevision || _failed.Contains(hardwareId) || _conflicts.Contains(hardwareId) ||
+                if (capability == null || request != _previewRevision || _resumeChecks.ContainsKey(hardwareId) || _resumeTransitions.Contains(hardwareId) ||
+                    _failed.Contains(hardwareId) || _conflicts.Contains(hardwareId) ||
                     (_journal.PausedUntil.TryGetValue(hardwareId, out var pause) && pause > _now())) return false;
                 if (_preview is { } previous && !previous.HardwareId.Equals(hardwareId, StringComparison.OrdinalIgnoreCase))
                 {
@@ -165,7 +169,7 @@ namespace OLED_Sleeper.Features.ColorTemperature
         {
             Interlocked.Increment(ref _previewRevision);
             await _serial.WaitAsync(cancellationToken).ConfigureAwait(false);
-            try { SetPreview(null); if (!_stopped) await RefreshCoreAsync(cancellationToken).ConfigureAwait(false); }
+            try { ResetResumeSamples(); SetPreview(null); if (!_stopped) await RefreshCoreAsync(cancellationToken).ConfigureAwait(false); }
             finally { Publish(); _serial.Release(); Changed?.Invoke(); }
         }
 
@@ -174,12 +178,34 @@ namespace OLED_Sleeper.Features.ColorTemperature
             Interlocked.Increment(ref _previewRevision);
             if (suspended) CancelValidation();
             // A lock/sleep request also blocks writes already queued behind an in-flight read.
-            if (suspended) Volatile.Write(ref _suspendRequested, 1);
+            long request;
+            lock (_suspensionSync)
+            {
+                request = ++_suspensionRevision;
+                if (suspended)
+                {
+                    _resumeCapturePending = true;
+                    Volatile.Write(ref _suspendRequested, 1);
+                }
+            }
             await _serial.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                _suspended = suspended;
-                if (!suspended) Volatile.Write(ref _suspendRequested, 0);
+                bool capture;
+                lock (_suspensionSync)
+                {
+                    // A delayed unlock must never clear the fast gate of a newer lock request.
+                    if (request != _suspensionRevision) return;
+                    // A quick lock/unlock can overtake the queued lock handler. Its recovery
+                    // observation must survive even when that obsolete handler is skipped.
+                    capture = _resumeCapturePending;
+                    _resumeCapturePending = false;
+                    _suspended = suspended;
+                    if (!suspended) Volatile.Write(ref _suspendRequested, 0);
+                }
+                Load();
+                if (capture) ArmResumeRecovery();
+                else ResetResumeSamples();
                 _smoothAll = true;
                 if (suspended) _transitions.Clear();
                 SetPreview(null);
@@ -198,6 +224,8 @@ namespace OLED_Sleeper.Features.ColorTemperature
             {
                 Load();
                 _stopped = true;
+                _resumeChecks.Clear();
+                _resumeTransitions.Clear();
                 _transitions.Clear();
                 _transitionPumpCancellation.Cancel();
                 SetPreview(null);
@@ -263,6 +291,8 @@ namespace OLED_Sleeper.Features.ColorTemperature
                 if (onlyScreenId != null && !scope.HardwareId.Equals(onlyScreenId, StringComparison.OrdinalIgnoreCase)) continue;
                 var record = _journal.Records.FirstOrDefault(r => r.Scope.HardwareId.Equals(scope.HardwareId, StringComparison.OrdinalIgnoreCase));
                 if (_conflicts.Contains(scope.HardwareId) || record?.Conflicted == true) continue;
+                if (!await ObserveResumeAsync(capability, record, revision, previewRevision, cancellationToken).ConfigureAwait(false)) continue;
+                record = _journal.Records.FirstOrDefault(r => r.Scope.HardwareId.Equals(scope.HardwareId, StringComparison.OrdinalIgnoreCase));
                 var screenSettings = Settings.ForScreen(scope.HardwareId);
                 var policy = ColorSchedule.Evaluate(screenSettings, now.DateTime);
                 bool participating = screenSettings.Enabled;
@@ -314,11 +344,14 @@ namespace OLED_Sleeper.Features.ColorTemperature
                 Capabilities = Capabilities.Select(c => c.State == ColorCapabilityState.Supported &&
                     _journal.ValidationRequiredScreens.Contains(c.Scope.HardwareId, StringComparer.OrdinalIgnoreCase)
                     ? c with { State = ColorCapabilityState.Unverified, Reason = "原色起点已重新建立，请重新验证此屏幕。" } : c).ToArray();
+                foreach (var check in _resumeChecks.Values)
+                    if (!Capabilities.Any(c => c.State == ColorCapabilityState.Supported && WindowsGammaBackend.SameScope(c.Scope, check.Record.Scope))) check.Reset();
                 return true;
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception)
             {
+                ResetResumeSamples();
                 LastError = "无法读取显示拓扑。";
                 foreach (var capability in Capabilities) Set(capability.Scope, ColorControlState.Failed, LastError);
                 return false;
@@ -328,19 +361,32 @@ namespace OLED_Sleeper.Features.ColorTemperature
         private async Task ApplyAsync(ColorDisplayScope scope, ColorRecoveryRecord? record, int kelvin, double warmth, long revision, CancellationToken cancellationToken,
             long previewRevision, bool immediate, bool retainBaseline)
         {
+            bool awaitingResumeRead = _resumeTransitions.Contains(scope.HardwareId) && record != null;
             try
             {
                 var current = await _backend.ReadAsync(scope, cancellationToken).ConfigureAwait(false);
                 if (revision != Volatile.Read(ref _revision) || previewRevision != Volatile.Read(ref _previewRevision) || Volatile.Read(ref _suspendRequested) != 0) return;
-                if (current is not { IsValid: true }) { Fail(scope, "无法读取原色基线。"); return; }
-                if (record != null && !current.SameAs(record.LastApplied)) { Conflict(record); return; }
+                if (current is not { IsValid: true })
+                {
+                    if (awaitingResumeRead) RetryResumeRead(scope, record!);
+                    else Fail(scope, "无法读取原色基线。");
+                    return;
+                }
+                if (record != null && !current.SameAs(record.LastApplied))
+                {
+                    if (awaitingResumeRead && current.SameAs(record.Baseline)) RetryResumeRead(scope, record);
+                    else Conflict(record);
+                    return;
+                }
+                bool resuming = _resumeTransitions.Remove(scope.HardwareId);
+                awaitingResumeRead = false;
                 bool firstTakeover = record == null;
                 record ??= new() { Scope = scope, SessionId = _session, Baseline = current.Copy(), LastApplied = current.Copy() };
                 // Sixty small increments limit hardware/journal churn. No unchanged target is rewritten on the one-second poll.
                 var desired = _backend.CreateTarget(record.Baseline, kelvin, Math.Round(warmth * 60) / 60);
                 _transitions.TryGetValue(scope.HardwareId, out var transition);
                 if (immediate || current.SameAs(desired)) transition = null;
-                else if ((_smoothAll && (transition == null || !desired.SameAs(transition.Target))) ||
+                else if (resuming || (_smoothAll && (transition == null || !desired.SameAs(transition.Target))) ||
                     (firstTakeover && (transition == null || !current.SameAs(transition.From))))
                     transition = new(current.Copy(), desired.Copy(), _monotonic());
                 else if (transition != null && !desired.SameAs(transition.Target)) transition = transition with { Target = desired.Copy() };
@@ -385,7 +431,11 @@ namespace OLED_Sleeper.Features.ColorTemperature
                     transitioning ? "正在平滑过渡到当前色温策略。" : "已写入经过验证的色温策略。", warmth: warmth);
             }
             catch (OperationCanceledException) { throw; }
-            catch (Exception) { Fail(scope, "色温写入或读回失败，保留恢复记录。"); }
+            catch (Exception)
+            {
+                if (awaitingResumeRead) RetryResumeRead(scope, record!);
+                else Fail(scope, "色温写入或读回失败，保留恢复记录。");
+            }
         }
 
         private async Task<bool> RestoreAsync(ColorRecoveryRecord record, CancellationToken cancellationToken)
@@ -417,6 +467,8 @@ namespace OLED_Sleeper.Features.ColorTemperature
                 next.Records.RemoveAll(r => r.Scope.ScopeId == scope.ScopeId);
                 if (!Persist(next)) { Set(scope, ColorControlState.RecoveryPending, "原色已恢复，但恢复记录更新失败。"); return false; }
                 _failed.Remove(scope.HardwareId);
+                _resumeChecks.Remove(scope.HardwareId);
+                _resumeTransitions.Remove(scope.HardwareId);
                 Set(scope, ColorControlState.Original, "已恢复接管前原色。");
                 return true;
             }
@@ -446,6 +498,8 @@ namespace OLED_Sleeper.Features.ColorTemperature
             Put(conflict);
             _failed.Add(record.Scope.HardwareId);
             _conflicts.Add(record.Scope.HardwareId);
+            _resumeChecks.Remove(record.Scope.HardwareId);
+            _resumeTransitions.Remove(record.Scope.HardwareId);
             _transitions.Remove(record.Scope.HardwareId);
             Set(record.Scope, ColorControlState.Conflict, "检测到外部调色，已停止竞争。请检查当前颜色。");
         }

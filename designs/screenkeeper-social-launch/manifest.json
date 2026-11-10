@@ -1,0 +1,68 @@
+{
+  "product": "屏幕良伴 ScreenKeeper",
+  "campaign": "2026-09 social launch",
+  "generatedWith": "OpenAI imagegen",
+  "illustrativeScenes": true,
+  "published": false,
+  "xWeightedCharacters": 211,
+  "xiaohongshuImageOrder": [
+    "xhs-01-cover.png",
+    "xhs-02-privacy.png",
+    "xhs-03-break.png"
+  ],
+  "files": [
+    {
+      "name": "copy-x.txt",
+      "bytes": 304,
+      "sha256": "a1e4bc52796a25c6be395b88b0711de4fdb2f5dbe39be9022b41e8c39818863d"
+    },
+    {
+      "name": "copy-xiaohongshu.txt",
+      "bytes": 1567,
+      "sha256": "4259cb292ab362c9ceba230e3f32398699f292b916a735bdc6e49bc91cef6b7c"
+    },
+    {
+      "name": "generation-prompts.json",
+      "bytes": 10179,
+      "sha256": "75769606ac348f81a39b8cca31e2e41425a7d5d509570e2e3b026ec5f036749c"
+    },
+    {
+      "name": "generation-revisions.json",
+      "bytes": 1064,
+      "sha256": "ab2520637c7340073c680eb7d24965f75b4c3180b5fef9f3da8f77e865283887"
+    },
+    {
+      "name": "README.md",
+      "bytes": 1526,
+      "sha256": "8cbe46bc57a12f4a4399acc1903633d72fa28f1455ca6c6dbcb48d2c4dd48f77"
+    },
+    {
+      "name": "x-poster.png",
+      "bytes": 2081905,
+      "sha256": "82a6e2ac2d18f79238ac5950ebea60316480e3fd3bfcee263f7dd31945765f6d",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "name": "xhs-01-cover.png",
+      "bytes": 2164651,
+      "sha256": "6ff2860c2047a0b2bf8ca25014c2c9665e25e39d29bab4d59b2b49a5bdddee16",
+      "width": 1086,
+      "height": 1448
+    },
+    {
+      "name": "xhs-02-privacy.png",
+      "bytes": 2015371,
+      "sha256": "d5a37ed78cb9ca46dcd675d5ab0ba257c65fbd2d1cd6b84101757970b2a7cbcd",
+      "width": 1086,
+      "height": 1448
+    },
+    {
+      "name": "xhs-03-break.png",
+      "bytes": 2167527,
+      "sha256": "47f32b9e65f7c38db15c7f463efca7a3daee276db9558f0eb14b437cd8c083e0",
+      "width": 1086,
+      "height": 1448
+    }
+  ]
+}

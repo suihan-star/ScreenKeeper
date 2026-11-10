@@ -1,0 +1,366 @@
+[
+  {
+    "clip": "01-screen-rest",
+    "errors": [],
+    "loopMatches": true,
+    "entries": [
+      {
+        "file": "01-screen-rest-00.png",
+        "t": 0.3,
+        "state": "正常工作",
+        "blackout": "0",
+        "caption": "正在用，安心专注。"
+      },
+      {
+        "file": "01-screen-rest-01.png",
+        "t": 2.85,
+        "state": "正常工作",
+        "blackout": "0",
+        "caption": "正在用，安心专注。"
+      },
+      {
+        "file": "01-screen-rest-02.png",
+        "t": 3.15,
+        "state": "空闲等待",
+        "blackout": "0",
+        "caption": "空闲后，按你的规则开始休息。"
+      },
+      {
+        "file": "01-screen-rest-03.png",
+        "t": 5.85,
+        "state": "空闲等待",
+        "blackout": "0",
+        "caption": "空闲后，按你的规则开始休息。"
+      },
+      {
+        "file": "01-screen-rest-04.png",
+        "t": 6.15,
+        "state": "屏幕休息中",
+        "blackout": "0.108",
+        "caption": "不需要一直亮着，就让它歇一会。"
+      },
+      {
+        "file": "01-screen-rest-05.png",
+        "t": 9.2,
+        "state": "屏幕休息中",
+        "blackout": "1",
+        "caption": "不需要一直亮着，就让它歇一会。"
+      },
+      {
+        "file": "01-screen-rest-06.png",
+        "t": 11.85,
+        "state": "屏幕休息中",
+        "blackout": "1",
+        "caption": "不需要一直亮着，就让它歇一会。"
+      },
+      {
+        "file": "01-screen-rest-07.png",
+        "t": 12.15,
+        "state": "屏幕休息中",
+        "blackout": "1",
+        "caption": "检测到所选活动条件，再恢复显示。"
+      },
+      {
+        "file": "01-screen-rest-08.png",
+        "t": 14.5,
+        "state": "检测到活动，恢复显示",
+        "blackout": "0",
+        "caption": "检测到所选活动条件，再恢复显示。"
+      },
+      {
+        "file": "01-screen-rest-09.png",
+        "t": 15.85,
+        "state": "检测到活动，恢复显示",
+        "blackout": "0",
+        "caption": "检测到所选活动条件，再恢复显示。"
+      },
+      {
+        "file": "01-screen-rest-10.png",
+        "t": 16.15,
+        "state": "正常工作",
+        "blackout": "0",
+        "caption": "正在用，安心专注。"
+      },
+      {
+        "file": "01-screen-rest-11.png",
+        "t": 17.95,
+        "state": "正常工作",
+        "blackout": "0",
+        "caption": "正在用，安心专注。"
+      }
+    ]
+  },
+  {
+    "clip": "02-privacy",
+    "errors": [],
+    "loopMatches": true,
+    "entries": [
+      {
+        "file": "02-privacy-00.png",
+        "t": 0.3,
+        "state": "内容正常显示",
+        "curtain": "0",
+        "caption": "聊天、资料，不必一直展示。"
+      },
+      {
+        "file": "02-privacy-01.png",
+        "t": 2.85,
+        "state": "内容正常显示",
+        "curtain": "0",
+        "caption": "聊天、资料，不必一直展示。"
+      },
+      {
+        "file": "02-privacy-02.png",
+        "t": 3.15,
+        "state": "保护等待",
+        "curtain": "0",
+        "caption": "开启规则，等待自动保护。"
+      },
+      {
+        "file": "02-privacy-03.png",
+        "t": 5.85,
+        "state": "保护等待",
+        "curtain": "0",
+        "caption": "开启规则，等待自动保护。"
+      },
+      {
+        "file": "02-privacy-04.png",
+        "t": 6.15,
+        "state": "隐私幕保护中",
+        "curtain": "1",
+        "caption": "先遮好内容，再换上安静的山林。"
+      },
+      {
+        "file": "02-privacy-05.png",
+        "t": 9.2,
+        "state": "隐私幕保护中",
+        "curtain": "1",
+        "caption": "鼠标经过，隐私幕也不会解除。"
+      },
+      {
+        "file": "02-privacy-06.png",
+        "t": 11.85,
+        "state": "隐私幕保护中",
+        "curtain": "1",
+        "caption": "鼠标经过，隐私幕也不会解除。"
+      },
+      {
+        "file": "02-privacy-07.png",
+        "t": 12.15,
+        "state": "隐私幕保护中",
+        "curtain": "1",
+        "caption": "点击“进入此屏幕”，再显示原内容。"
+      },
+      {
+        "file": "02-privacy-08.png",
+        "t": 14.5,
+        "state": "已明确解除保护",
+        "curtain": "0",
+        "caption": "点击“进入此屏幕”，再显示原内容。"
+      },
+      {
+        "file": "02-privacy-09.png",
+        "t": 15.85,
+        "state": "已明确解除保护",
+        "curtain": "0",
+        "caption": "点击“进入此屏幕”，再显示原内容。"
+      },
+      {
+        "file": "02-privacy-10.png",
+        "t": 16.15,
+        "state": "内容正常显示",
+        "curtain": "0",
+        "caption": "聊天、资料，不必一直展示。"
+      },
+      {
+        "file": "02-privacy-11.png",
+        "t": 17.95,
+        "state": "内容正常显示",
+        "curtain": "0",
+        "caption": "聊天、资料，不必一直展示。"
+      }
+    ]
+  },
+  {
+    "clip": "03-health",
+    "errors": [],
+    "loopMatches": true,
+    "entries": [
+      {
+        "file": "03-health-00.png",
+        "t": 0.3,
+        "state": "专注工作",
+        "health": "reminder",
+        "caption": "工作有节奏，休息也应该。"
+      },
+      {
+        "file": "03-health-01.png",
+        "t": 2.85,
+        "state": "专注工作",
+        "health": "reminder",
+        "caption": "工作有节奏，休息也应该。"
+      },
+      {
+        "file": "03-health-02.png",
+        "t": 3.15,
+        "state": "休息提醒",
+        "health": "reminder",
+        "caption": "到点轻轻提醒，不抢走你的决定权。"
+      },
+      {
+        "file": "03-health-03.png",
+        "t": 5.85,
+        "state": "休息提醒",
+        "health": "reminder",
+        "caption": "到点轻轻提醒，不抢走你的决定权。"
+      },
+      {
+        "file": "03-health-04.png",
+        "t": 6.15,
+        "state": "休息提醒",
+        "health": "reminder",
+        "caption": "点击开始休息，才进入休息倒计时。"
+      },
+      {
+        "file": "03-health-05.png",
+        "t": 9.2,
+        "state": "休息倒计时",
+        "health": "resting",
+        "caption": "点击开始休息，才进入休息倒计时。"
+      },
+      {
+        "file": "03-health-06.png",
+        "t": 11.85,
+        "state": "休息倒计时",
+        "health": "resting",
+        "caption": "点击开始休息，才进入休息倒计时。"
+      },
+      {
+        "file": "03-health-07.png",
+        "t": 12.15,
+        "state": "休息倒计时",
+        "health": "resting",
+        "caption": "准备好了，也能提前结束。"
+      },
+      {
+        "file": "03-health-08.png",
+        "t": 14.5,
+        "state": "回到工作",
+        "health": "ended",
+        "caption": "准备好了，也能提前结束。"
+      },
+      {
+        "file": "03-health-09.png",
+        "t": 15.85,
+        "state": "回到工作",
+        "health": "ended",
+        "caption": "准备好了，也能提前结束。"
+      },
+      {
+        "file": "03-health-10.png",
+        "t": 16.15,
+        "state": "专注工作",
+        "health": "ended",
+        "caption": "工作有节奏，休息也应该。"
+      },
+      {
+        "file": "03-health-11.png",
+        "t": 17.95,
+        "state": "专注工作",
+        "health": "ended",
+        "caption": "工作有节奏，休息也应该。"
+      }
+    ]
+  },
+  {
+    "clip": "04-color",
+    "errors": [],
+    "loopMatches": true,
+    "entries": [
+      {
+        "file": "04-color-00.png",
+        "t": 0.3,
+        "state": "保持原色",
+        "warm": "0",
+        "caption": "白天保持原色，按习惯工作。"
+      },
+      {
+        "file": "04-color-01.png",
+        "t": 2.85,
+        "state": "保持原色",
+        "warm": "0",
+        "caption": "白天保持原色，按习惯工作。"
+      },
+      {
+        "file": "04-color-02.png",
+        "t": 3.15,
+        "state": "保持原色",
+        "warm": "0.000122344",
+        "caption": "到了设定时段，逐渐切换暖色。"
+      },
+      {
+        "file": "04-color-03.png",
+        "t": 5.85,
+        "state": "平滑调整",
+        "warm": "0.524868",
+        "caption": "到了设定时段，逐渐切换暖色。"
+      },
+      {
+        "file": "04-color-04.png",
+        "t": 6.15,
+        "state": "自定义暖色",
+        "warm": "0.557738",
+        "caption": "每块屏幕，都能安排自己的作息。"
+      },
+      {
+        "file": "04-color-05.png",
+        "t": 9.2,
+        "state": "自定义暖色",
+        "warm": "0.58",
+        "caption": "每块屏幕，都能安排自己的作息。"
+      },
+      {
+        "file": "04-color-06.png",
+        "t": 11.85,
+        "state": "自定义暖色",
+        "warm": "0.58",
+        "caption": "每块屏幕，都能安排自己的作息。"
+      },
+      {
+        "file": "04-color-07.png",
+        "t": 12.15,
+        "state": "自定义暖色",
+        "warm": "0.58",
+        "caption": "对比原色，感受两种氛围。"
+      },
+      {
+        "file": "04-color-08.png",
+        "t": 14.5,
+        "state": "保持原色",
+        "warm": "0",
+        "caption": "对比原色，感受两种氛围。"
+      },
+      {
+        "file": "04-color-09.png",
+        "t": 15.85,
+        "state": "保持原色",
+        "warm": "0",
+        "caption": "对比原色，感受两种氛围。"
+      },
+      {
+        "file": "04-color-10.png",
+        "t": 16.15,
+        "state": "保持原色",
+        "warm": "0",
+        "caption": "白天保持原色，按习惯工作。"
+      },
+      {
+        "file": "04-color-11.png",
+        "t": 17.95,
+        "state": "保持原色",
+        "warm": "0",
+        "caption": "白天保持原色，按习惯工作。"
+      }
+    ]
+  }
+]

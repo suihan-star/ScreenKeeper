@@ -63,7 +63,7 @@ public sealed class ColorScreenViewModel : ViewModelBase
         _selected = selected; IsSupported = capability?.State == ColorCapabilityState.Supported;
         NeedsValidation = capability?.State == ColorCapabilityState.Unverified;
         CanValidate = capability?.CanValidate == true && validationAvailable && validationBlockReason == null;
-        CanPreview = IsSupported && validationAvailable && state?.State is not (ColorControlState.Conflict or ColorControlState.Failed or ColorControlState.RecoveryPending or ColorControlState.Paused);
+        CanPreview = IsSupported && validationAvailable && state?.State is not (ColorControlState.Conflict or ColorControlState.Failed or ColorControlState.RecoveryPending or ColorControlState.Paused or ColorControlState.Detecting);
         Name = capability == null ? UiText.Get("未连接的屏幕") : MonitorTitleFormatter.Format(capability.Scope, connectedScreens ?? [capability]);
         NeedsRecovery = state?.State is ColorControlState.RecoveryPending or ColorControlState.Conflict or ColorControlState.Failed;
         IsPaused = state?.State == ColorControlState.Paused;
@@ -128,7 +128,10 @@ public sealed partial class ColorSettingsViewModel : ViewModelBase
         set
         {
             if (ReferenceEquals(value, _selectedScreen) || value != null && !VerifiedScreens.Contains(value)) return;
-            LeavePage(); _selectedScreen = value; PreviewScreen = value; Notify();
+            // Canceling preview may synchronously publish capabilities. Commit both targets first,
+            // otherwise a removed screen is selected again by the nested refresh until the stack overflows.
+            _selectedScreen = value; _previewScreen = value;
+            LeavePage(); Notify();
         }
     }
     public int SelectedPage { get => _selectedPage; set { if (_selectedPage == value) return; LeavePage(); _selectedPage = value; Notify(); } }

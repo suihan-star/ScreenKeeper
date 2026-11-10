@@ -281,6 +281,10 @@ namespace OLED_Sleeper.Tests.Features.ColorTemperature
             Assert.Equal(ColorControlState.Paused, Assert.Single(service.States).State);
             await service.SetSuspendedAsync(false);
             Assert.Single(backend.Writes);
+            Assert.Equal(ColorControlState.Detecting, Assert.Single(service.States).State);
+            backend.MonotonicMilliseconds += 2000;
+            await service.RefreshAsync();
+            Assert.Single(backend.Writes);
             Assert.Equal(ColorControlState.Warm, Assert.Single(service.States).State);
         }
 
@@ -364,6 +368,9 @@ namespace OLED_Sleeper.Tests.Features.ColorTemperature
             await service.RefreshAsync();
             Assert.Single(backend.Writes);
             await service.SetSuspendedAsync(false);
+            Assert.Single(backend.Writes);
+            backend.MonotonicMilliseconds += 2000;
+            await service.RefreshAsync();
             Assert.Single(backend.Writes);
             backend.MonotonicMilliseconds += 10000;
             await service.RefreshAsync();

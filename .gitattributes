@@ -1,0 +1,3 @@
+# Mac command entry points must retain Unix line endings on Windows checkouts.
+macos/*.command text eol=lf
+macos/scripts/*.sh text eol=lf

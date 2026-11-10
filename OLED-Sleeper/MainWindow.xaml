@@ -22,6 +22,7 @@
                         <TextBlock x:Name="BrandTagline" Grid.Column="2" Text="{l:Text Key=照顾屏幕，也照顾自己}" ToolTip="{l:Text Key=照顾屏幕，也照顾自己}" Foreground="{DynamicResource SecondaryForegroundColor}" FontSize="10" VerticalAlignment="Center" Margin="12,0,0,0" TextTrimming="CharacterEllipsis"/>
                     </Grid>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                        <Button x:Name="OfficialWebsiteButton" Content="{l:Text Key=官网 ↗}" Click="OfficialWebsite_Click" Height="28" MinHeight="28" Padding="9,0" Margin="0,0,8,0" ToolTip="{l:Text Key=在默认浏览器中打开官网}" AutomationProperties.Name="{l:Text Key=打开官网}"/>
                         <ComboBox x:Name="ThemeSelector" Width="115" MinHeight="28" Height="28" Margin="0,0,8,0" SelectedValuePath="Tag" SelectedValue="{Binding Theme, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{l:Text Key=外观主题}" ToolTip="{l:Text Key=外观主题}">
                             <ComboBoxItem Tag="forest" Content="{l:Text Key=深绿}"/><ComboBoxItem Tag="fog" Content="{l:Text Key=雾白绿}"/>
                         </ComboBox>

@@ -37,14 +37,19 @@ dotnet test OLED-Sleeper.sln -c Release --no-build --no-restore -p:BaseOutputPat
 
 ## 版本与发布
 
-MinVer 使用本产品专属的 `screenkeeper-v` 标签前缀，与保留的上游 `v*` 标签区分。用户确认首版为 `1.0.0`，对应 `screenkeeper-v1.0.0`；决定与验证记录见 [013 计划](tasks/013-first-version-plan.md)。克隆时保留产品标签，避免浅克隆遗漏版本信息；未打本产品正式标签的构建保留预发布标识。
+MinVer 使用本产品专属的 `screenkeeper-v` 标签前缀，与保留的上游 `v*` 标签区分。用户确认首版为 `1.0.0`，对应 `screenkeeper-v1.0.0`；决定与验证记录见 [013 计划](tasks/013-first-version-plan.md)。克隆时保留产品标签，避免浅克隆遗漏版本信息；常规未打本产品正式标签的构建保留预发布标识。用户明确指定版本的归档构建可显式传入 MinVerVersionOverride，但必须附精确源码快照、逐文件清单及独立构建身份，不移动既有标签，也不能将工作区更改冒充已提交源码。1.0.0 构建 20260924 见 [015 记录](tasks/015-stable-portable-plan.md)，新增官网入口的构建 20260924.2 见 [016 记录](tasks/016-official-website-plan.md)。
 
 本次交付推送源码 `main` 和首版产品标签 `screenkeeper-v1.0.0`，不推送上游标签或自动创建线上发行版。以后正式发布须明确版本、验收和标签范围。
 
-- `build.ps1` 调用 Inno Setup 生成 x64／x86 安装器和 x64 自包含便携 ZIP，默认写入仓库 `artifacts/`。
+- `build.ps1` 调用 Inno Setup 生成双架构安装器和独立的 x64／x86 自包含便携 ZIP，默认写入仓库 `artifacts/`；便携 staging 位于 `publish/portable/x64/ScreenKeeper` 与 `publish/portable/x86/ScreenKeeper`。
+- 便携 ZIP 压缩前从 `docs/portable/*.txt` 复制双语快速说明和 FAQ；这里是随包帮助的维护来源。直接使用 `dotnet publish` 时不会运行该脚本步骤，手动重打包须复制这两份文档并重新计算 ZIP 校验值。
 - 当前安装器脚本读取默认 `artifacts/publish` 布局；先使用默认输出目录，不把自定义 `OutputDirectory` 当成已验证功能。
 - 新版发布前核对许可证、安装／升级／卸载、硬件恢复、不同 DPI 和客户端签名；当前没有宣称安装包已签名。
 - `.github/workflows/ci.yml` 面向 GitHub 镜像的 main 检查，手动构建工作流只上传构建产物，不创建 Release。Codeup 需要另外配置 Windows 流水线，不能直接把这些工作流视为已在 Codeup 执行。
+
+## x86 兼容检查
+
+x86 兼容设计、双架构检查和人工验收边界见 [014 开发计划](tasks/014-x86-compatibility-plan.md)。窗口指针 API 按进程位数分派；不能因为宿主是 x64 系统就调用 64 位入口。读取其他应用路径使用最小查询权限的 QueryFullProcessImageName，不用跨位数模块枚举。WOW64 测试不等同于 Windows 10 x86 系统或真实显示器验收。
 
 ## Git 与数据边界
 
