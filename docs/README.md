@@ -40,6 +40,7 @@
 | 018 | 异常退出与色温失效排查 | [设计](tasks/018-crash-color-investigation-design.md) | [计划与证据](tasks/018-crash-color-investigation-plan.md) |
 | 019 | macOS Apple Silicon 版（源码开发预览） | [设计](tasks/019-macos-apple-silicon-design.md) | [计划](tasks/019-macos-apple-silicon-plan.md) |
 | 020 | GitHub 完整仓库托管与 Mac 构建 | [设计](tasks/020-github-hosting-design.md) | [计划](tasks/020-github-hosting-plan.md) |
+| 021 | 开源前隐私清理 | [设计](tasks/021-open-source-privacy-design.md) | [计划](tasks/021-open-source-privacy-plan.md) |
 
 专题记录：[健康与色温研究](tasks/007-wellbeing-research.md)、[显示输出异常排查](tasks/011-aoc-display-diagnosis-2026-09-23.md)。这些记录包含未复现或未定论事项，不应当作已完成修复。
 

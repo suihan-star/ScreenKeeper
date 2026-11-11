@@ -6,7 +6,7 @@ One screen or many. Your way.
 - `exports/`: four 18-second looping GIFs (540×720) and MP4s (900×1200, 24 fps).
 - `index.html`: gallery. `motion/*.html`: editable timeline players.
 - `motion.jsx` / `motion.css`: English composition source; `vendor/` contains local timeline and React dependencies.
-- `imagegen-prompts.json`: exact prompts and source references. `manifest.json`: checksums.
+- `imagegen-prompts.json`: exact prompts and source references relative to this directory. `manifest.json`: checksums.
 - `qa/`: the workspace holds all keyframes; the ZIP includes representative thumbnails and validation reports.
 
 The illustrations preserve the existing Chinese campaign’s composition and colors. Single-screen setups are supported. Screen rest, privacy and color temperature can be configured per display; break reminders use one independent work cycle.
@@ -15,6 +15,6 @@ These are feature illustrations, not screen recordings. Waits are shortened. The
 
 Serve the repository’s `designs/` directory over HTTP and open `screenkeeper-social-launch/v2-en/index.html`. All preview dependencies are local. Edit `motion.jsx` and run `node build.cjs`; run `node render.cjs qa`, then `node render.cjs export`, `python verify-media.py`, and `python package.py` from this directory. The render script expects the preview server on port 4311.
 
-Build uses the existing local Babel/Playwright/Chrome and the isolated FFmpeg export tool; environment overrides are supported in the scripts. No application dependencies changed. Forest and logo assets come from the existing ScreenKeeper project. React’s license is included. The Chinese source pack remains unchanged.
+Build uses locally available Babel/Playwright/Chrome and the FFmpeg export tool. Set `SCREENKEEPER_BABEL` to a Babel standalone file and `SCREENKEEPER_PLAYWRIGHT` to a Playwright module, or provide the normally resolved `@babel/standalone` and `playwright` modules. `SCREENKEEPER_CHROME`, `SCREENKEEPER_FFMPEG`, and `SCREENKEEPER_PREVIEW_URL` override the other tools and preview server. No application dependencies changed. Forest and logo assets come from the existing ScreenKeeper project. React’s license is included.
 
-Media verification needs Pillow. It was run with the bundled Python runtime at `<user-home>/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe`; the system Python does not include Pillow. The ZIP contains final assets and editable sources, not these build runtimes.
+Media verification needs a Python environment with Pillow available. The recorded verification used such an environment; use the corresponding Python executable when running `verify-media.py`. The ZIP contains final assets and editable sources, not these build runtimes.

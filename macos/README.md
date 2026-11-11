@@ -8,7 +8,7 @@
 
 **Testers do not need to compile or install Xcode.** Build `ci-1-1` produced `ScreenKeeper-Mac-0.1.0-Dev-ci-1-1-arm64.zip` and the matching `.dmg`. Use the app package supplied by the developer and follow [the short instructions](DISTRIBUTION.txt). Source-building instructions below are for developers only.
 
-[首次 Mac 构建记录 / First Mac build](https://github.com/suihan-star/ScreenKeeper/actions/runs/42943387164)：源码提交 `319a29ac41483cddd098dfb209398d4b7f2b663b`，环境为 macOS 15.8.2 arm64、Xcode 16.4、Swift 6.1.2。38 个 XCTest 与 18 个打包辅助测试均通过；arm64／最低系统 13.0／依赖检查、ad-hoc 签名验证、资源自检和 DMG 校验完成。未执行交互界面、权限、真实显示器或 macOS 13 运行验收。
+首次 Mac 构建记录 / First Mac build（脱敏前历史记录）：源码提交 `319a29ac41483cddd098dfb209398d4b7f2b663b`，环境为 macOS 15.8.2 arm64、Xcode 16.4、Swift 6.1.2。38 个 XCTest 与 18 个打包辅助测试均通过；arm64／最低系统 13.0／依赖检查、ad-hoc 签名验证、资源自检和 DMG 校验完成。未执行交互界面、权限、真实显示器或 macOS 13 运行验收。
 
 The linked run built commit `319a29ac41483cddd098dfb209398d4b7f2b663b` on macOS 15.8.2 arm64 with Xcode 16.4 and Swift 6.1.2. All 38 XCTest cases and 18 packaging-helper tests passed, along with architecture, minimum-OS/dependency, ad-hoc signature, resource and DMG checks. Interactive UI, permissions, physical displays and runtime behavior on macOS 13 have not been validated.
 

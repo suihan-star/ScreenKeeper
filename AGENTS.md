@@ -7,7 +7,7 @@
 - 初始基线：OLED Sleeper v2.2.0，提交 27f1c777a9a1dca6002692b66fe0ec6cf4d71724。
 - 保留上游 Git 历史及 MIT 版权许可声明。upstream 指向 Quorthon13/OLED-Sleeper。
 - 产品主分支为 main；功能分支默认使用 codex/ 前缀。
-- origin 为 GitHub 主仓库 https://github.com/suihan-star/ScreenKeeper，原 Codeup 仓库保留为 codeup，upstream 保留上游参考地址；只推送目标分支和已确认的产品版本标签，不默认推送继承的 v* 标签，不强推已有远程历史。
+- origin 为 GitHub 主仓库 https://github.com/suihan-star/ScreenKeeper，upstream 保留上游参考地址；只推送目标分支和已确认的产品版本标签，不默认推送继承的 v* 标签，不强推已有远程历史。个人私有 remote 和备份只在本地维护，不写入公开文档。
 - 未经用户要求，不自动提交、推送、创建 PR 或发布。
 
 ## 代码与构建事实
@@ -73,6 +73,7 @@
 - 现有 CI 命令：dotnet restore OLED-Sleeper.sln；dotnet build OLED-Sleeper.sln -c Release --no-restore；dotnet test OLED-Sleeper.sln -c Release --no-build；dotnet format OLED-Sleeper.sln --verify-no-changes。
 - .github/workflows/ci.yml 在 GitHub 主仓库面向 main PR 和手动检查 Windows 构建、测试及格式；release.yml 仅手动构建 Windows 产物，mac-preview.yml 仅手动构建 Mac 开发预览，均不自动创建 Release。Codeup 不执行 GitHub Actions，若继续使用其构建服务需另行配置流水线。旧上游发布脚本归档在 docs/upstream/github-release.yml。
 - 根 README 为首版产品与快速入口；docs/user-guide.md、docs/development.md、docs/README.md 分别维护使用、开发和任务索引，上游 README 留档在 docs/upstream。运行配置、恢复记录、日志、构建目录及私钥／签名材料不得提交；历史设计与任务记录保留，不因整理删改其原始验证结论。
+- 公开源码与历史记录不得包含个人邮箱、本机用户名／工作区绝对路径、私有仓库地址、个人桌面截图或账户认证／费用快照；示例用相对路径、环境变量和虚构数据。产品提交使用已确认的公开 GitHub 身份及 noreply 邮箱，上游作者和许可证归属保持原样。开源前检查提交／标签身份、可达历史、资源元数据及构建记录；脱敏保留技术结论，不把旧记录改写成未经执行的验证结果。
 
 ## 开发约束
 

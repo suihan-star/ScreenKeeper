@@ -1,6 +1,6 @@
 name: Build Mac preview (manual)
 
-# Builds the Mac module from an exact commit of the private product repository.
+# Builds the Mac module from an exact commit of the product repository.
 on:
   workflow_dispatch:
 
@@ -16,12 +16,8 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 20
     steps:
-      - name: Verify private repository and Apple Silicon runner
-        env:
-          REPOSITORY_PRIVATE: ${{ github.event.repository.private }}
-        run: |
-          test "$REPOSITORY_PRIVATE" = true
-          test "$(uname -m)" = arm64
+      - name: Verify Apple Silicon runner
+        run: test "$(uname -m)" = arm64
       - name: Check out the selected commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:

@@ -92,9 +92,9 @@ A+「叠屏静夜」已获用户确认并接入客户端，应用最终 SVG / IC
 
 ## 任务栏图标可见度 v6（2026-09-23，已确认 A）
 
-入口：[taskbar-icon-v6.html](taskbar-icon-v6.html)，本地预览 http://127.0.0.1:4311/screenkeeper-calm/taskbar-icon-v6.html 。用户最终确认任务栏和托盘均采用 A 雾绿轮廓：深色任务栏用浅绿，浅色任务栏用深绿。已接入客户端并完成相关构建／检查，实际 Explorer 表现待打开新版确认。原型默认 A，B／C 仅保留为历史对照；仍可切换截图中的模拟图标、原图和深浅背景，提供 16/20/24/32 CSS 像素预览及放大稿。
+入口：[taskbar-icon-v6.html](taskbar-icon-v6.html)，本地预览 http://127.0.0.1:4311/screenkeeper-calm/taskbar-icon-v6.html 。用户最终确认任务栏和托盘均采用 A 雾绿轮廓：深色任务栏用浅绿，浅色任务栏用深绿。已接入客户端并完成相关构建／检查，实际 Explorer 表现待打开新版确认。原型默认 A，B／C 仅保留为历史对照；仍可切换通用任务栏示意中的模拟图标、原图标和深浅背景，提供 16/20/24/32 CSS 像素预览及放大稿。
 
-素材及交互源文件位于 `taskbar-icons-v6/`。用户提供的 `taskbar-reference.png` 为原截图直接复制；图标替换仅使用 HTML 叠加图层。SVG 沿用本项目 A+ 源路径，React／画布／Babel 复用已有文件。没有新运行时依赖。设计与浏览器核验记录见 `../../docs/tasks/004-tray-icon-design.md`、`../../docs/tasks/004-tray-icon-plan.md`。原已确认 `tray-icon.html` 保持不变。
+素材及交互源文件位于 `taskbar-icons-v6/`。公开源码使用 `taskbar-generic.svg` 通用任务栏示意，不包含个人应用列表；历史用户截图已移出公开源码，保留原有设计与验证结论。图标替换仍使用 HTML 叠加图层。SVG 沿用本项目 A+ 源路径，React／画布／Babel 复用已有文件。没有新运行时依赖。设计与浏览器核验记录见 `../../docs/tasks/004-tray-icon-design.md`、`../../docs/tasks/004-tray-icon-plan.md`。原已确认 `tray-icon.html` 保持不变。
 
 ## 色温实时预览 v6（待确认）
 

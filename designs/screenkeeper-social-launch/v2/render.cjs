@@ -1,5 +1,7 @@
 const fs=require("node:fs"),path=require("node:path"),{spawn}=require("node:child_process"),{once}=require("node:events"),crypto=require("node:crypto");
-const {chromium}=require(process.env.SCREENKEEPER_PLAYWRIGHT||"<user-home>/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright");
+let chromium;
+try{({chromium}=require(process.env.SCREENKEEPER_PLAYWRIGHT||"playwright"));}
+catch{console.error("找不到 Playwright。请设置 SCREENKEEPER_PLAYWRIGHT 指向本地模块，或提供 playwright 模块。\nPlaywright is unavailable. Set SCREENKEEPER_PLAYWRIGHT to a local module, or make playwright resolvable.");process.exit(1);}
 const root=__dirname, mode=process.argv[2]||"qa",base=process.env.SCREENKEEPER_PREVIEW_URL||"http://127.0.0.1:4311/screenkeeper-social-launch/v2/";
 const chrome=process.env.SCREENKEEPER_CHROME||"C:/Program Files/Google/Chrome/Application/chrome.exe";
 const clips=["01-screen-rest","02-privacy","03-health","04-color"];

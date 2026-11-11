@@ -76,10 +76,10 @@ function ScreenshotRow({
   }, /*#__PURE__*/React.createElement("div", {
     className: "shot"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "taskbar-icons-v6/taskbar-reference.png",
+    src: "taskbar-icons-v6/taskbar-generic.svg",
     width: "984",
     height: "52",
-    alt: "\u7528\u6237\u63D0\u4F9B\u7684\u539F\u59CB\u4EFB\u52A1\u680F\u622A\u56FE"
+    alt: "\u901A\u7528\u4EFB\u52A1\u680F\u793A\u610F\uFF0C\u4E0D\u542B\u4E2A\u4EBA\u5E94\u7528\u5217\u8868"
   }), id !== 'original' && /*#__PURE__*/React.createElement("div", {
     className: "replacement",
     "aria-label": "\u56FE\u6807\u4F4D\u7F6E\u6A21\u62DF\u66FF\u6362"
@@ -110,18 +110,18 @@ function App() {
     className: "intro"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "eyebrow"
-  }, "A+ \u53E0\u5C4F\u9759\u591C / \u53EF\u89C1\u5EA6\u4F18\u5316"), /*#__PURE__*/React.createElement("h1", null, "\u66F4\u5BB9\u6613\u627E\u5230\uFF0C", /*#__PURE__*/React.createElement("br", null), "\u4ECD\u7136\u5B89\u9759\u8212\u670D\u3002")), /*#__PURE__*/React.createElement("p", null, "\u53E0\u5C4F\u4E0E\u6708\u7259\u4FDD\u7559\u3002", /*#__PURE__*/React.createElement("br", null), "\u8FD9\u6B21\u91CD\u70B9\u770B\uFF1A\u653E\u56DE\u4F60\u7684\u4EFB\u52A1\u680F\uFF0C", /*#__PURE__*/React.createElement("br", null), "\u80FD\u4E0D\u80FD\u4E00\u773C\u8BA4\u51FA\u6765\u3002")), /*#__PURE__*/React.createElement("section", {
+  }, "A+ \u53E0\u5C4F\u9759\u591C / \u53EF\u89C1\u5EA6\u4F18\u5316"), /*#__PURE__*/React.createElement("h1", null, "\u66F4\u5BB9\u6613\u627E\u5230\uFF0C", /*#__PURE__*/React.createElement("br", null), "\u4ECD\u7136\u5B89\u9759\u8212\u670D\u3002")), /*#__PURE__*/React.createElement("p", null, "\u53E0\u5C4F\u4E0E\u6708\u7259\u4FDD\u7559\u3002", /*#__PURE__*/React.createElement("br", null), "\u8FD9\u6B21\u91CD\u70B9\u770B\uFF1A\u653E\u56DE\u4EFB\u52A1\u680F\uFF0C", /*#__PURE__*/React.createElement("br", null), "\u80FD\u4E0D\u80FD\u4E00\u773C\u8BA4\u51FA\u6765\u3002")), /*#__PURE__*/React.createElement("section", {
     className: "comparison",
     "aria-labelledby": "real-title"
   }, /*#__PURE__*/React.createElement("div", {
     className: "section-heading"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
     id: "real-title"
-  }, "\u5148\u653E\u56DE\u4F60\u7684\u4EFB\u52A1\u680F"), /*#__PURE__*/React.createElement("p", null, "\u539F\u622A\u56FE\u4E0E 24 px \u56FE\u6807\u6A21\u62DF\uFF0C\u70B9\u51FB\u4E0B\u65B9\u5207\u6362\u3002")), /*#__PURE__*/React.createElement("button", {
+  }, "\u5148\u653E\u56DE\u4EFB\u52A1\u680F"), /*#__PURE__*/React.createElement("p", null, "\u901A\u7528\u4EFB\u52A1\u680F\u793A\u610F\u4E0E 24 px \u56FE\u6807\u6A21\u62DF\uFF0C\u70B9\u51FB\u4E0B\u65B9\u5207\u6362\u3002")), /*#__PURE__*/React.createElement("button", {
     className: "text-button",
     "aria-pressed": original,
     onClick: () => setOriginal(!original)
-  }, original ? '返回所选方案' : '对照原图')), /*#__PURE__*/React.createElement("div", {
+  }, original ? '返回所选方案' : '对照原图标')), /*#__PURE__*/React.createElement("div", {
     className: "choice-tabs",
     role: "group",
     "aria-label": "\u9009\u62E9\u56FE\u6807\u65B9\u6848"
@@ -140,16 +140,16 @@ function App() {
     className: "screenshot-pair"
   }, /*#__PURE__*/React.createElement(ScreenshotRow, {
     id: "original",
-    label: "\u73B0\u5728"
+    label: "\u539F\u56FE\u6807"
   }), /*#__PURE__*/React.createElement(ScreenshotRow, {
     id: original ? 'original' : selected,
-    label: original ? '原图' : choice.letter + ' 方案'
+    label: original ? '原图标' : choice.letter + ' 方案'
   })), /*#__PURE__*/React.createElement("div", {
     className: "selection-caption",
     "aria-live": "polite"
   }, /*#__PURE__*/React.createElement("strong", null, original ? '现有深绿色图标' : choice.letter + ' · ' + choice.name), /*#__PURE__*/React.createElement("span", null, original ? '在深色任务栏上，轮廓容易融入背景。' : choice.body)), /*#__PURE__*/React.createElement("p", {
     className: "fineprint"
-  }, "\u622A\u56FE\u539F\u6837\u4FDD\u7559\uFF1B\u4E0B\u6392\u4EC5\u5728\u56FE\u6807\u4F4D\u7F6E\u53E0\u52A0\u6A21\u62DF\u56FE\u5C42\u3002\u6D4F\u89C8\u5668\u6548\u679C\u9700\u5728\u5B9E\u65BD\u540E\u7528 Windows \u5B9E\u673A\u590D\u6838\u3002")), /*#__PURE__*/React.createElement("section", {
+  }, "\u901A\u7528\u793A\u610F\u4E0D\u5BF9\u5E94\u771F\u5B9E\u7528\u6237\u7684\u8F6F\u4EF6\u5217\u8868\uFF1B\u4E0B\u6392\u4EC5\u5728\u56FE\u6807\u4F4D\u7F6E\u53E0\u52A0\u6A21\u62DF\u56FE\u5C42\u3002\u6D4F\u89C8\u5668\u6548\u679C\u9700\u5728\u5B9E\u65BD\u540E\u7528 Windows \u5B9E\u673A\u590D\u6838\u3002")), /*#__PURE__*/React.createElement("section", {
     className: "size-section",
     "aria-labelledby": "size-title"
   }, /*#__PURE__*/React.createElement("div", {

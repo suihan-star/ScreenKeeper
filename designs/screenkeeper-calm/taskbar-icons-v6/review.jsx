@@ -6,7 +6,7 @@ const candidates = [
 function iconPath(id,theme='dark') { return 'taskbar-icons-v6/'+(id==='original'?'original.svg':id==='tile'?'tile.svg':id+'-'+theme+'.svg'); }
 function Mark({id,theme='dark',size=24}) { return <img className="mark" src={iconPath(id,theme)} width={size} height={size} alt={id==='original'?'现有深绿图标':candidates.find(c=>c.id===id).name} draggable="false"/>; }
 function MiniTray({id,theme}) { return <div className={'mini-tray '+theme}><span aria-hidden="true">⌃</span><Mark id={id} theme={theme} size={16}/><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true"><path d="M2 6h3l4-3v10l-4-3H2ZM11 5q4 3 0 6"/></svg><span className="time">14:28</span></div>; }
-function ScreenshotRow({id,label}) { return <div className="screenshot-line"><div className="shot-label">{label}</div><div className="shot-scroll"><div className="shot"><img src="taskbar-icons-v6/taskbar-reference.png" width="984" height="52" alt="用户提供的原始任务栏截图"/>{id!=='original'&&<div className="replacement" aria-label="图标位置模拟替换"><Mark id={id}/></div>}</div></div></div>; }
+function ScreenshotRow({id,label}) { return <div className="screenshot-line"><div className="shot-label">{label}</div><div className="shot-scroll"><div className="shot"><img src="taskbar-icons-v6/taskbar-generic.svg" width="984" height="52" alt="通用任务栏示意，不含个人应用列表"/>{id!=='original'&&<div className="replacement" aria-label="图标位置模拟替换"><Mark id={id}/></div>}</div></div></div>; }
 function App(){
   const [selected,setSelected]=React.useState('outline');
   const [original,setOriginal]=React.useState(false);
@@ -16,12 +16,12 @@ function App(){
   return <div className="review-page">
     <header className="page-header"><a className="brand" href="index.html"><Mark id="outline" theme="light" size={27}/><strong>屏幕良伴</strong><span>图标可见度 · 06</span></a><span className="draft">已确认 A · 任务栏与托盘</span></header>
     <main>
-      <section className="intro"><div><p className="eyebrow">A+ 叠屏静夜 / 可见度优化</p><h1>更容易找到，<br/>仍然安静舒服。</h1></div><p>叠屏与月牙保留。<br/>这次重点看：放回你的任务栏，<br/>能不能一眼认出来。</p></section>
-      <section className="comparison" aria-labelledby="real-title"><div className="section-heading"><div><h2 id="real-title">先放回你的任务栏</h2><p>原截图与 24 px 图标模拟，点击下方切换。</p></div><button className="text-button" aria-pressed={original} onClick={()=>setOriginal(!original)}>{original?'返回所选方案':'对照原图'}</button></div>
+      <section className="intro"><div><p className="eyebrow">A+ 叠屏静夜 / 可见度优化</p><h1>更容易找到，<br/>仍然安静舒服。</h1></div><p>叠屏与月牙保留。<br/>这次重点看：放回任务栏，<br/>能不能一眼认出来。</p></section>
+      <section className="comparison" aria-labelledby="real-title"><div className="section-heading"><div><h2 id="real-title">先放回任务栏</h2><p>通用任务栏示意与 24 px 图标模拟，点击下方切换。</p></div><button className="text-button" aria-pressed={original} onClick={()=>setOriginal(!original)}>{original?'返回所选方案':'对照原图标'}</button></div>
         <div className="choice-tabs" role="group" aria-label="选择图标方案">{candidates.map(c=><button key={c.id} className="choice-tab" aria-pressed={selected===c.id} onClick={()=>{setSelected(c.id);setOriginal(false);}}><Mark id={c.id} size={24}/><span><strong>{c.letter} · {c.name}</strong><small>{c.lead}</small></span></button>)}</div>
-        <div className="screenshot-pair"><ScreenshotRow id="original" label="现在"/><ScreenshotRow id={original?'original':selected} label={original?'原图':choice.letter+' 方案'}/></div>
+        <div className="screenshot-pair"><ScreenshotRow id="original" label="原图标"/><ScreenshotRow id={original?'original':selected} label={original?'原图标':choice.letter+' 方案'}/></div>
         <div className="selection-caption" aria-live="polite"><strong>{original?'现有深绿色图标':choice.letter+' · '+choice.name}</strong><span>{original?'在深色任务栏上，轮廓容易融入背景。':choice.body}</span></div>
-        <p className="fineprint">截图原样保留；下排仅在图标位置叠加模拟图层。浏览器效果需在实施后用 Windows 实机复核。</p>
+        <p className="fineprint">通用示意不对应真实用户的软件列表；下排仅在图标位置叠加模拟图层。浏览器效果需在实施后用 Windows 实机复核。</p>
       </section>
       <section className="size-section" aria-labelledby="size-title"><div className="section-heading"><div><h2 id="size-title">大小不变，辨识度不同</h2><p>实际 CSS 像素大小，不随下方画布缩放。</p></div><button className="text-button" aria-expanded={tweaks} onClick={()=>setTweaks(!tweaks)}>背景切换 · Tweaks {tweaks?'−':'＋'}</button></div>
         {tweaks&&<div className="tweaks" role="group" aria-label="任务栏背景"><span>对比背景</span><button className="chip" aria-pressed={theme==='dark'} onClick={()=>setTheme('dark')}>深色任务栏</button><button className="chip" aria-pressed={theme==='light'} onClick={()=>setTheme('light')}>浅色任务栏</button></div>}

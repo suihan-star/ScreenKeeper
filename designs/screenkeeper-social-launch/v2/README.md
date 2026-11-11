@@ -24,6 +24,6 @@ forest-mist.png 与 logo.svg 复制自本项目 OLED-Sleeper/Assets；山林原�
 
 在仓库根目录使用 Python HTTP server 服务 designs/，打开 screenkeeper-social-launch/v2/index.html。动画文件与依赖全部本地加载，预览不需要联网。
 
-编辑 motion.jsx / motion.css 后运行 node designs/screenkeeper-social-launch/v2/build.cjs 重新编译。编译使用本机技能包中的 Babel，可用 SCREENKEEPER_BABEL 指定本地路径。渲染器 render.cjs 通过 animations-v3 的同步时间轴事件逐帧导出，使用已有本机 Chrome、Playwright 与任务隔离的 FFmpeg，不修改应用依赖。
+编辑 motion.jsx / motion.css 后运行 node designs/screenkeeper-social-launch/v2/build.cjs 重新编译。通过 SCREENKEEPER_BABEL 指定本地 Babel standalone 文件、SCREENKEEPER_PLAYWRIGHT 指定 Playwright 模块，或提供可正常解析的 @babel/standalone 与 playwright 模块。渲染器 render.cjs 通过 animations-v3 的同步时间轴事件逐帧导出；Chrome、FFmpeg 与预览地址可分别通过 SCREENKEEPER_CHROME、SCREENKEEPER_FFMPEG、SCREENKEEPER_PREVIEW_URL 指定，不修改应用依赖。
 
 根任务设计与计划仍为 docs/tasks/017-social-promotion-*，第二轮结果追加记录。
