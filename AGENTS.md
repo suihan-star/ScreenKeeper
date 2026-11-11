@@ -7,7 +7,7 @@
 - 初始基线：OLED Sleeper v2.2.0，提交 27f1c777a9a1dca6002692b66fe0ec6cf4d71724。
 - 保留上游 Git 历史及 MIT 版权许可声明。upstream 指向 Quorthon13/OLED-Sleeper。
 - 产品主分支为 main；功能分支默认使用 codex/ 前缀。
-- origin 为用户的 Codeup 仓库，upstream 保留上游参考地址；只推送目标分支和已确认的产品版本标签，不默认推送继承的 v* 标签，不强推已有远程历史。
+- origin 为 GitHub 主仓库 https://github.com/suihan-star/ScreenKeeper，原 Codeup 仓库保留为 codeup，upstream 保留上游参考地址；只推送目标分支和已确认的产品版本标签，不默认推送继承的 v* 标签，不强推已有远程历史。
 - 未经用户要求，不自动提交、推送、创建 PR 或发布。
 
 ## 代码与构建事实
@@ -71,7 +71,7 @@
 - build.ps1 生成双架构安装包和独立的 x64／x86 自包含便携 ZIP，分别使用 publish/portable/x64/ScreenKeeper 与 publish/portable/x86/ScreenKeeper；安装包构建还需要 Inno Setup，不混用两种架构的运行时 DLL。
 - 便携版中英双语快速说明与 FAQ 原稿位于 docs/portable/*.txt，build.ps1 在压缩 ZIP 前复制到程序文件夹；手动重打包也须同步这两份帮助并更新校验值。用户帮助应覆盖实际按钮与恢复流程，不指导删除恢复记录或绕过验证／安全保护来消除错误。
 - 现有 CI 命令：dotnet restore OLED-Sleeper.sln；dotnet build OLED-Sleeper.sln -c Release --no-restore；dotnet test OLED-Sleeper.sln -c Release --no-build；dotnet format OLED-Sleeper.sln --verify-no-changes。
-- .github/workflows/ci.yml 面向可选 GitHub 镜像的 main PR 和手动检查，release.yml 仅手动构建并上传产物，不自动创建 Release；Codeup 不执行 GitHub Actions，Windows 流水线需另行配置。旧上游发布脚本归档在 docs/upstream/github-release.yml。
+- .github/workflows/ci.yml 在 GitHub 主仓库面向 main PR 和手动检查 Windows 构建、测试及格式；release.yml 仅手动构建 Windows 产物，mac-preview.yml 仅手动构建 Mac 开发预览，均不自动创建 Release。Codeup 不执行 GitHub Actions，若继续使用其构建服务需另行配置流水线。旧上游发布脚本归档在 docs/upstream/github-release.yml。
 - 根 README 为首版产品与快速入口；docs/user-guide.md、docs/development.md、docs/README.md 分别维护使用、开发和任务索引，上游 README 留档在 docs/upstream。运行配置、恢复记录、日志、构建目录及私钥／签名材料不得提交；历史设计与任务记录保留，不因整理删改其原始验证结论。
 
 ## 开发约束

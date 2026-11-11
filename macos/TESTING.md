@@ -1,22 +1,24 @@
 # Mac 开发预览测试 / Mac development preview testing
 
-此版本为首次 Mac 源码交接，尚无 Mac 编译和实机验收记录。请先构建；失败时保留错误，不跳过测试或关闭系统安全机制。首次仅在没有敏感内容的桌面测试。/ This is the first Mac source handoff with no native build or device validation yet. Build first and retain any error. Do not skip tests or disable system security. Use a desktop without sensitive content for initial testing.
+开发预览 `ci-1-1` 已在 [Mac 云端构建 42943387164](https://github.com/suihan-star/ScreenKeeper/actions/runs/42943387164) 完成编译与打包，源码提交为 `319a29ac41483cddd098dfb209398d4b7f2b663b`。38 个 XCTest、18 个打包辅助测试，以及 arm64／最低系统／依赖／ad-hoc 签名／资源／DMG 检查通过；交互与实机显示器验收仍未完成。/ Development preview `ci-1-1` was built and packaged in the linked Mac run from commit `319a29ac41483cddd098dfb209398d4b7f2b663b`. All 38 XCTest cases, 18 packaging-helper tests, and architecture/minimum-OS/dependency/ad-hoc-signature/resource/DMG checks passed. Interactive and physical-display validation is still pending.
 
-后续流程已改为由开发者云端构建：朋友拿到 `.app` ZIP／DMG 后无需执行下面的源码构建段，直接阅读 [测试包使用说明](DISTRIBUTION.txt)，再按本文件场景反馈。云端构建状态须以该包随附的日志／校验值为准。/ The revised workflow builds in the cloud for testers. Recipients of an app ZIP/DMG can skip source building, follow [the package instructions](DISTRIBUTION.txt), and report the scenarios below. Check the evidence supplied with that particular build.
+测试者使用开发者提供的 `ScreenKeeper-Mac-0.1.0-Dev-ci-1-1-arm64.zip` 或同名 `.dmg`，无需编译或安装 Xcode。先阅读 [测试包使用说明](DISTRIBUTION.txt)，再按本文件场景反馈。首次仅在没有敏感内容的桌面测试，不关闭系统安全机制；每个构建的状态以随附日志与校验值为准。/ Use the developer-supplied `ScreenKeeper-Mac-0.1.0-Dev-ci-1-1-arm64.zip` or matching `.dmg`; no compilation or Xcode installation is required. Follow [the package instructions](DISTRIBUTION.txt), then report the scenarios below. Start on a desktop without sensitive content and keep system security enabled. Check the evidence supplied with each particular build.
 
-## 构建与诊断 / Build and diagnostics
+## 运行与诊断 / Run and diagnostics
 
-运行 `bash scripts/build-macos.sh`。成功后，双击生成的 `.app` 打开；所有管理功能默认关闭。测试日志与应用同在 `dist/<构建编号>/`。/ Run the build script, then open the resulting app. Management features start disabled. Logs are kept next to the app.
-
-如果只有 Command Line Tools 不兼容当前 Swift 版本，安装适配本机系统的 Xcode 后，用 `xcode-select` 选择对应开发工具，再运行脚本。请把原始编译错误反馈给开发者，不需要自行修改源码绕过。/ If the installed tools are incompatible, select a compatible Xcode installation and retry. Share the original error instead of patching around it.
+从 DMG 将 `ScreenKeeper.app` 拖入 Applications，或解压 ZIP 后移动应用，再打开；所有管理功能默认关闭。/ Drag `ScreenKeeper.app` from the DMG into Applications, or extract the ZIP and move the app, then open it. Management features start disabled.
 
 只读诊断（将示例路径替换为实际路径）：/ Read-only diagnostics; replace the example path:
 
 ```bash
-"dist/<build-id>/ScreenKeeper.app/Contents/MacOS/ScreenKeeper" --diagnostics
+"/Applications/ScreenKeeper.app/Contents/MacOS/ScreenKeeper" --diagnostics
 ```
 
 诊断不会改色、调亮度、切换拓扑或读取用户配置；输出系统版本、屏幕尺寸、缩放、镜像／身份状态及 Gamma 读取能力摘要，不包含颜色数组、屏幕 UUID、序列号、窗口标题或截图。读取成功不代表实际调色通过验证。/ Diagnostics do not change displays or read user settings. They report OS and display capabilities without color arrays, display UUIDs, serial numbers, window titles, or screenshots. A successful read is not color-control validation.
+
+## 开发者重新构建（可选）/ Optional developer rebuild
+
+仅开发者需要在源码的 `macos/` 目录运行 `bash scripts/build-macos.sh`；日志及产物位于 `dist/<构建编号>/`。工具链要求见 [README](README.md)。如遇编译错误，保留原始日志，不跳过测试或修改源码绕过。测试者使用上面的应用包即可。/ Only developers need to run `bash scripts/build-macos.sh` from the source `macos/` directory. Logs and artifacts are stored in `dist/<build-id>/`; see [README](README.md) for toolchain requirements. Retain original errors instead of skipping tests or patching around failures. Testers can use the supplied app package.
 
 ## 建议顺序 / Suggested order
 
@@ -44,7 +46,7 @@
 
 ## 反馈信息 / Feedback
 
-请记录 Mac 系列、macOS 和 Xcode/Swift 版本、屏幕数量及连接方式、测试步骤、预期与实际行为，以及构建日志或只读诊断。型号用于覆盖兼容场景，不是支持名单。可截取应用自身界面，但不要提供私人桌面内容或整份配置目录。/ Share Mac family, OS/tool versions, display count/connections, reproduction steps, expected/actual results, and build logs or diagnostics. Models inform test coverage, not an allowlist. Avoid private desktop content or full configuration folders.
+请记录应用构建编号、Mac 系列、macOS 版本、屏幕数量及连接方式、测试步骤、预期与实际行为，以及错误或只读诊断；仅自行构建时另附 Xcode/Swift 版本及构建日志。型号用于覆盖兼容场景，不是支持名单。可截取应用自身界面，但不要提供私人桌面内容或整份配置目录。/ Share the app build ID, Mac family, macOS version, display count/connections, reproduction steps, expected/actual results, and errors or diagnostics. Add Xcode/Swift versions and build logs only for a self-built app. Models inform test coverage, not an allowlist. Avoid private desktop content or full configuration folders.
 
 ## 常见问题 / FAQ
 
@@ -54,4 +56,4 @@
 
 **能复制 Windows 的 Data 过来吗？** 不能。本版本使用独立配置和屏幕身份，不导入 Windows 恢复记录。/ **Can I copy Windows Data?** No. Mac settings, display identity, and recovery data are separate.
 
-**这是正式安装包吗？** 不是。交付的是源码；朋友在 Mac 构建后得到的是本地开发预览，尚未完成签名公证或完整硬件验收。/ **Is this a release installer?** No. It is source for a locally built preview, not a notarized or fully validated release.
+**这是正式安装包吗？** 不是。已经提供可直接运行的开发预览 ZIP／DMG，但仅作 ad-hoc 签名，未经 Developer ID 签名与 Apple 公证，交互和真实显示器验收仍待完成。/ **Is this a release installer?** No. A ready-to-run development-preview ZIP/DMG is available, but it is only ad-hoc signed, not Developer ID signed or notarized. Interactive and physical-display validation remains pending.

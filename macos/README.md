@@ -1,12 +1,16 @@
 # 屏幕良伴 · ScreenKeeper for Mac
 
-**开发预览源码，尚未在 Mac 编译或验收，不是可直接安装的正式版。** 目标为 macOS 13 及以上、Apple Silicon（M 系列），不以显示器品牌或固定屏数限制应用。
+**开发预览已完成 Mac 云端编译和自动检查，尚待交互与实机验收，不是正式版。** 目标为 macOS 13 及以上、Apple Silicon（M 系列），不以显示器品牌或固定屏数限制应用。
 
-**Development-preview source, not yet compiled or validated on a Mac.** Targets macOS 13+ on Apple Silicon. It is not a ready-to-install release.
+**The development preview has been built and automatically checked on a Mac runner; interactive and physical-device testing is still pending.** Targets macOS 13+ on Apple Silicon. It is not a production release.
 
-**测试者无需编译。** 现已准备手动云端构建流程；获得已授权 GitHub 私有仓库访问并完成构建后，测试者接收 `.app` ZIP／DMG，按 [简短使用说明](DISTRIBUTION.txt) 运行即可。当前云任务尚未启动，下面的源码构建步骤只给开发者使用。
+**测试者无需编译或安装 Xcode。** 构建 `ci-1-1` 已生成 `ScreenKeeper-Mac-0.1.0-Dev-ci-1-1-arm64.zip` 和同名 `.dmg`。使用开发者提供的应用包，按 [简短使用说明](DISTRIBUTION.txt) 运行即可；下面的源码构建步骤仅供开发者使用。
 
-**Testers do not need to compile.** A manual cloud build is prepared. After an authorized private GitHub build completes, testers receive an app ZIP/DMG and follow [the short instructions](DISTRIBUTION.txt). No cloud build has started yet; the source instructions below are for developers.
+**Testers do not need to compile or install Xcode.** Build `ci-1-1` produced `ScreenKeeper-Mac-0.1.0-Dev-ci-1-1-arm64.zip` and the matching `.dmg`. Use the app package supplied by the developer and follow [the short instructions](DISTRIBUTION.txt). Source-building instructions below are for developers only.
+
+[首次 Mac 构建记录 / First Mac build](https://github.com/suihan-star/ScreenKeeper/actions/runs/42943387164)：源码提交 `319a29ac41483cddd098dfb209398d4b7f2b663b`，环境为 macOS 15.8.2 arm64、Xcode 16.4、Swift 6.1.2。38 个 XCTest 与 18 个打包辅助测试均通过；arm64／最低系统 13.0／依赖检查、ad-hoc 签名验证、资源自检和 DMG 校验完成。未执行交互界面、权限、真实显示器或 macOS 13 运行验收。
+
+The linked run built commit `319a29ac41483cddd098dfb209398d4b7f2b663b` on macOS 15.8.2 arm64 with Xcode 16.4 and Swift 6.1.2. All 38 XCTest cases and 18 packaging-helper tests passed, along with architecture, minimum-OS/dependency, ad-hoc signature, resource and DMG checks. Interactive UI, permissions, physical displays and runtime behavior on macOS 13 have not been validated.
 
 ## 当前源码范围 / Implemented source
 
@@ -20,7 +24,7 @@
 
 Color control, hardware brightness/power, desktop/selected-app actions, login startup, fullscreen DND, and animated fog reminders are not enabled. No Gamma writes or display-topology changes occur. The color schedule is logic only, not a working hardware backend.
 
-## 在 Mac 构建 / Build on a Mac
+## 开发者在 Mac 构建 / Developer build on a Mac
 
 需要 Apple Silicon Mac、macOS 13+、Swift 5.9+（Xcode 15+ 或兼容的 Command Line Tools）及 Python 3.10+。首次安装工具可能需要网络和磁盘空间；本项目没有第三方 Swift 包依赖。
 
@@ -38,9 +42,9 @@ Requires an Apple Silicon Mac, macOS 13+, Swift 5.9+ via Xcode 15+ or compatible
 
 The script verifies source, tests, builds arm64, exports icons, applies an ad-hoc signature, checks the package, and creates ZIP/DMG files under `dist/<build-id>/`. It records environment, dependencies, signing and build logs. CI skips Finder. The package check does not access displays or settings; business functionality is never launched automatically.
 
-此签名仅供本机构建测试，不是 Developer ID 签名或 Apple 公证。不要将此构建作为正式版向公众分发，也不要为了运行它关闭系统安全保护。外部分发需要后续签名、公证和验收。
+此签名仅供开发预览测试，不是 Developer ID 签名或 Apple 公证。不要将此构建作为正式版向公众分发，也不要为了运行它关闭系统安全保护。正式公开分发需要后续签名、公证和验收。
 
-The ad-hoc signature is for local testing, not Developer ID signing or notarization. Do not distribute it as a public release or disable system security to run it. Public distribution needs signing, notarization, and validation.
+The ad-hoc signature is for development-preview testing, not Developer ID signing or notarization. Do not distribute it as a public release or disable system security to run it. Public distribution needs signing, notarization, and validation.
 
 仅运行核心测试（有兼容 Swift 工具链时）：
 
@@ -48,9 +52,9 @@ The ad-hoc signature is for local testing, not Developer ID signing or notarizat
 swift test
 ```
 
-在非 macOS 主机，Package.swift 不加入原生应用目标，仅测试 Foundation 核心；这不能验证 Mac 界面与系统 API。当前交付者没有 Swift 工具链，因此没有实际执行这些命令；源码包附带的静态检查不等于编译通过。
+在非 macOS 主机，Package.swift 不加入原生应用目标，仅测试 Foundation 核心；这不能验证 Mac 界面与系统 API。本次构建和测试已在上述 Mac 云端环境执行；Windows 上此前的语法检查不替代原生编译，云端自动检查也不替代实机验收。
 
-On non-macOS hosts, the package omits the native app target and tests the Foundation core only. This does not validate Mac UI or system APIs. These build/test commands have not been run by the source author in the Windows environment.
+On non-macOS hosts, the package omits the native app target and tests the Foundation core only. This does not validate Mac UI or system APIs. This build and its tests ran on the Mac runner described above; earlier Windows syntax checks do not replace native compilation, and cloud checks do not replace device testing.
 
 ## 数据与权限 / Data and permissions
 

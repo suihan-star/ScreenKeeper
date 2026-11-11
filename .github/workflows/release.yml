@@ -1,6 +1,6 @@
 name: Build artifacts (manual)
 
-# Source hosting is Codeup. This optional GitHub mirror workflow never publishes a Release.
+# Manual Windows packaging in the product repository; never publishes a Release.
 on:
   workflow_dispatch:
 

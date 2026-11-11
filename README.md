@@ -4,7 +4,7 @@
 
 当前正式便携版为 **1.0.0**，本仓库保留源码、测试、设计稿和开发记录。修复内容与验收边界见 [变更记录](CHANGELOG.md) 和 [正式包验证结果](docs/tasks/015-stable-portable-plan.md)。
 
-Apple Silicon Mac 版正在开发，独立源码与构建入口见 [macos/README.md](macos/README.md)。当前为待 Mac 编译及实机验证的开发预览，不能将 Windows 验收结论用于 Mac。
+Apple Silicon Mac 版正在开发，独立源码与构建入口见 [macos/README.md](macos/README.md)。已通过云端 Mac 编译、38 项核心测试及应用包自检，生成 ZIP／DMG 开发预览；界面与真实显示器行为仍待实机验收，不能将 Windows 验收结论用于 Mac。
 
 ## 主要功能
 
@@ -68,11 +68,17 @@ dotnet format OLED-Sleeper.sln --verify-no-changes --no-restore
 | `docs/` | 使用、开发、任务设计与验收记录 |
 | `tools/` | 图标生成与受控色温观察工具 |
 | `installer/`、`build.ps1` | 安装器及本地打包入口 |
-| `.github/workflows/` | 可选 GitHub 镜像检查／手动构建；Codeup 不执行这些工作流 |
+| `.github/workflows/` | GitHub 主仓库的 Windows 检查及 Windows／Mac 手动构建；不自动发布 |
 
 ## 源码仓库与贡献
 
-产品主分支为 `main`，功能分支使用 `codex/` 前缀。Codeup 为 `origin`：
+完整源码托管于 [GitHub 私有仓库 suihan-star/ScreenKeeper](https://github.com/suihan-star/ScreenKeeper)，对应 `origin`。产品主分支为 `main`，功能分支使用 `codex/` 前缀。克隆地址：
+
+```text
+https://github.com/suihan-star/ScreenKeeper.git
+```
+
+原 Codeup 仓库保留为 `codeup`，不因迁移删除或覆盖：
 
 ```text
 <private-repository>
