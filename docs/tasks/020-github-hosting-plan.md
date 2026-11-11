@@ -11,9 +11,9 @@
 5. 核对 GitHub Actions 额度与停止付费设置，启动 Mac 手动构建，处理实际编译／测试和打包错误，下载并核验产物。
 6. 更新设计、计划、README、开发说明及对应 AGENTS.md；分别交付 GitHub 托管结果与 Mac 构建结果，不混同两者。
 
-## 当前执行记录
+## 首次私有迁移的执行记录
 
-- 用户已完成 GitHub 登录和 CLI 授权，确认账号为 `suihan-star`；私有仓库 [suihan-star/ScreenKeeper](https://github.com/suihan-star/ScreenKeeper) 已接收完整源码、历史与原产品标签。GitHub API 确认默认分支为 main、仓库仍为私有，681 个源码文件与本地冻结提交数量一致，树查询未截断。
+- 首次迁移时，用户已完成 GitHub 登录和 CLI 授权，账号为 `suihan-star`；当时的私有仓库已接收完整源码、历史与原产品标签。该次 GitHub API 核验确认默认分支为 main、仓库为私有，681 个源码文件与本地冻结提交数量一致，树查询未截断。此后原仓库已私有留档，[现公开仓库](https://github.com/suihan-star/ScreenKeeper) 使用独立的脱敏历史，见 [021 计划](021-open-source-privacy-plan.md)。
 - Mac workflow 已改为完整私有仓库：checkout／核对精确 `github.sha`，不再要求最小副本专用的根清单；保留 arm64、手动触发、20 分钟和 3 天产物限制。
 - 工作区含先前 Windows 修复、发行文档与 Mac 新模块；本次依用户“全部代码托管”要求核对后纳入，运行数据与生成包不纳入。
 - Mac 云端构建及下载后核验已完成，已交付 ci-1-1 的 arm64 ZIP／DMG 开发预览；具体结果和未验收边界见下文。

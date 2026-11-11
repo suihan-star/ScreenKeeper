@@ -72,7 +72,7 @@ dotnet format OLED-Sleeper.sln --verify-no-changes --no-restore
 
 ## 源码仓库与贡献
 
-完整源码托管于 [GitHub 仓库 suihan-star/ScreenKeeper](https://github.com/suihan-star/ScreenKeeper)，对应 `origin`。产品主分支为 `main`，功能分支使用 `codex/` 前缀。克隆地址：
+完整源码以 MIT 许可公开托管于 [GitHub 仓库 suihan-star/ScreenKeeper](https://github.com/suihan-star/ScreenKeeper)，对应 `origin`。产品主分支为 `main`，功能分支使用 `codex/` 前缀。克隆地址：
 
 ```text
 https://github.com/suihan-star/ScreenKeeper.git

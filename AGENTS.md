@@ -7,7 +7,7 @@
 - 初始基线：OLED Sleeper v2.2.0，提交 27f1c777a9a1dca6002692b66fe0ec6cf4d71724。
 - 保留上游 Git 历史及 MIT 版权许可声明。upstream 指向 Quorthon13/OLED-Sleeper。
 - 产品主分支为 main；功能分支默认使用 codex/ 前缀。
-- origin 为 GitHub 主仓库 https://github.com/suihan-star/ScreenKeeper，upstream 保留上游参考地址；只推送目标分支和已确认的产品版本标签，不默认推送继承的 v* 标签，不强推已有远程历史。个人私有 remote 和备份只在本地维护，不写入公开文档。
+- origin 为 MIT 开源的 GitHub 主仓库 https://github.com/suihan-star/ScreenKeeper，upstream 保留上游参考地址；只推送目标分支和已确认的产品版本标签，不默认推送继承的 v* 标签，不强推已有远程历史。个人私有 remote 和备份只在本地维护，不写入公开文档。公开历史已脱敏，旧克隆和私有备份分支不得直接推入公共仓库；后续工作基于公开 main。
 - 未经用户要求，不自动提交、推送、创建 PR 或发布。
 
 ## 代码与构建事实
